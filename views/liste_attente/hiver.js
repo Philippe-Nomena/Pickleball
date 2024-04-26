@@ -47,8 +47,8 @@ const Hiver_liste = () => {
           color="black"
           style={tw`mr-2`}
         />
+        <Text style={tw`text-lg text-gray-800 mr-2`}>{item.id}</Text>
         <Text style={tw`text-lg text-gray-800 mr-8`}>{item.title}</Text>
-        <Text style={tw`text-lg text-gray-800`}>{item.session}</Text>
       </View>
     </Swipeable>
   );

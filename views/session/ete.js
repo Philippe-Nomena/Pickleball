@@ -17,17 +17,66 @@ export class Ete_Session extends Component {
     super(props);
     this.state = {
       categorie: "A",
-      sexe: "Femme",
+      sexe: "F",
       evaluation: "NON",
       groupe: "Jour",
+      payement: [],
+      carte_fede: [],
+      consigne: [],
+      etiquete: [],
       eteVisible: false,
     };
     this.setEvaluation = this.setEvaluation.bind(this);
     this.setGroupe = this.setGroupe.bind(this);
+    this.setPayement = this.setPayement.bind(this);
+    this.setCarte_fede = this.setCarte_fede.bind(this);
+    this.setConsigne = this.setConsigne.bind(this);
+    this.setEtiquete = this.setEtiquete.bind(this);
     this.setSexe = this.setSexe.bind(this);
   }
+
   setEvaluation(itemValue) {
     this.setState({ evaluation: itemValue });
+  }
+  setEtiquete(option) {
+    const updatedEtiquete = [...this.state.etiquete];
+    const index = updatedEtiquete.indexOf(option);
+    if (index > -1) {
+      updatedEtiquete.splice(index, 1);
+    } else {
+      updatedEtiquete.push(option);
+    }
+    this.setState({ etiquete: updatedEtiquete });
+  }
+  setConsigne(option) {
+    const updatedConsigne = [...this.state.consigne];
+    const index = updatedConsigne.indexOf(option);
+    if (index > -1) {
+      updatedConsigne.splice(index, 1);
+    } else {
+      updatedConsigne.push(option);
+    }
+    this.setState({ consigne: updatedConsigne });
+  }
+  setPayement(option) {
+    const updatedPayement = [...this.state.payement];
+    const index = updatedPayement.indexOf(option);
+    if (index > -1) {
+      updatedPayement.splice(index, 1);
+    } else {
+      updatedPayement.push(option);
+    }
+    this.setState({ payement: updatedPayement });
+  }
+  setCarte_fede(option) {
+    const updatedCarte_fede = [...this.state.carte_fede];
+    const index = updatedCarte_fede.indexOf(option);
+    if (index > -1) {
+      updatedCarte_fede.splice(index, 1);
+    } else {
+      updatedCarte_fede.push(option);
+    }
+    this.setState({ carte_fede: updatedCarte_fede });
   }
 
   setGroupe(itemValue) {
@@ -67,8 +116,8 @@ export class Ete_Session extends Component {
               selectedValue={this.state.sexe}
               onValueChange={(itemValue, itemIndex) => this.setSexe(itemValue)}
             >
-              <Picker.Item label="Femme" value="Femme" />
-              <Picker.Item label="Homme" value="Homme" />
+              <Picker.Item label="F" value="F" />
+              <Picker.Item label="M" value="M" />
             </Picker>
           </View>
 
@@ -77,6 +126,41 @@ export class Ete_Session extends Component {
             placeholder="Naissance"
             style={tw`border border-gray-300 rounded-md p-2 mb-4`}
           />
+          <View style={tw`flex-row items-center mb-2`}>
+            <View style={tw`flex-col`}>
+              <View style={tw`flex-row`}>
+                <Checkbox
+                  checked={this.state.payement.includes("Payement")}
+                  onChange={() => this.setPayement("Payement")}
+                />
+                <Text style={tw`text-lg font-bold mb-2`}>Payement</Text>
+              </View>
+
+              <View style={tw`flex-row`}>
+                <Checkbox
+                  checked={this.state.carte_fede.includes("Carte Fédé")}
+                  onChange={() => this.setCarte_fede("Carte Fédé")}
+                />
+                <Text style={tw`text-lg font-bold mb-2`}>Carte Fédé</Text>
+              </View>
+            </View>
+            <View style={tw`flex-col ml-4`}>
+              <View style={tw`flex-row`}>
+                <Checkbox
+                  checked={this.state.consigne.includes("Consigne")}
+                  onChange={() => this.setConsigne("Consigne")}
+                />
+                <Text style={tw`text-lg font-bold mb-2`}>Consigne</Text>
+              </View>
+              <View style={tw`flex-row`}>
+                <Checkbox
+                  checked={this.state.etiquete.includes("Etiquete")}
+                  onChange={() => this.setEtiquete("Etiquete")}
+                />
+                <Text style={tw`text-lg font-bold mb-2`}>Etiquete</Text>
+              </View>
+            </View>
+          </View>
 
           <Text style={tw`text-lg font-bold mb-2`}>Courriel</Text>
           <TextInput

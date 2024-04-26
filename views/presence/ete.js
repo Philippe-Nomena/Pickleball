@@ -48,6 +48,11 @@ export class Ete_Presence extends Component {
             placeholder="Nom"
             style={tw`border border-gray-300 rounded-md p-2 mb-4`}
           />
+          <Text style={tw`text-lg font-bold mb-2`}>Numéro</Text>
+          <TextInput
+            placeholder="Numéro"
+            style={tw`border border-gray-300 rounded-md p-2 mb-4`}
+          />
 
           <Text style={tw`text-lg font-bold mb-2`}>Remarque</Text>
           <TextInput

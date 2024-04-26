@@ -3,8 +3,8 @@ import { View, StyleSheet, Dimensions, StatusBar, Text } from "react-native";
 import { TabView, TabBar, SceneMap } from "react-native-tab-view";
 import { MaterialIcons } from "@expo/vector-icons";
 import Ete_Presence from "./ete";
-import Hiver_Presence from "./hiver";
 import Automne_Presence from "./automne";
+import { Hiver_Presence } from "./hiver";
 
 const Ete = () => (
   <View style={styles.scene}>

@@ -1,4 +1,4 @@
-import React, { useState, Component } from "react";
+import React, { Component } from "react";
 import tw from "tailwind-react-native-classnames";
 import { FontAwesome5, MaterialIcons } from "@expo/vector-icons";
 import { Picker } from "@react-native-picker/picker";
@@ -11,15 +11,18 @@ import {
   View,
   TouchableOpacity,
 } from "react-native";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+// import Hiver_liste_presente from "./hiver/liste_hiver";
+
+const Tab = createBottomTabNavigator();
 
 export class Hiver_Presence extends Component {
   constructor(props) {
     super(props);
     this.state = {
       categorie: "A",
-
-      groupe: "Lundi",
-      eteVisible: false,
+      groupe: ["Lundi"],
+      hiverVisible: false,
     };
 
     this.setGroupe = this.setGroupe.bind(this);
@@ -45,7 +48,11 @@ export class Hiver_Presence extends Component {
             placeholder="Nom"
             style={tw`border border-gray-300 rounded-md p-2 mb-4`}
           />
-
+          <Text style={tw`text-lg font-bold mb-2`}>Numéro</Text>
+          <TextInput
+            placeholder="Numéro"
+            style={tw`border border-gray-300 rounded-md p-2 mb-4`}
+          />
           <Text style={tw`text-lg font-bold mb-2`}>Remarque</Text>
           <TextInput
             placeholder="Remarque"
@@ -142,5 +149,3 @@ export class Hiver_Presence extends Component {
     );
   }
 }
-
-export default Hiver_Presence;
