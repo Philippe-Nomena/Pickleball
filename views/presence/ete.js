@@ -11,15 +11,19 @@ import {
   View,
   TouchableOpacity,
 } from "react-native";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import BottomTab from "./bottomtab";
+// import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Ete_liste_presente from "./ete/liste_ete";
 
-const Tab = createBottomTabNavigator();
+// const Tab = createBottomTabNavigator();
 
-export class Ete_Presence extends Component {
+class Ete_Presence extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      nom: "",
+      numero: "",
+      remarque: "",
       categorie: "A",
       groupe: "Lundi",
       eteVisible: false,
@@ -38,6 +42,21 @@ export class Ete_Presence extends Component {
     }
     this.setState({ groupe: updatedGroupe });
   }
+  Ajout = async (e) => {
+    try {
+      const res = await fetch(
+        "https://sheet.best/api/sheets/753b9050-fbd4-4174-aa2d-996b8d84b15a",
+        {
+          nom: this.state.nom,
+          remarque: this.state.remarque,
+          categorie: this.state.categorie,
+          jour: this.state.groupe,
+        }
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   render() {
     return (
@@ -46,17 +65,26 @@ export class Ete_Presence extends Component {
           <Text style={tw`text-lg font-bold mb-2`}>Nom</Text>
           <TextInput
             placeholder="Nom"
+            name="nom"
+            value={this.state.nom}
+            onChange={(e) => this.setState({ nom: e.target.value })}
             style={tw`border border-gray-300 rounded-md p-2 mb-4`}
           />
           <Text style={tw`text-lg font-bold mb-2`}>Numéro</Text>
           <TextInput
             placeholder="Numéro"
+            name="numero"
+            value={this.state.numero}
+            onChange={(e) => this.setState({ numero: e.target.value })}
             style={tw`border border-gray-300 rounded-md p-2 mb-4`}
           />
 
           <Text style={tw`text-lg font-bold mb-2`}>Remarque</Text>
           <TextInput
             placeholder="Remarque"
+            name="remarque"
+            value={this.state.remarque}
+            onChange={(e) => this.setState({ remarque: e.target.value })}
             style={tw`border border-gray-300 rounded-md p-2 mb-4`}
           />
           <Text style={tw`text-lg font-bold mb-2`}>Votre catégorie</Text>
@@ -136,7 +164,9 @@ export class Ete_Presence extends Component {
               style={tw`bg-blue-500 py-2 px-4 rounded-md flex-row items-center justify-center mr-4`}
             >
               <FontAwesome5 name="save" size={24} color="white" />
-              <Text style={tw`text-white ml-2`}>Ajouter</Text>
+              <Text style={tw`text-white ml-2`} onPress={this.Ajout}>
+                Ajouter
+              </Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={tw`bg-red-500 py-2 px-4 rounded-md flex-row items-center justify-center`}
@@ -146,42 +176,14 @@ export class Ete_Presence extends Component {
             </TouchableOpacity>
           </View>
         </ScrollView>
+        {/* <BottomTab
+          screen1Name="Presence Ete"
+          screen1Component={Ete_Presence}
+          screen2Name="Liste de presence Ete"
+          screen2Component={Ete_liste_presente}
+        /> */}
       </SafeAreaView>
     );
   }
 }
-
-const BottomTab = () => {
-  return (
-    <Tab.Navigator
-      screenOptions={({ route }) => ({
-        tabBarIcon: ({ color, size }) => {
-          let iconName;
-
-          if (route.name === "Presence") {
-            iconName = "calendar";
-          } else if (route.name === "Liste de presence") {
-            iconName = "list";
-          }
-
-          return <FontAwesome5 name={iconName} size={size} color={color} />;
-        },
-        tabBarActiveTintColor: "blue",
-        tabBarInactiveTintColor: "black",
-      })}
-    >
-      <Tab.Screen
-        name="Presence"
-        options={{ headerShown: false }}
-        component={Ete_Presence}
-      />
-      <Tab.Screen
-        name="Liste de presence"
-        options={{ headerShown: false }}
-        component={Ete_liste_presente}
-      />
-    </Tab.Navigator>
-  );
-};
-
-export default BottomTab;
+export default Ete_Presence;

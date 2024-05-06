@@ -5,20 +5,28 @@ import Liste_attente from "./views/liste_attente/liste_attente";
 import {
   AntDesign,
   MaterialCommunityIcons,
-  FontAwesome6,
   MaterialIcons,
 } from "@expo/vector-icons";
 import Bonus from "./views/bonus/bonus";
-
 import Presence from "./views/presence/presence";
 import Session from "./views/session/session";
+// import { View, StyleSheet } from "react-native";
 
 const Drawer = createDrawerNavigator();
 
 export default function App() {
   return (
     <NavigationContainer>
-      <Drawer.Navigator initialRouteName="Pratiquants">
+      <Drawer.Navigator
+        initialRouteName="Pratiquants"
+        screenOptions={{
+          drawerContentStyle: { backgroundColor: "black" },
+          drawerLabelStyle: { color: "white" },
+          drawerActiveBackgroundColor: "gray",
+          headerTintColor: "white",
+          headerStyle: { backgroundColor: "black" },
+        }}
+      >
         <Drawer.Screen
           name="Pratiquants"
           component={Liste_attente}
@@ -27,7 +35,7 @@ export default function App() {
               <MaterialCommunityIcons
                 name="view-list"
                 size={24}
-                color="black"
+                color="white"
               />
             ),
           }}
@@ -36,16 +44,15 @@ export default function App() {
           name="Bonus"
           component={Bonus}
           options={{
-            drawerIcon: () => <AntDesign name="gift" size={24} color="black" />,
+            drawerIcon: () => <AntDesign name="gift" size={24} color="white" />,
           }}
         />
-
         <Drawer.Screen
           name="Présence"
           component={Presence}
           options={{
             drawerIcon: () => (
-              <MaterialIcons name="co-present" size={24} color="black" />
+              <MaterialIcons name="co-present" size={24} color="white" />
             ),
           }}
         />
@@ -57,7 +64,7 @@ export default function App() {
               <MaterialCommunityIcons
                 name="weather-cloudy"
                 size={24}
-                color="black"
+                color="white"
               />
             ),
           }}

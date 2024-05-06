@@ -11,17 +11,13 @@ import {
   View,
   TouchableOpacity,
 } from "react-native";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-// import Hiver_liste_presente from "./hiver/liste_hiver";
-
-const Tab = createBottomTabNavigator();
 
 export class Hiver_Presence extends Component {
   constructor(props) {
     super(props);
     this.state = {
       categorie: "A",
-      groupe: ["Lundi"],
+      groupe: "Lundi",
       hiverVisible: false,
     };
 

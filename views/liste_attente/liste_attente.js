@@ -38,9 +38,9 @@ const renderTabBar = (props) => (
               : "ac-unit"
           }
           size={20}
-          color={focused ? "brown" : "black"}
+          color={focused ? "white" : "white"}
         />
-        <Text style={[styles.label, { color: focused ? "brown" : "black" }]}>
+        <Text style={[styles.label, { color: focused ? "white" : "white" }]}>
           {route.title}
         </Text>
       </View>
@@ -87,9 +87,10 @@ const Liste_attente = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "black",
   },
   indicator: {
-    backgroundColor: "brown",
+    backgroundColor: "white",
   },
   scene: {
     marginTop: 2,
@@ -101,8 +102,8 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   tabBar: {
-    backgroundColor: "white",
     height: "6%",
+    backgroundColor: "black",
   },
   label: {
     textTransform: "capitalize",

@@ -38,9 +38,9 @@ const renderTabBar = (props) => (
               : "ac-unit"
           }
           size={20}
-          color={focused ? "brown" : "black"}
+          color={focused ? "white" : "white"}
         />
-        <Text style={[styles.label, { color: focused ? "brown" : "black" }]}>
+        <Text style={[styles.label, { color: focused ? "white" : "white" }]}>
           {route.title}
         </Text>
       </View>
@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   indicator: {
-    backgroundColor: "brown",
+    backgroundColor: "white",
   },
   scene: {
     flex: 1,
@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   tabBar: {
-    backgroundColor: "white",
+    backgroundColor: "black",
     height: "6%",
   },
   label: {
