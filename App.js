@@ -1,6 +1,7 @@
 import * as React from "react";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import { NavigationContainer } from "@react-navigation/native";
+
 import Liste_attente from "./views/liste_attente/liste_attente";
 import {
   AntDesign,
@@ -10,7 +11,8 @@ import {
 import Bonus from "./views/bonus/bonus";
 import Presence from "./views/presence/presence";
 import Session from "./views/session/session";
-// import { View, StyleSheet } from "react-native";
+import Bottomnavigation from "./views/bottomtab/bottomnavigation";
+import Login from "./views/connexion/login";
 
 const Drawer = createDrawerNavigator();
 
@@ -18,7 +20,7 @@ export default function App() {
   return (
     <NavigationContainer>
       <Drawer.Navigator
-        initialRouteName="Pratiquants"
+        initialRouteName="Login"
         screenOptions={{
           drawerContentStyle: { backgroundColor: "black" },
           drawerLabelStyle: { color: "white" },
@@ -27,6 +29,19 @@ export default function App() {
           headerStyle: { backgroundColor: "black" },
         }}
       >
+        <Drawer.Screen
+          name="Login"
+          component={Login}
+          options={{
+            drawerIcon: () => (
+              <MaterialCommunityIcons
+                name="view-list"
+                size={24}
+                color="white"
+              />
+            ),
+          }}
+        />
         <Drawer.Screen
           name="Pratiquants"
           component={Liste_attente}
@@ -70,6 +85,7 @@ export default function App() {
           }}
         />
       </Drawer.Navigator>
+      {/* <Bottomnavigation /> */}
     </NavigationContainer>
   );
 }

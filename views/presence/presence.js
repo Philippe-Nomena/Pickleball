@@ -3,22 +3,25 @@ import { View, StyleSheet, Dimensions, StatusBar, Text } from "react-native";
 import { TabView, TabBar, SceneMap } from "react-native-tab-view";
 import { MaterialIcons } from "@expo/vector-icons";
 import Ete_Presence from "./ete";
-import Automne_Presence from "./automne";
-import { Hiver_Presence } from "./hiver";
+// import Automne_Presence from "./automne";
+// import { Hiver_Presence } from "./hiver";
 import BottomTab from "./bottomtab";
 import Ete_liste_presente from "./ete/liste_ete";
 // import Hiver_liste_presente from "./hiver/liste_hiver";
 // import Automne_liste_presente from "./automne/liste_automne";
 import BarcodeScannerScreen from "./qrcode";
+import Hiver_Presence from "./hiver";
+import Automne_Presence from "./automne";
 
 const Ete = () => (
   <View style={styles.scene}>
-    <BottomTab
+    {/* <BottomTab
       screen1Name="Presence Ete"
       screen1Component={Ete_Presence}
       screen2Name="Liste de presence Ete"
       screen2Component={Ete_liste_presente}
-    />
+    /> */}
+    <Ete_Presence />
   </View>
 );
 
@@ -30,7 +33,7 @@ const Hiver = () => (
       screen2Name="Liste de presence Hiver"
       screen2Component={Hiver_liste_presente}
     /> */}
-    <BarcodeScannerScreen />
+    <Hiver_Presence />
   </View>
 );
 
@@ -42,6 +45,7 @@ const Automne = () => (
       screen2Name="Liste de presence Automne"
       screen2Component={Automne_liste_presente}
     /> */}
+    <Automne_Presence />
   </View>
 );
 
@@ -59,9 +63,9 @@ const renderTabBar = (props) => (
               : "ac-unit"
           }
           size={20}
-          color={focused ? "brown" : "black"}
+          color={focused ? "white" : "white"}
         />
-        <Text style={[styles.label, { color: focused ? "brown" : "black" }]}>
+        <Text style={[styles.label, { color: focused ? "white" : "white" }]}>
           {route.title}
         </Text>
       </View>
@@ -110,7 +114,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   indicator: {
-    backgroundColor: "brown",
+    backgroundColor: "white",
   },
   scene: {
     flex: 1,
@@ -120,8 +124,8 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   tabBar: {
-    backgroundColor: "white",
-    height: "6%",
+    backgroundColor: "black",
+    // height: "6%",
   },
   label: {
     textTransform: "capitalize",

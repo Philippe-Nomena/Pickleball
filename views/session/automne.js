@@ -117,23 +117,23 @@ export class Automne_Session extends Component {
           {this.state.automneVisible && (
             <TextInput
               value="Automne"
-              style={tw`border border-gray-300 rounded-md p-2 mb-4`}
+              style={tw`bg-gray-300 border border-gray-300 rounded-md p-2 mb-4`}
             />
           )}
 
           <Text style={tw`text-white text-lg font-bold mb-2`}>Nom</Text>
           <TextInput
-            placeholderTextColor="gray"
             placeholder="Nom"
-            style={tw` border border-gray-300 rounded-md p-2 mb-4`}
+            style={tw` bg-gray-300 border border-gray-300 rounded-md p-2 mb-4`}
           />
 
           <Text style={tw`text-white text-lg font-bold mb-2`}>Sexe</Text>
-          <View style={tw`border border-gray-300 rounded-md p-2 mb-4`}>
+          <View
+            style={tw`bg-gray-300 border border-gray-300 rounded-md p-2 mb-4`}
+          >
             <Picker
               selectedValue={this.state.sexe}
               onValueChange={(itemValue, itemIndex) => this.setSexe(itemValue)}
-              style={{ color: "gray" }}
             >
               <Picker.Item label="F" value="F" />
               <Picker.Item label="M" value="M" />
@@ -142,7 +142,9 @@ export class Automne_Session extends Component {
 
           <Text style={tw`text-white text-lg font-bold mb-2`}>Naissance</Text>
           <TouchableOpacity onPress={this.showDatePicker}>
-            <View style={tw`border border-gray-300 rounded-md p-2 mb-4`}>
+            <View
+              style={tw`bg-gray-300 border border-gray-300 rounded-md p-2 mb-4`}
+            >
               <TextInput
                 value={this.state.date.toDateString()}
                 editable={false}
@@ -206,41 +208,38 @@ export class Automne_Session extends Component {
 
           <Text style={tw`text-white text-lg font-bold mb-2`}>Courriel</Text>
           <TextInput
-            placeholderTextColor="gray"
             placeholder="Courriel"
-            style={tw`border border-gray-300 rounded-md p-2 mb-4`}
+            style={tw`bg-gray-300 border border-gray-300 rounded-md p-2 mb-4`}
           />
           <Text style={tw`text-white text-lg font-bold mb-2`}>Adresse</Text>
           <TextInput
-            placeholderTextColor="gray"
             placeholder="Adresse"
-            style={tw`border border-gray-300 rounded-md p-2 mb-4`}
+            style={tw`bg-gray-300 border border-gray-300 rounded-md p-2 mb-4`}
           />
           <Text style={tw`text-white text-lg font-bold mb-2`}>Telephone</Text>
           <TextInput
-            placeholderTextColor="gray"
             placeholder="Telephone"
-            style={tw`border border-gray-300 rounded-md p-2 mb-4`}
+            style={tw`bg-gray-300 border border-gray-300 rounded-md p-2 mb-4`}
           />
 
           <Text style={tw`text-white text-lg font-bold mb-2`}>
             En cas d'urgence
           </Text>
           <TextInput
-            placeholderTextColor="gray"
             placeholder="Numero en cas d'urgence"
-            style={tw`border border-gray-300 rounded-md p-2 mb-4`}
+            style={tw`bg-gray-300 border border-gray-300 rounded-md p-2 mb-4`}
           />
           <Text style={tw`text-white text-lg font-bold mb-2`}>
             Dans quelle catégorie avez-vous joué auparavant ?
           </Text>
-          <View style={tw`border border-gray-300 rounded-md p-2 mb-4`}>
+          <View
+            style={tw`bg-gray-300 border border-gray-300 rounded-md p-2 mb-4`}
+          >
             <Picker
               selectedValue={this.state.categorie}
               onValueChange={(itemValue, itemIndex) =>
                 this.setState({ categorie: itemValue })
               }
-              style={{ color: "gray" }}
             >
               <Picker.Item label="A" value="A" />
               <Picker.Item label="B" value="B" />
@@ -249,13 +248,14 @@ export class Automne_Session extends Component {
             </Picker>
           </View>
           <Text style={tw`text-white text-lg font-bold mb-2`}>Evaluation</Text>
-          <View style={tw`border border-gray-300 rounded-md p-2 mb-4`}>
+          <View
+            style={tw`bg-gray-300 border border-gray-300 rounded-md p-2 mb-4`}
+          >
             <Picker
               selectedValue={this.state.evaluation}
               onValueChange={(itemValue, itemIndex) =>
                 this.setEvaluation(itemValue)
               }
-              style={{ color: "gray" }}
             >
               <Picker.Item label="NON" value="NON" />
               <Picker.Item label="OUI" value="OUI" />
@@ -265,17 +265,15 @@ export class Automne_Session extends Component {
             Mode de payement
           </Text>
           <TextInput
-            placeholderTextColor="gray"
             placeholder="Mode de payement"
-            style={tw`border border-gray-300 rounded-md p-2 mb-4`}
+            style={tw`bg-gray-300 border border-gray-300 rounded-md p-2 mb-4`}
           />
           <Text style={tw`text-white text-lg font-bold mb-2`}>
             Carte bancaire
           </Text>
           <TextInput
-            placeholderTextColor="gray"
             placeholder="Carte bancaire"
-            style={tw`border border-gray-300 rounded-md p-2 mb-4`}
+            style={tw`bg-gray-300 border border-gray-300 rounded-md p-2 mb-4`}
           />
           <Text style={tw`text-white text-lg font-bold mb-2`}>Groupe</Text>
           <View>

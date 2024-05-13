@@ -102,7 +102,7 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   tabBar: {
-    height: "6%",
+    // height: "6%",
     backgroundColor: "black",
   },
   label: {

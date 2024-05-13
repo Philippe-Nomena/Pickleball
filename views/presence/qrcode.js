@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { StyleSheet, Text, View, Button } from "react-native";
+import { StyleSheet, Text, View, Button, Dimensions } from "react-native";
 import { Camera } from "expo-camera";
 
 export default function BarcodeScannerScreen() {
@@ -28,10 +28,12 @@ export default function BarcodeScannerScreen() {
 
   return (
     <View style={styles.container}>
-      <Camera
-        onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
-        style={StyleSheet.absoluteFillObject}
-      />
+      <View style={styles.cameraContainer}>
+        <Camera
+          onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
+          style={[StyleSheet.absoluteFill, styles.cameraView]}
+        />
+      </View>
       {scanned && (
         <Button title={"Tap to Scan Again"} onPress={() => setScanned(false)} />
       )}
@@ -44,12 +46,23 @@ export default function BarcodeScannerScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    flexDirection: "column",
+    // flex: 1,
+    backgroundColor: "white",
     justifyContent: "center",
+    alignItems: "center",
+    marginTop: "2%",
+    marginBottom: "2%",
+  },
+  cameraContainer: {
+    width: "100%",
+    aspectRatio: 1,
+    overflow: "hidden",
+    borderRadius: 20,
+  },
+  cameraView: {
+    flex: 1,
   },
   barcodeData: {
-    marginTop: 20,
     fontSize: 20,
     fontWeight: "bold",
     textAlign: "center",
