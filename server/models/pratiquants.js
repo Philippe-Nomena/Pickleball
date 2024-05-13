@@ -12,11 +12,11 @@ const Pratiquants = database.define("pratiquants", {
     allowNull: true,
   },
   nom: {
-    type: Sequelize.STRING(100),
+    type: Sequelize.STRING,
     allowNull: false,
   },
   sexe: {
-    type: Sequelize.STRING(100),
+    type: Sequelize.STRING,
     allowNull: false,
   },
 
