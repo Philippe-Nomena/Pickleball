@@ -13,6 +13,7 @@ import Presence from "./views/presence/presence";
 import Session from "./views/session/session";
 import Bottomnavigation from "./views/bottomtab/bottomnavigation";
 import Login from "./views/connexion/login";
+import Signup from "./views/connexion/signup";
 
 const Drawer = createDrawerNavigator();
 
@@ -32,6 +33,19 @@ export default function App() {
         <Drawer.Screen
           name="Login"
           component={Login}
+          options={{
+            drawerIcon: () => (
+              <MaterialCommunityIcons
+                name="view-list"
+                size={24}
+                color="white"
+              />
+            ),
+          }}
+        />
+        <Drawer.Screen
+          name="Sign up"
+          component={Signup}
           options={{
             drawerIcon: () => (
               <MaterialCommunityIcons

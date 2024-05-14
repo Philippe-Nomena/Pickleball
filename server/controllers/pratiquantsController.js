@@ -9,7 +9,7 @@ exports.getAllPratiquants = async (req, res, next) => {
 };
 
 exports.getPratiquants = async (req, res, next) => {
-  const id = req.id;
+  const id = req.params.id;
   let pratiquants = await Pratiquants.findOne({
     where: {
       id: id,
