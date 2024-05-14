@@ -105,7 +105,7 @@ const Automne_liste = () => {
           <AntDesign name="search1" size={18} color="white" />
         </TouchableOpacity>
         <TextInput
-          style={tw`flex-1 border-b border-white p-2`}
+          style={tw`flex-1 border-b border-white text-white p-2`}
           placeholder="chercher..."
           onChangeText={(text) => setSearchQuery(text)}
           value={searchQuery}

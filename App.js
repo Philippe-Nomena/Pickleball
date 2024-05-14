@@ -1,27 +1,58 @@
 import * as React from "react";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import { NavigationContainer } from "@react-navigation/native";
+import { createStackNavigator } from "@react-navigation/stack";
 
 import Liste_attente from "./views/liste_attente/liste_attente";
+import Bonus from "./views/bonus/bonus";
+import Presence from "./views/presence/presence";
+import Session from "./views/session/session";
+// import Bottomnavigation from "./views/bottomtab/bottomnavigation";
+import Login from "./views/connexion/login";
+import Signup from "./views/connexion/signup";
 import {
   AntDesign,
   MaterialCommunityIcons,
   MaterialIcons,
 } from "@expo/vector-icons";
-import Bonus from "./views/bonus/bonus";
-import Presence from "./views/presence/presence";
-import Session from "./views/session/session";
-import Bottomnavigation from "./views/bottomtab/bottomnavigation";
-import Login from "./views/connexion/login";
-import Signup from "./views/connexion/signup";
+import Forget_pass from "./views/connexion/forget_pass";
 
 const Drawer = createDrawerNavigator();
+const Stack = createStackNavigator();
+
+function AuthStack() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+        name="Login"
+        component={Login}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="Signup"
+        component={Signup}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="Forget_pass"
+        component={Forget_pass}
+        options={{
+          headerShown: false,
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
 
 export default function App() {
   return (
     <NavigationContainer>
       <Drawer.Navigator
-        initialRouteName="Login"
+        initialRouteName="Pratiquants"
         screenOptions={{
           drawerContentStyle: { backgroundColor: "black" },
           drawerLabelStyle: { color: "white" },
@@ -31,29 +62,11 @@ export default function App() {
         }}
       >
         <Drawer.Screen
-          name="Login"
-          component={Login}
+          name="Auth"
+          component={AuthStack}
           options={{
-            drawerIcon: () => (
-              <MaterialCommunityIcons
-                name="view-list"
-                size={24}
-                color="white"
-              />
-            ),
-          }}
-        />
-        <Drawer.Screen
-          name="Sign up"
-          component={Signup}
-          options={{
-            drawerIcon: () => (
-              <MaterialCommunityIcons
-                name="view-list"
-                size={24}
-                color="white"
-              />
-            ),
+            drawerLabel: () => null,
+            headerShown: false,
           }}
         />
         <Drawer.Screen
