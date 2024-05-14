@@ -54,6 +54,7 @@ exports.createPratiquants = async (req, res, next) => {
     let isAvalableEmail = await Pratiquants.findOne({
       where: { courriel: courriel },
     });
+
     if (isAvalableEmail) {
       return res.status(400).send("cet email est déjà enregistré");
     }
@@ -94,8 +95,8 @@ exports.updatePratiquants = async (req, res, next) => {
     });
 
     (pratiquants.session = req.body.session),
-      (pratiquants.nom = req.body.nom),
-      (pratiquants.sexe = req.body.sexe);
+    (pratiquants.nom = req.body.nom),
+    (pratiquants.sexe = req.body.sexe);
     pratiquants.naissance = req.body.naissance;
     pratiquants.payement = req.body.payement;
     pratiquants.consigne = req.body.consigne;
