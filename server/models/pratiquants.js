@@ -7,14 +7,17 @@ const Pratiquants = database.define("pratiquants", {
     primaryKey: true,
     autoIncrement: true,
   },
+  
   session: {
     type: Sequelize.STRING,
     allowNull: true,
   },
+
   nom: {
     type: Sequelize.STRING,
     allowNull: false,
   },
+
   sexe: {
     type: Sequelize.STRING,
     allowNull: false,

@@ -43,21 +43,6 @@ class Ete_Presence extends Component {
     }
     this.setState({ groupe: updatedGroupe });
   }
-  Ajout = async (e) => {
-    try {
-      const res = await fetch(
-        "https://sheet.best/api/sheets/753b9050-fbd4-4174-aa2d-996b8d84b15a",
-        {
-          nom: this.state.nom,
-          remarque: this.state.remarque,
-          activite: this.state.activite,
-          jour: this.state.groupe,
-        }
-      );
-    } catch (error) {
-      console.log(error);
-    }
-  };
 
   render() {
     return (

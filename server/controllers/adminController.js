@@ -47,7 +47,7 @@ exports.createUsers = async (req, res, next) => {
 
 exports.updateUser = async (req, res, next) => {
   try {
-    let users = await Utilisateur.findOne({
+    let users = await Admin.findOne({
       where: {
         id: req.params.id,
       },

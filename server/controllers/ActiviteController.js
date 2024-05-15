@@ -1,16 +1,17 @@
 const { Op } = require("sequelize");
+const jwt = require('jsonwebtoken');
 
-const CodeBarre = require("../models/CodeBarre");
+const Activite = require("../models/Activite");
 
-exports.getAllCode = async (req, res, next) => {
-  const users = await CodeBarre.findAll();
+exports.getAllActivite = async (req, res, next) => {
+  const users = await Activite.findAll();
 
   res.json(users);
 };
 
-exports.getCodeById = async (req, res, next) => {
+exports.getActivite = async (req, res, next) => {
   const id = req.params.id;
-  let users = await CodeBarre.findOne({
+  let users = await Activite.findOne({
     where: {
       id: id,
     },
@@ -18,8 +19,8 @@ exports.getCodeById = async (req, res, next) => {
   res.json(users);
 };
 
-exports.deleteCode = async (req, res, next) => {
-  let users = await CodeBarre.destroy({
+exports.deleteActivite = async (req, res, next) => {
+  let users = await Activite.destroy({
     where: {
       id: req.params.id,
     },
@@ -29,10 +30,10 @@ exports.deleteCode = async (req, res, next) => {
   }
 };
 
-exports.createCodeBarre = async (req, res, next) => {
+exports.createActivite = async (req, res, next) => {
   try {
-    let newuser = await CodeBarre.create({
-      iduser: req.body.iduser,
+    let newuser = await Activite.create({
+      nom: req.body.nom,
     });
     if (newuser) {
       return res.status(200).send("Ajout avec succées");
@@ -42,15 +43,15 @@ exports.createCodeBarre = async (req, res, next) => {
   }
 };
 
-exports.updateCodeBarre = async (req, res, next) => {
+exports.updateActivite = async (req, res, next) => {
   try {
-    let users = await CodeBarre.findOne({
+    let users = await Activite.findOne({
       where: {
         id: req.params.id,
       },
     });
 
-    users.iduser = req.body.iduser;
+    users.nom = req.body.nom;
 
     let userUpdate = await users.save();
     if (userUpdate) {

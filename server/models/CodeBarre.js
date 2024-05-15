@@ -10,7 +10,7 @@ const CodeBarre = database.define("codebarre", {
     autoIncrement: true,
   },
   iduser: {
-    type: Sequelize.STRING,
+    type: Sequelize.INTEGER, 
     allowNull: false,
     references: {
       model: Utilisateur,
@@ -24,10 +24,10 @@ CodeBarre.belongsTo(Utilisateur, { foreignKey: "iduser" });
 database
   .sync()
   .then(() => {
-    console.log("Creation du table codebarre avec succes!");
+    console.log("Création de la table codebarre avec succès!");
   })
   .catch((error) => {
-    console.error("creation du table codebarre echoue :", error);
+    console.error("La création de la table codebarre a échoué :", error);
   });
 
 module.exports = CodeBarre;

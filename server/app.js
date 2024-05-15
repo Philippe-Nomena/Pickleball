@@ -3,9 +3,12 @@ const bodyParser = require("body-parser");
 const express = require("express");
 const app = express();
 const cors = require("cors");
+
 const PratiquantsRoute = require("./routes/pratiquantsRoute");
 const UtilisateurRoute = require("./routes/utilisateursRoute");
 const AdminRoute = require("./routes/adminRoute");
+const CodeBarreRoute = require("./routes/codeBarreRoute");
+const ActiviteRoute = require("./routes/activiteRoute");
 
 // middlewares
 app.use((req, res, next) => {
@@ -24,6 +27,10 @@ app.use("/pratiquants", PratiquantsRoute);
 app.use("/utilisateur", UtilisateurRoute);
 
 app.use("/admin", AdminRoute);
+
+app.use("/codebarre", CodeBarreRoute);
+
+app.use("/activite", ActiviteRoute);
 
 app.listen(process.env.APP_PORT, process.env.URL, () => {
   console.log("======================================");
