@@ -1,5 +1,5 @@
 const { Op } = require("sequelize");
-const jwt = require('jsonwebtoken');
+const jwt = require("jsonwebtoken");
 
 const Utilisateur = require("../models/Utilisateur");
 
@@ -86,8 +86,8 @@ exports.login = async (req, res, next) => {
       }
     }
     if (result) {
-        console.log(thing.id);
-        const token = jwt.sign({ id: thing.id }, 'secret', { expiresIn: '1h' });
+      console.log(thing.id);
+      const token = jwt.sign({ id: thing.id }, "secret", { expiresIn: "1h" });
       return res.json({ result: result, token: token }); // Utiliser res.json() pour envoyer des réponses JSON
     } else {
       return res.json({ result }); // Utiliser res.json() pour envoyer des réponses JSON
@@ -99,13 +99,13 @@ exports.login = async (req, res, next) => {
 };
 
 exports.verifyToken = (req, res, next) => {
-    try {
-      const decoded = jwt.verify(req.body.token, 'secret');
-      console.log(decoded);
-      const userId = decoded.id; 
-      return res.json({ iduser: userId });
-    } catch (error) {
-      console.error('Erreur lors de la vérification du token :', error);
-      return null;
-    }
-  };
+  try {
+    const decoded = jwt.verify(req.body.token, "secret");
+    console.log(decoded);
+    const userId = decoded.id;
+    return res.json({ iduser: userId });
+  } catch (error) {
+    console.error("Erreur lors de la vérification du token :", error);
+    return null;
+  }
+};

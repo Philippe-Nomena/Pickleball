@@ -16,6 +16,7 @@ import {
   MaterialIcons,
 } from "@expo/vector-icons";
 import Forget_pass from "./views/connexion/forget_pass";
+import Activity from "./views/activity/activity";
 
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
@@ -72,6 +73,19 @@ export default function App() {
         <Drawer.Screen
           name="Pratiquants"
           component={Liste_attente}
+          options={{
+            drawerIcon: () => (
+              <MaterialCommunityIcons
+                name="view-list"
+                size={24}
+                color="white"
+              />
+            ),
+          }}
+        />
+        <Drawer.Screen
+          name="Activités"
+          component={Activity}
           options={{
             drawerIcon: () => (
               <MaterialCommunityIcons
