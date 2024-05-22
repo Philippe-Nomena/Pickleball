@@ -24,6 +24,14 @@ const Signup = () => {
         username: nickname,
         motdepasse: password,
       });
+
+      if (res) {
+        alert("Enregistrement réussis avec succés");
+        setNickname("");
+        setNom("");
+        setPassword("");
+        setConfirmPassword("");
+      }
     } catch (error) {
       console.error(error);
     }

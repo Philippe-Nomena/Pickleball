@@ -19,7 +19,7 @@ const Admin = () => {
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
 
-  const Login = () => {
+  const Admin = () => {
     const res = url.post("/utilisateur/login", {
       username: username,
       motdepasse: password,
@@ -50,6 +50,7 @@ const Admin = () => {
       <View style={tw`flex-row justify-center mt-5`}>
         <TouchableOpacity
           style={tw`w-36 h-8 bg-blue-500 flex-row rounded-lg flex items-center justify-center`}
+          onPress={Admin}
         >
           <Text style={tw`text-white mr-3`}>Se connecter</Text>
           <AntDesign name="right" size={15} color="white" />
@@ -81,7 +82,7 @@ const Users = () => {
           <Text style={tw`text-white w-48 mr-5`}>Mot de passe oubliée?</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={Login}
+          // onPress={Login}
           style={tw`w-36 h-8 bg-blue-500 flex-row rounded-lg flex items-center justify-center`}
         >
           <Text style={tw`text-white mr-3`}>Se connecter</Text>
