@@ -53,7 +53,7 @@ export default function App() {
   return (
     <NavigationContainer>
       <Drawer.Navigator
-        initialRouteName="Pratiquants"
+        initialRouteName="Activités"
         screenOptions={{
           drawerContentStyle: { backgroundColor: "black" },
           drawerLabelStyle: { color: "white" },

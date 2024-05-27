@@ -1,131 +1,12 @@
-// import React, { useState, useEffect } from "react";
-// import { StyleSheet, Text, View, Button, Dimensions } from "react-native";
-// import { Camera } from "expo-camera";
-
-// export default function BarcodeScannerScreen() {
-//   const [hasPermission, setHasPermission] = useState(null);
-//   const [scanned, setScanned] = useState(false);
-//   const [barcodeData, setBarcodeData] = useState(null);
-
-//   useEffect(() => {
-//     (async () => {
-//       const { status } = await Camera.requestCameraPermissionsAsync();
-//       setHasPermission(status === "granted");
-//     })();
-//   }, []);
-
-//   const handleBarCodeScanned = ({ type, data }) => {
-//     setScanned(true);
-//     setBarcodeData(data);
-//   };
-
-//   if (hasPermission === null) {
-//     return <Text>Requesting camera permission</Text>;
-//   }
-//   if (hasPermission === false) {
-//     return <Text>No access to camera</Text>;
-//   }
-
-//   return (
-//     <View style={styles.container}>
-//       <View style={styles.cameraContainer}>
-//         <Camera
-//           onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
-//           style={[StyleSheet.absoluteFill, styles.cameraView]}
-//         />
-//       </View>
-//       {scanned && (
-//         <Button title={"Tap to Scan Again"} onPress={() => setScanned(false)} />
-//       )}
-//       {barcodeData && (
-//         <Text style={styles.barcodeData}>Scanned Barcode: {barcodeData}</Text>
-//       )}
-//     </View>
-//   );
-// }
-
-// const styles = StyleSheet.create({
-//   container: {
-//     // flex: 1,
-//     backgroundColor: "white",
-//     justifyContent: "center",
-//     alignItems: "center",
-//     marginTop: "2%",
-//     marginBottom: "2%",
-//   },
-//   cameraContainer: {
-//     width: "100%",
-//     aspectRatio: 1,
-//     overflow: "hidden",
-//     borderRadius: 20,
-//   },
-//   cameraView: {
-//     flex: 1,
-//   },
-//   barcodeData: {
-//     fontSize: 20,
-//     fontWeight: "bold",
-//     textAlign: "center",
-//   },
-// });
-
-///////////////////////
-
-// import React, { useState, useEffect } from 'react';
-// import { Text, View, StyleSheet, Button } from 'react-native';
-// import { Camera } from 'expo-camera';
-
-// export default function BarcodeScannerScreen() {
-//   const [hasPermission, setHasPermission] = useState(null);
-//   const [scanned, setScanned] = useState(false);
-
-//   useEffect(() => {
-//     (async () => {
-//       const { status } = await Camera.requestCameraPermissionsAsync();
-//       setHasPermission(status);
-//     })();
-//   }, []);
-
-//   const handleBarCodeScanned = ({ type, data }) => {
-//     setScanned(true);
-//     alert(`Bar code with type ${type} and data ${data} has been scanned!`);
-//   };
-
-//   if (hasPermission === null) {
-//     return <Text>Requesting for camera permission</Text>;
-//   }
-//   if (hasPermission === false) {
-//     return <Text>No access to camera</Text>;
-//   }
-
-//   return (
-//     <View style={styles.container}>
-//       <Camera
-//         onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
-//         style={StyleSheet.absoluteFillObject}
-//       />
-//       {scanned && <Button title={'Tap to Scan Again'} onPress={() => setScanned(false)} />}
-//     </View>
-//   );
-// }
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     flexDirection: 'column',
-//     justifyContent: 'center',
-//   },
-// });
-
-////////////////////////////////
-
+import React, { useState, useEffect, useRef } from "react";
 import { Camera } from "expo-camera";
-import { useState, useEffect, useRef } from "react";
 import { Button, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function BarcodeScannerScreen() {
-  const [facing, setFacing] = useState(Camera.Constants.Type.back);
   const [hasPermission, setHasPermission] = useState(null);
+  const [scanned, setScanned] = useState(false);
+  const [facing, setFacing] = useState(Camera.Constants.Type.back);
+  const [barcodeData, setBarcodeData] = useState(null);
   const cameraRef = useRef(null);
 
   useEffect(() => {
@@ -135,13 +16,25 @@ export default function BarcodeScannerScreen() {
     })();
   }, []);
 
+  const handleBarCodeScanned = ({ type, data }) => {
+    alert(`Bar code with type ${type} and data ${data} has been scanned!`); // Log for debugging
+    setScanned(true);
+    setBarcodeData(data);
+  };
+
+  const toggleCameraFacing = () => {
+    setFacing((current) =>
+      current === Camera.Constants.Type.back
+        ? Camera.Constants.Type.front
+        : Camera.Constants.Type.back
+    );
+  };
+
   if (hasPermission === null) {
-    // Camera permissions are still loading.
-    return <View />;
+    return <Text>Requesting for camera permission...</Text>;
   }
 
   if (hasPermission === false) {
-    // Camera permissions are not granted yet.
     return (
       <View style={styles.container}>
         <Text style={{ textAlign: "center" }}>
@@ -159,23 +52,31 @@ export default function BarcodeScannerScreen() {
     );
   }
 
-  function toggleCameraFacing() {
-    setFacing((current) =>
-      current === Camera.Constants.Type.back
-        ? Camera.Constants.Type.front
-        : Camera.Constants.Type.back
-    );
-  }
-
   return (
     <View style={styles.container}>
-      <Camera style={styles.camera} type={facing} ref={cameraRef}>
+      <Camera
+        style={styles.camera}
+        type={facing}
+        ref={cameraRef}
+        onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
+      >
         <View style={styles.buttonContainer}>
           <TouchableOpacity style={styles.button} onPress={toggleCameraFacing}>
             <Text style={styles.text}>Flip Camera</Text>
           </TouchableOpacity>
+          {scanned && (
+            <TouchableOpacity
+              style={styles.button}
+              onPress={() => setScanned(false)}
+            >
+              <Text style={styles.text}>Tap to Scan Again</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </Camera>
+      {barcodeData && (
+        <Text style={styles.barcodeText}>Scanned Data: {barcodeData}</Text>
+      )}
     </View>
   );
 }
@@ -203,5 +104,11 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
     color: "white",
+  },
+  barcodeText: {
+    fontSize: 18,
+    fontWeight: "bold",
+    textAlign: "center",
+    margin: 16,
   },
 });
