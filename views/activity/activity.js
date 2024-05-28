@@ -16,7 +16,7 @@ import url from "../url";
 
 const Activity = () => {
   const [data, setData] = useState([]);
-  // const [selectedItem, setSelectedItem] = useState(null);
+
   const [modalVisible, setModalVisible] = useState(false);
   const [ajoutModal, setAjoutModal] = useState(false);
   const [editedItem, setEditedItem] = useState(null);
@@ -25,27 +25,12 @@ const Activity = () => {
   const [itemToDelete, setItemToDelete] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [nom, setNom] = useState("");
-  const [activiteId, setActiviteId] = useState("");
-  const [categories, setCategories] = useState("");
+  const [id_activite, setId_activite] = useState("");
+  const [categorie, setCategorie] = useState("");
   const [groupe, setGroupe] = useState([]);
   const [horaire, SetHoraire] = useState("");
   const [prix, setPrix] = useState("");
-  // const handleAddCategory = () => {
-  //   if (categories.length < 4) {
-  //     setCategories([...categories, ""]);
-  //   }
-  // };
-  // const handleRemoveCategory = (index) => {
-  //   if (categories.length > 1) {
-  //     const newCategories = categories.filter((_, i) => i !== index);
-  //     setCategories(newCategories);
-  //   }
-  // };
-  // const handleCategoryChange = (text, index) => {
-  //   const newCategories = [...categories];
-  //   newCategories[index] = text;
-  //   setCategories(newCategories);
-  // };
+
   useEffect(() => {
     fetchAllData();
   }, []);
@@ -93,29 +78,43 @@ const Activity = () => {
   };
   const handleCategorie = (item) => {
     setEditedItem(item);
-    setActiviteId(item.id);
+    setId_activite(item.id);
     setCategorieModalVisible(true);
   };
   const saveEditedItem = async () => {
     try {
       await url.put(`/activite/${editedItem.id}`, {
         nom,
-        // groupe,
-        // categories,
-        // horaire,
-        // prix,
       });
       setModalVisible(false);
       fetchAllData();
       setNom("");
-      // setCategories([""]);
-      // setGroupe([]);
-      // SetHoraire("");
-      // setPrix("");
+
       Alert.alert("Edit réussi");
     } catch (error) {
       console.error("Error editing item:", error);
       Alert.alert("Error editing item", error.message);
+    }
+  };
+  const addCategorie = async () => {
+    try {
+      await url.post(`/categorie`, {
+        id_activite,
+        horaire,
+        prix,
+        categorie,
+        jour: groupe,
+      });
+      setCategorieModalVisible(false);
+      fetchAllData();
+      SetHoraire("");
+      setPrix("");
+      setCategorie("");
+
+      Alert.alert("categorie reussi");
+    } catch (error) {
+      console.error("Error categorie item:", error);
+      Alert.alert("Error categorie item", error.message);
     }
   };
 
@@ -123,15 +122,11 @@ const Activity = () => {
     try {
       await url.post("/activite", {
         nom,
-        // , categories, groupe, horaire, prix
       });
       setAjoutModal(false);
       fetchAllData();
       setNom("");
-      // setCategories([""]);
-      // setGroupe([]);
-      // SetHoraire("");
-      // setPrix("");
+
       Alert.alert("Ajout d'activité réussi avec succès");
     } catch (error) {
       console.error("Error adding activity:", error);
@@ -146,10 +141,10 @@ const Activity = () => {
   const renderRightActions = (item) => (
     <View style={tw`flex-row mr-5`}>
       <TouchableOpacity
-        style={tw`bg-blue-500 p-2 h-10 mr-1 rounded-md`}
+        style={tw`bg-green-500 p-2 h-10 mr-1 rounded-md`}
         onPress={() => handleCategorie(item)}
       >
-        <MaterialIcons name="category" size={24} color="black" />
+        <MaterialIcons name="category" size={24} color="white" />
       </TouchableOpacity>
       <TouchableOpacity
         style={tw`bg-blue-500 p-2 h-10 mr-1 rounded-md`}
@@ -229,121 +224,6 @@ const Activity = () => {
                   name="nom"
                 />
               </View>
-
-              {/* <View>
-                {categories.map((category, index) => (
-                  <View key={index} style={tw`mb-2 `}>
-                    <Text style={tw`text-white mb-2`}>Categorie:</Text>
-                    <View style={tw`flex-row items-center`}>
-                      <TextInput
-                        style={tw`bg-gray-200 border border-gray-600 rounded-md p-2 text-center w-44`}
-                        placeholder="ex:A || debutant ..."
-                        value={category}
-                        onChangeText={(text) =>
-                          handleCategoryChange(text, index)
-                        }
-                      />
-                      {index === 0 && (
-                        <TouchableOpacity
-                          onPress={handleAddCategory}
-                          style={tw`bg-blue-900 ml-2 rounded-xl p-2`}
-                        >
-                          <AntDesign name="plus" size={24} color="white" />
-                        </TouchableOpacity>
-                      )}
-                      {index > 0 && (
-                        <TouchableOpacity
-                          style={tw`bg-red-900 ml-2 rounded-xl p-2`}
-                          onPress={() => handleRemoveCategory(index)}
-                        >
-                          <AntDesign name="minus" size={24} color="white" />
-                        </TouchableOpacity>
-                      )}
-                    </View>
-                  </View>
-                ))}
-              </View>
-
-              <View>
-                <Text style={tw`text-white `}>Horaire:</Text>
-                <TextInput
-                  style={tw`bg-gray-200 border border-gray-600 rounded-md p-2 mb-2 text-center`}
-                  placeholder="ex: 9h-10h-30"
-                  value={horaire}
-                  onChangeText={SetHoraire}
-                  name="horaire"
-                />
-              </View>
-
-              <View>
-                <Text style={tw`text-white `}>Prix:</Text>
-                <TextInput
-                  style={tw`bg-gray-200 border border-gray-600 rounded-md p-2 mb-2 text-center`}
-                  placeholder="Prix"
-                  value={prix}
-                  onChangeText={setPrix}
-                  name="prix"
-                />
-              </View>
-              <View style={tw`mt-4`}>
-                <Text style={tw`text-white text-lg font-bold mb-2`}>Jours</Text>
-                <View style={tw`flex-row`}>
-                  <View style={tw`flex-col mr-1`}>
-                    <View style={tw`flex-row items-center mb-2`}>
-                      <Checkbox
-                        checked={groupe.includes("Lundi")}
-                        onChange={() => handleSetGroupe("Lundi")}
-                      />
-                      <Text style={tw`text-white text-lg ml-2`}>Lundi</Text>
-                    </View>
-                    <View style={tw`flex-row items-center mb-2`}>
-                      <Checkbox
-                        checked={groupe.includes("Mardi")}
-                        onChange={() => handleSetGroupe("Mardi")}
-                      />
-                      <Text style={tw`text-white text-lg ml-2`}>Mardi</Text>
-                    </View>
-                    <View style={tw`flex-row items-center mb-2`}>
-                      <Checkbox
-                        checked={groupe.includes("Mercredi")}
-                        onChange={() => handleSetGroupe("Mercredi")}
-                      />
-                      <Text style={tw`text-white text-lg ml-2`}>Mercredi</Text>
-                    </View>
-                    <View style={tw`flex-row items-center mb-2`}>
-                      <Checkbox
-                        checked={groupe.includes("Jeudi")}
-                        onChange={() => handleSetGroupe("Jeudi")}
-                      />
-                      <Text style={tw`text-white text-lg ml-2`}>Jeudi</Text>
-                    </View>
-                  </View>
-
-                  <View style={tw`flex-col`}>
-                    <View style={tw`flex-row items-center mb-2`}>
-                      <Checkbox
-                        checked={groupe.includes("Vendredi")}
-                        onChange={() => handleSetGroupe("Vendredi")}
-                      />
-                      <Text style={tw`text-white text-lg ml-2`}>Vendredi</Text>
-                    </View>
-                    <View style={tw`flex-row items-center mb-2`}>
-                      <Checkbox
-                        checked={groupe.includes("Samedi")}
-                        onChange={() => handleSetGroupe("Samedi")}
-                      />
-                      <Text style={tw`text-white text-lg ml-2`}>Samedi</Text>
-                    </View>
-                    <View style={tw`flex-row items-center mb-2`}>
-                      <Checkbox
-                        checked={groupe.includes("Dimanche")}
-                        onChange={() => handleSetGroupe("Dimanche")}
-                      />
-                      <Text style={tw`text-white text-lg ml-2`}>Dimanche</Text>
-                    </View>
-                  </View>
-                </View>
-              </View> */}
             </ScrollView>
 
             <View style={tw`flex-row justify-center items-center`}>
@@ -426,123 +306,6 @@ const Activity = () => {
                   name="nom"
                 />
               </View>
-
-              {/* <View>
-                {categories.map((category, index) => (
-                  <View key={index} style={tw`mb-2 `}>
-                    <Text style={tw`text-white mb-2`}>Categorie:</Text>
-                    <View style={tw`flex-row items-center`}>
-                      <TextInput
-                        style={tw`bg-gray-200 border border-gray-600 rounded-md p-2 text-center w-44`}
-                        placeholder="A,B,C ......."
-                        value={category}
-                        onChangeText={(text) =>
-                          handleCategoryChange(text, index)
-                        }
-                      />
-                      {index === 0 && (
-                        <TouchableOpacity
-                          onPress={handleAddCategory}
-                          style={tw`bg-blue-900 ml-2 rounded-xl p-2`}
-                        >
-                          <AntDesign name="plus" size={24} color="white" />
-                        </TouchableOpacity>
-                      )}
-                      {index > 0 && (
-                        <TouchableOpacity
-                          style={tw`bg-red-900 ml-2 rounded-xl p-2`}
-                          onPress={() => handleRemoveCategory(index)}
-                        >
-                          <AntDesign name="minus" size={24} color="white" />
-                        </TouchableOpacity>
-                      )}
-                    </View>
-                    <Text style={tw`text-white `}>Horaire:</Text>
-                    <TextInput
-                      style={tw`bg-gray-200 border border-gray-600 rounded-md p-2 mb-2 text-center`}
-                      placeholder="ex: 9h-10h-30"
-                      value={horaire}
-                      onChangeText={SetHoraire}
-                      name="horaire"
-                    />
-                    <Text style={tw`text-white `}>Prix:</Text>
-                    <TextInput
-                      style={tw`bg-gray-200 border border-gray-600 rounded-md p-2 mb-2 text-center`}
-                      placeholder="Prix"
-                      value={prix}
-                      onChangeText={setPrix}
-                      name="prix"
-                    />
-                    <Text style={tw`text-white text-lg font-bold mb-2`}>
-                      Jour
-                    </Text>
-                    <View style={tw`flex-row`}>
-                      <View style={tw`flex-col mr-1`}>
-                        <View style={tw`flex-row items-center mb-2`}>
-                          <Checkbox
-                            checked={groupe.includes("Lundi")}
-                            onChange={() => handleSetGroupe("Lundi")}
-                          />
-                          <Text style={tw`text-white text-lg ml-2`}>Lundi</Text>
-                        </View>
-                        <View style={tw`flex-row items-center mb-2`}>
-                          <Checkbox
-                            checked={groupe.includes("Mardi")}
-                            onChange={() => handleSetGroupe("Mardi")}
-                          />
-                          <Text style={tw`text-white text-lg ml-2`}>Mardi</Text>
-                        </View>
-                        <View style={tw`flex-row items-center mb-2`}>
-                          <Checkbox
-                            checked={groupe.includes("Mercredi")}
-                            onChange={() => handleSetGroupe("Mercredi")}
-                          />
-                          <Text style={tw`text-white text-lg ml-2`}>
-                            Mercredi
-                          </Text>
-                        </View>
-                        <View style={tw`flex-row items-center mb-2`}>
-                          <Checkbox
-                            checked={groupe.includes("Jeudi")}
-                            onChange={() => handleSetGroupe("Jeudi")}
-                          />
-                          <Text style={tw`text-white text-lg ml-2`}>Jeudi</Text>
-                        </View>
-                      </View>
-
-                      <View style={tw`flex-col`}>
-                        <View style={tw`flex-row items-center mb-2`}>
-                          <Checkbox
-                            checked={groupe.includes("Vendredi")}
-                            onChange={() => handleSetGroupe("Vendredi")}
-                          />
-                          <Text style={tw`text-white text-lg ml-2`}>
-                            Vendredi
-                          </Text>
-                        </View>
-                        <View style={tw`flex-row items-center mb-2`}>
-                          <Checkbox
-                            checked={groupe.includes("Samedi")}
-                            onChange={() => handleSetGroupe("Samedi")}
-                          />
-                          <Text style={tw`text-white text-lg ml-2`}>
-                            Samedi
-                          </Text>
-                        </View>
-                        <View style={tw`flex-row items-center mb-2`}>
-                          <Checkbox
-                            checked={groupe.includes("Dimanche")}
-                            onChange={() => handleSetGroupe("Dimanche")}
-                          />
-                          <Text style={tw`text-white text-lg ml-2`}>
-                            Dimanche
-                          </Text>
-                        </View>
-                      </View>
-                    </View>
-                  </View>
-                ))}
-              </View> */}
             </ScrollView>
 
             <View style={tw`flex-row justify-center items-center`}>
@@ -570,36 +333,29 @@ const Activity = () => {
         visible={categorieModalVisible}
         onRequestClose={() => setCategorieModalVisible(!categorieModalVisible)}
       >
-        <View>
-          <View style={tw`mb-2 `}>
+        <View
+          style={tw`flex-1 justify-center items-center bg-gray-800 bg-opacity-50`}
+        >
+          <View
+            style={[tw`bg-gray-700 p-2 w-60 rounded-md`, { maxHeight: "70%" }]}
+          >
+            <Text style={tw`text-white text-xl text-center`}>
+              Nouveau categorie
+            </Text>
+            <TextInput
+              value={id_activite.toString()}
+              editable={false}
+              name="id_activite"
+            />
             <Text style={tw`text-white mb-2`}>Categorie:</Text>
             <View style={tw`flex-row items-center`}>
-              <TextInput value={activiteId} name="activitesId" />
               <TextInput
                 style={tw`bg-gray-200 border border-gray-600 rounded-md p-2 text-center w-44`}
                 placeholder="ex:A || debutant ..."
-                value={categories}
-                onChangeText={setCategories}
-                name="categories"
-                // value={category}
-                // onChangeText={(text) => handleCategoryChange(text, index)}
+                value={categorie}
+                onChangeText={setCategorie}
+                name="categorie"
               />
-              {/* {index === 0 && (
-                <TouchableOpacity
-                  onPress={handleAddCategory}
-                  style={tw`bg-blue-900 ml-2 rounded-xl p-2`}
-                >
-                  <AntDesign name="plus" size={24} color="white" />
-                </TouchableOpacity>
-              )}
-              {index > 0 && (
-                <TouchableOpacity
-                  style={tw`bg-red-900 ml-2 rounded-xl p-2`}
-                  onPress={() => handleRemoveCategory(index)}
-                >
-                  <AntDesign name="minus" size={24} color="white" />
-                </TouchableOpacity>
-              )} */}
             </View>
           </View>
         </View>
@@ -631,6 +387,7 @@ const Activity = () => {
             <View style={tw`flex-col mr-1`}>
               <View style={tw`flex-row items-center mb-2`}>
                 <Checkbox
+                  name="jour"
                   checked={groupe.includes("Lundi")}
                   onChange={() => handleSetGroupe("Lundi")}
                 />
@@ -638,6 +395,7 @@ const Activity = () => {
               </View>
               <View style={tw`flex-row items-center mb-2`}>
                 <Checkbox
+                  name="jour"
                   checked={groupe.includes("Mardi")}
                   onChange={() => handleSetGroupe("Mardi")}
                 />
@@ -645,6 +403,7 @@ const Activity = () => {
               </View>
               <View style={tw`flex-row items-center mb-2`}>
                 <Checkbox
+                  name="jour"
                   checked={groupe.includes("Mercredi")}
                   onChange={() => handleSetGroupe("Mercredi")}
                 />
@@ -652,6 +411,7 @@ const Activity = () => {
               </View>
               <View style={tw`flex-row items-center mb-2`}>
                 <Checkbox
+                  name="jour"
                   checked={groupe.includes("Jeudi")}
                   onChange={() => handleSetGroupe("Jeudi")}
                 />
@@ -662,6 +422,7 @@ const Activity = () => {
             <View style={tw`flex-col`}>
               <View style={tw`flex-row items-center mb-2`}>
                 <Checkbox
+                  name="jour"
                   checked={groupe.includes("Vendredi")}
                   onChange={() => handleSetGroupe("Vendredi")}
                 />
@@ -669,6 +430,7 @@ const Activity = () => {
               </View>
               <View style={tw`flex-row items-center mb-2`}>
                 <Checkbox
+                  name="jour"
                   checked={groupe.includes("Samedi")}
                   onChange={() => handleSetGroupe("Samedi")}
                 />
@@ -676,6 +438,7 @@ const Activity = () => {
               </View>
               <View style={tw`flex-row items-center mb-2`}>
                 <Checkbox
+                  name="jour"
                   checked={groupe.includes("Dimanche")}
                   onChange={() => handleSetGroupe("Dimanche")}
                 />
@@ -683,6 +446,22 @@ const Activity = () => {
               </View>
             </View>
           </View>
+        </View>
+        <View style={tw`flex-row justify-center items-center`}>
+          <TouchableOpacity
+            style={tw`bg-blue-500 p-2 rounded-md ml-2 mr-4 w-24 flex-row`}
+            onPress={addCategorie}
+          >
+            <AntDesign name="save" size={20} color="white" />
+            <Text style={tw`text-white text-center ml-2`}>Ajouter</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={tw`bg-red-500 p-2 rounded-md w-24 flex-row`}
+            onPress={() => setCategorieModalVisible(false)}
+          >
+            <MaterialIcons name="cancel" size={20} color="white" />
+            <Text style={tw`text-white text-center ml-2`}>Annuler</Text>
+          </TouchableOpacity>
         </View>
       </Modal>
     </View>

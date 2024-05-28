@@ -1,14 +1,12 @@
 const { Op } = require("sequelize");
 const Categorie = require("../models/Categorie");
 
-
-
-// Get single activity by ID
+// Get single categorie by Activite
 exports.getCategoriebyActivite = async (req, res, next) => {
- let id_activite = req.params.id;
- const categorie=await Categorie.findAll({
-    where:{id_activite:id_activite}
- })
+  let id_activite = req.params.id;
+  const categorie = await Categorie.findAll({
+    where: { id_activite: id_activite },
+  });
 };
 
 // Delete an activity by ID
@@ -30,8 +28,14 @@ exports.deleteCategorie = async (req, res, next) => {
 // Create a new categorie
 exports.createCategorie = async (req, res, next) => {
   try {
-    let{categories,horaire,prix,jour,id_activite}=req.body
-    const newCategorie = await Categorie.create({ categorie:categories,horaire,prix,jour,id_activite });
+    let { categorie, horaire, prix, jour, id_activite } = req.body;
+    const newCategorie = await Categorie.create({
+      categorie,
+      horaire,
+      prix,
+      jour,
+      id_activite,
+    });
     res.status(201).send("Ajout avec succès");
   } catch (error) {
     res
@@ -45,7 +49,7 @@ exports.updateCategorie = async (req, res, next) => {
   try {
     const categorie = await Categorie.findOne({ where: { id: req.params.id } });
     if (categorie) {
-      categorie.categories = req.body.categories;
+      categorie.categorie = req.body.categorie;
       categorie.horaire = req.body.horaire;
       categorie.prix = req.body.prix;
       categorie.jour = req.body.jour;
