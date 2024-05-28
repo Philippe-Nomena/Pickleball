@@ -17,6 +17,7 @@ export class Ete_Session extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      nom:"",
       categorie: "A",
       sexe: "F",
       evaluation: "NON",
@@ -116,6 +117,7 @@ export class Ete_Session extends Component {
         <ScrollView style={tw`mb-2`}>
           {this.state.eteVisible && (
             <TextInput
+            name="session"
               value="Ete"
               style={tw`bg-gray-300 border border-gray-100 rounded-md p-2 mb-4`}
             />
@@ -125,6 +127,7 @@ export class Ete_Session extends Component {
           <TextInput
             placeholderTextColor="gray"
             placeholder="Nom"
+            value={this.state.nom}
             style={tw` bg-gray-300 border border-gray-100 rounded-md p-2 mb-4`}
           />
 
@@ -168,6 +171,7 @@ export class Ete_Session extends Component {
             <View style={tw`flex-col`}>
               <View style={tw`flex-row`}>
                 <Checkbox
+                
                   checked={this.state.payement.includes("Payement")}
                   onChange={() => this.setPayement("Payement")}
                 />

@@ -22,7 +22,7 @@ const Categorie = database.define("categorie", {
     allowNull: false,
   },
   jour: {
-    type: Sequelize.STRING,
+    type: Sequelize.JSON,
     allowNull: false,
   },
 });
@@ -43,4 +43,4 @@ database
     console.error("creation du table categorie echoue :", error);
   });
 
-module.exports = Activite;
+module.exports = Categorie;

@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const CategorieController = require("../controllers/CategorieController");
+const CategorieController = require("../controllers/categorieController");
 
 router.post("/", CategorieController.createCategorie);
 router.get("/byactivite/:id", CategorieController.getCategoriebyActivite);

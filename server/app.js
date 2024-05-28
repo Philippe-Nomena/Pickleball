@@ -9,6 +9,7 @@ const UtilisateurRoute = require("./routes/utilisateursRoute");
 const AdminRoute = require("./routes/adminRoute");
 const CodeBarreRoute = require("./routes/codeBarreRoute");
 const ActiviteRoute = require("./routes/activiteRoute");
+const CategorieRoute = require("./routes/categorieRoute");
 
 // middlewares
 app.use((req, res, next) => {
@@ -31,6 +32,8 @@ app.use("/admin", AdminRoute);
 app.use("/codebarre", CodeBarreRoute);
 
 app.use("/activite", ActiviteRoute);
+
+app.use("/categorie", CategorieRoute);
 
 app.listen(process.env.APP_PORT, process.env.URL, () => {
   console.log("======================================");

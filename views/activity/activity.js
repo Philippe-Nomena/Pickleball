@@ -44,7 +44,6 @@ const Activity = () => {
     }
     setGroupe(updatedGroupe);
   };
-
   const fetchAllData = async () => {
     try {
       const res = await url.get("/activite");
@@ -97,6 +96,7 @@ const Activity = () => {
     }
   };
   const addCategorie = async () => {
+
     try {
       await url.post(`/categorie`, {
         id_activite,
@@ -110,11 +110,12 @@ const Activity = () => {
       SetHoraire("");
       setPrix("");
       setCategorie("");
+      setGroupe([]);
 
       Alert.alert("categorie reussi");
     } catch (error) {
       console.error("Error categorie item:", error);
-      Alert.alert("Error categorie item", error.message);
+      Alert.alert('Error categorie item', error.response?.data?.error || error.message);
     }
   };
 
@@ -195,7 +196,7 @@ const Activity = () => {
         />
       </View>
       <FlatList
-        style={tw`mt-1 `}
+        style={tw`mt-2`}
         data={filteredData}
         vertical={true}
         showsVerticalScrollIndicator={false}
@@ -263,14 +264,14 @@ const Activity = () => {
             )}
             <View style={tw`flex-row justify-center`}>
               <TouchableOpacity
-                style={tw`bg-red-500 p-2 rounded-md mr-5 w-20 flex-row`}
+                style={tw`bg-red-500 p-2 rounded-md mr-5 flex-row`}
                 onPress={confirmDeleteItem}
               >
                 <Entypo name="trash" size={18} color="white" />
                 <Text style={tw`text-white text-center ml-1`}>Supprimer</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={tw`bg-gray-500 p-2 rounded-md w-20 flex-row`}
+                style={tw`bg-gray-500 p-2 rounded-md  flex-row`}
                 onPress={() => setDeleteModalVisible(false)}
               >
                 <MaterialIcons name="cancel" size={20} color="white" />
@@ -337,7 +338,7 @@ const Activity = () => {
           style={tw`flex-1 justify-center items-center bg-gray-800 bg-opacity-50`}
         >
           <View
-            style={[tw`bg-gray-700 p-2 w-60 rounded-md`, { maxHeight: "70%" }]}
+            style={[tw`bg-gray-700 w-64 p-2 rounded-md`]}
           >
             <Text style={tw`text-white text-xl text-center`}>
               Nouveau categorie
@@ -346,21 +347,19 @@ const Activity = () => {
               value={id_activite.toString()}
               editable={false}
               name="id_activite"
+              // style={{display:"none"}}
             />
             <Text style={tw`text-white mb-2`}>Categorie:</Text>
             <View style={tw`flex-row items-center`}>
               <TextInput
-                style={tw`bg-gray-200 border border-gray-600 rounded-md p-2 text-center w-44`}
+                style={tw`bg-gray-200 border border-gray-600 rounded-md p-2 text-center w-full`}
                 placeholder="ex:A || debutant ..."
                 value={categorie}
                 onChangeText={setCategorie}
                 name="categorie"
               />
             </View>
-          </View>
-        </View>
-
-        <View>
+            <View>
           <Text style={tw`text-white `}>Horaire:</Text>
           <TextInput
             style={tw`bg-gray-200 border border-gray-600 rounded-md p-2 mb-2 text-center`}
@@ -381,7 +380,7 @@ const Activity = () => {
             name="prix"
           />
         </View>
-        <View style={tw`mt-4`}>
+        <View>
           <Text style={tw`text-white text-lg font-bold mb-2`}>Jours</Text>
           <View style={tw`flex-row`}>
             <View style={tw`flex-col mr-1`}>
@@ -463,6 +462,10 @@ const Activity = () => {
             <Text style={tw`text-white text-center ml-2`}>Annuler</Text>
           </TouchableOpacity>
         </View>
+          </View>
+        </View>
+
+       
       </Modal>
     </View>
   );
