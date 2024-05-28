@@ -1,20 +1,46 @@
-// models/Categorie.js
-const { Model, DataTypes } = require("sequelize");
-const sequelize = require("../utils/database");
+const Sequelize = require("sequelize");
+const database = require("../utils/database");
+const Activite = require("../models/Activite")
 
-class Categorie extends Model {}
-
-Categorie.init(
-  {
-    name: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
+const Categorie = database.define("categorie", {
+  id: {
+    type: Sequelize.INTEGER,
+    allowNull: false,
+    primaryKey: true,
+    autoIncrement: true,
   },
-  {
-    sequelize,
-    modelName: "Categorie",
-  }
-);
+  categorie: {
+    type: Sequelize.STRING,
+    allowNull: false,
+  },
+  horaire: {
+    type: Sequelize.STRING,
+    allowNull: false,
+  },
+  prix: {
+    type: Sequelize.INTEGER,
+    allowNull: false,
+  },
+  jour: {
+    type: Sequelize.STRING,
+    allowNull: false,
+  },
+});
 
-module.exports = Categorie;
+Categorie.belongsTo(Activite,{
+  foreignKey:"id_activite",
+  as:"activite",
+  onDelete:"CASCADE",
+  onUpdate:"CASCADE"
+})
+
+database
+  .sync()
+  .then(() => {
+    console.log("Creation du table categorie avec succes!");
+  })
+  .catch((error) => {
+    console.error("creation du table categorie echoue :", error);
+  });
+
+module.exports = Activite;
