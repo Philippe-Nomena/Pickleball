@@ -12,20 +12,30 @@ import { Picker } from "@react-native-picker/picker";
 import { Checkbox } from "./checkbox";
 import tw from "tailwind-react-native-classnames";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import url from "../url";
 
 export class Ete_Session extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      nom:"",
-      categorie: "A",
+      session: "Ete",
+      nom: "",
+      categorie: [],
+      activite: "",
       sexe: "F",
+      adresse: "",
+      tel_urgence: "",
       evaluation: "NON",
-      groupe: "Jour",
+      groupe: [],
       payement: [],
+      carte_payement: "",
+      mode_payement: "",
+      telephone: "",
+      courriel: "",
       carte_fede: [],
       consigne: [],
       etiquete: [],
+      data: [],
       eteVisible: false,
       date: new Date(),
       showDatePicker: false,
@@ -39,8 +49,13 @@ export class Ete_Session extends Component {
     this.setSexe = this.setSexe.bind(this);
     this.handleDateChange = this.handleDateChange.bind(this);
     this.showDatePicker = this.showDatePicker.bind(this);
+    this.setActivite = this.setActivite.bind(this);
+    this.setCategorie = this.setCategorie.bind(this);
   }
 
+  setCategorie(value) {
+    this.setState({ categorie: value });
+  }
   setEvaluation(itemValue) {
     this.setState({ evaluation: itemValue });
   }
@@ -101,15 +116,77 @@ export class Ete_Session extends Component {
 
   handleDateChange(event, selectedDate) {
     if (selectedDate) {
-      this.setState({ date: selectedDate, showDatePicker: false });
+      this.setState({ date: selectedDate, showDatePicker: false }, () => {
+        console.log("Selected date:", this.state.date.toDateString());
+      });
     } else {
       this.setState({ showDatePicker: false });
     }
   }
 
+  componentDidMount() {
+    this.fetchAllData();
+  }
+  fetchAllData = async () => {
+    try {
+      const res = await url.get("/activite");
+      this.setState({ data: res.data });
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+  fetchAllData1 = async (id_activite) => {
+    try {
+      const res = await url.get(`/categorie/byactivite/${id_activite}`);
+      this.setState({ categorie: res.data });
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+  setActivite(value) {
+    this.setState({ activite: value });
+    this.fetchAllData1(value);
+  }
   showDatePicker() {
     this.setState({ showDatePicker: true });
   }
+  ajoutEte = async () => {
+    try {
+      const newPratiquants = await url.post("/pratiquants", {
+        session: this.state.session,
+        nom: this.state.nom,
+        sexe: this.state.sexe,
+        naissance: this.state.date.toDateString(),
+        payement: this.state.payement,
+        consigne: this.state.consigne,
+        carte_fede: this.state.carte_fede,
+        etiquete: this.state.etiquete,
+        courriel: this.state.courriel,
+        adresse: this.state.adresse,
+        telephone: this.state.telephone,
+        tel_urgence: this.state.tel_urgence,
+        categorie: this.state.categorie,
+        evaluation: this.state.evaluation,
+        mode_payement: this.state.mode_payement,
+        carte_payement: this.state.carte_payement,
+        groupe: this.state.groupe,
+      });
+      if (newPratiquants) {
+        this.setState({
+          nom: "",
+          adresse: "",
+          tel_urgence: "",
+          carte_payement: "",
+          mode_payement: "",
+          telephone: "",
+          courriel: "",
+        });
+        alert("Ajout avec succees");
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
 
   render() {
     return (
@@ -117,8 +194,8 @@ export class Ete_Session extends Component {
         <ScrollView style={tw`mb-2`}>
           {this.state.eteVisible && (
             <TextInput
-            name="session"
-              value="Ete"
+              name="session"
+              value={this.state.session}
               style={tw`bg-gray-300 border border-gray-100 rounded-md p-2 mb-4`}
             />
           )}
@@ -127,7 +204,9 @@ export class Ete_Session extends Component {
           <TextInput
             placeholderTextColor="gray"
             placeholder="Nom"
+            name="nom"
             value={this.state.nom}
+            onChangeText={(t) => this.setState({ nom: t })}
             style={tw` bg-gray-300 border border-gray-100 rounded-md p-2 mb-4`}
           />
 
@@ -139,6 +218,7 @@ export class Ete_Session extends Component {
               selectedValue={this.state.sexe}
               onValueChange={(itemValue, itemIndex) => this.setSexe(itemValue)}
               style={{ color: "gray" }}
+              name="sexe"
             >
               <Picker.Item label="F" value="F" />
               <Picker.Item label="M" value="M" />
@@ -154,6 +234,7 @@ export class Ete_Session extends Component {
                 value={this.state.date.toDateString()}
                 editable={false}
                 style={{ flex: 1, color: "gray" }}
+                name="naissance"
               />
             </View>
           </TouchableOpacity>
@@ -171,7 +252,7 @@ export class Ete_Session extends Component {
             <View style={tw`flex-col`}>
               <View style={tw`flex-row`}>
                 <Checkbox
-                
+                  name="payement"
                   checked={this.state.payement.includes("Payement")}
                   onChange={() => this.setPayement("Payement")}
                 />
@@ -182,6 +263,7 @@ export class Ete_Session extends Component {
 
               <View style={tw`flex-row`}>
                 <Checkbox
+                  name="carte_fede"
                   checked={this.state.carte_fede.includes("Carte Fédé")}
                   onChange={() => this.setCarte_fede("Carte Fédé")}
                 />
@@ -193,6 +275,7 @@ export class Ete_Session extends Component {
             <View style={tw`flex-col ml-4`}>
               <View style={tw`flex-row`}>
                 <Checkbox
+                  name="consigne"
                   checked={this.state.consigne.includes("Consigne")}
                   onChange={() => this.setConsigne("Consigne")}
                 />
@@ -202,6 +285,7 @@ export class Ete_Session extends Component {
               </View>
               <View style={tw`flex-row`}>
                 <Checkbox
+                  name="etiquete"
                   checked={this.state.etiquete.includes("Etiquete")}
                   onChange={() => this.setEtiquete("Etiquete")}
                 />
@@ -214,20 +298,29 @@ export class Ete_Session extends Component {
 
           <Text style={tw`text-white text-lg font-bold mb-2`}>Courriel</Text>
           <TextInput
+            name="courriel"
             placeholderTextColor="gray"
             placeholder="Courriel"
+            value={this.state.courriel}
+            onChangeText={(t) => this.setState({ courriel: t })}
             style={tw`bg-gray-300 border border-gray-100 rounded-md p-2 mb-4`}
           />
           <Text style={tw`text-white text-lg font-bold mb-2`}>Adresse</Text>
           <TextInput
+            name="adresse"
             placeholderTextColor="gray"
+            value={this.state.adresse}
+            onChangeText={(t) => this.setState({ adresse: t })}
             placeholder="Adresse"
             style={tw`bg-gray-300 border border-gray-100 rounded-md p-2 mb-4`}
           />
           <Text style={tw`text-white text-lg font-bold mb-2`}>Telephone</Text>
           <TextInput
+            name="telephone"
             placeholderTextColor="gray"
             placeholder="Telephone"
+            value={this.state.telephone}
+            onChangeText={(t) => this.setState({ telephone: t })}
             style={tw`bg-gray-300 border border-gray-100 rounded-md p-2 mb-4`}
           />
 
@@ -235,10 +328,28 @@ export class Ete_Session extends Component {
             En cas d'urgence
           </Text>
           <TextInput
+            name="tel_urgence"
             placeholderTextColor="gray"
             placeholder="Numero en cas d'urgence"
+            value={this.state.tel_urgence}
+            onChangeText={(t) => this.setState({ tel_urgence: t })}
             style={tw`bg-gray-300 border border-gray-100 rounded-md p-2 mb-4`}
           />
+          <Text>Choisissez votre activité</Text>
+          <View
+            style={tw`bg-gray-300 border border-gray-100 rounded-md p-2 mb-4`}
+          >
+            <Picker
+              selectedValue={this.state.activite}
+              onValueChange={(itemValue) => this.setActivite(itemValue)}
+              style={{ color: "gray" }}
+              name="activite"
+            >
+              {/* {this.state.data.map((item) => (
+                <Picker.Item key={item.id} label={item.nom} value={item.id} />
+              ))} */}
+            </Picker>
+          </View>
           <Text style={tw`text-white text-lg font-bold mb-2`}>
             Dans quelle catégorie avez-vous joué auparavant ?
           </Text>
@@ -247,16 +358,31 @@ export class Ete_Session extends Component {
           >
             <Picker
               selectedValue={this.state.categorie}
+              onValueChange={(itemValue) => this.setCategorie(itemValue)}
+              style={{ color: "gray" }}
+              name="categorie"
+            >
+              {/* {this.state.categories.map((item) => (
+                <Picker.Item
+                  key={item.id}
+                  label={item.categorie}
+                  value={item.id}
+                />
+              ))} */}
+            </Picker>
+            {/* <Picker
+              selectedValue={this.state.categorie}
               onValueChange={(itemValue, itemIndex) =>
                 this.setState({ categorie: itemValue })
               }
               style={{ color: "gray" }}
+              name="categorie"
             >
               <Picker.Item label="A" value="A" />
               <Picker.Item label="B" value="B" />
               <Picker.Item label="C" value="C" />
               <Picker.Item label="D" value="D" />
-            </Picker>
+            </Picker> */}
           </View>
           <Text style={tw`text-white text-lg font-bold mb-2`}>Evaluation</Text>
           <View
@@ -268,6 +394,7 @@ export class Ete_Session extends Component {
                 this.setEvaluation(itemValue)
               }
               style={{ color: "gray" }}
+              name="evaluation"
             >
               <Picker.Item label="NON" value="NON" />
               <Picker.Item label="OUI" value="OUI" />
@@ -277,6 +404,9 @@ export class Ete_Session extends Component {
             Mode de payement
           </Text>
           <TextInput
+            name="mode_payement"
+            value={this.state.mode_payement}
+            onChangeText={(t) => this.setState({ mode_payement: t })}
             placeholderTextColor="gray"
             placeholder="Mode de payement"
             style={tw`bg-gray-300 border border-gray-100 rounded-md p-2 mb-4`}
@@ -285,14 +415,18 @@ export class Ete_Session extends Component {
             Carte bancaire
           </Text>
           <TextInput
+            name="carte_payement"
             placeholderTextColor="gray"
             placeholder="Carte bancaire"
+            value={this.state.carte_payement}
+            onChangeText={(t) => this.setState({ carte_payement: t })}
             style={tw`bg-gray-300 border border-gray-100 rounded-md p-2 mb-4`}
           />
           <Text style={tw`text-white text-lg font-bold mb-2`}>Groupe</Text>
           <View>
             <View style={tw`flex-row items-center mb-2`}>
               <Checkbox
+                name="groupe"
                 checked={this.state.groupe.includes("Jour")}
                 onChange={() => this.setGroupe("Jour")}
               />
@@ -300,6 +434,7 @@ export class Ete_Session extends Component {
             </View>
             <View style={tw`flex-row items-center mb-2`}>
               <Checkbox
+                name="groupe"
                 checked={this.state.groupe.includes("Nuit")}
                 onChange={() => this.setGroupe("Nuit")}
               />
@@ -307,6 +442,7 @@ export class Ete_Session extends Component {
             </View>
             <View style={tw`flex-row items-center mb-2`}>
               <Checkbox
+                name="groupe"
                 checked={this.state.groupe.includes("Mixte")}
                 onChange={() => this.setGroupe("Mixte")}
               />
@@ -314,6 +450,7 @@ export class Ete_Session extends Component {
             </View>
             <View style={tw`flex-row items-center mb-2`}>
               <Checkbox
+                name="groupe"
                 checked={this.state.groupe.includes("Weekend")}
                 onChange={() => this.setGroupe("Weekend")}
               />
@@ -323,6 +460,7 @@ export class Ete_Session extends Component {
 
           <View style={tw`flex-row justify-center`}>
             <TouchableOpacity
+              onPress={this.ajoutEte}
               style={tw`bg-blue-500 py-2 px-4 rounded-md flex-row items-center justify-center mr-4`}
             >
               <FontAwesome5 name="save" size={24} color="white" />

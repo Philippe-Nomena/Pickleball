@@ -7,7 +7,7 @@ const Pratiquants = database.define("pratiquants", {
     primaryKey: true,
     autoIncrement: true,
   },
-  
+
   session: {
     type: Sequelize.STRING,
     allowNull: true,
@@ -76,7 +76,7 @@ const Pratiquants = database.define("pratiquants", {
     allowNull: true,
   },
   groupe: {
-    type: Sequelize.STRING(255),
+    type: Sequelize.JSON,
     allowNull: true,
   },
 });
