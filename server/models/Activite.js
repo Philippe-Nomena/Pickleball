@@ -12,6 +12,10 @@ const Activite = database.define("activite", {
     type: Sequelize.STRING,
     allowNull: false,
   },
+  imagePath: {
+    type: Sequelize.STRING,
+    allowNull: false,
+  },
 });
 
 database

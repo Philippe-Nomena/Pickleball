@@ -13,6 +13,7 @@ import { Checkbox } from "./checkbox";
 import tw from "tailwind-react-native-classnames";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import url from "../url";
+import dayjs from "dayjs";
 
 export class Ete_Session extends Component {
   constructor(props) {
@@ -20,7 +21,7 @@ export class Ete_Session extends Component {
     this.state = {
       session: "Ete",
       nom: "",
-      categorie: [],
+      categorie: "",
       activite: "",
       sexe: "F",
       adresse: "",
@@ -156,7 +157,7 @@ export class Ete_Session extends Component {
         session: this.state.session,
         nom: this.state.nom,
         sexe: this.state.sexe,
-        naissance: this.state.date.toDateString(),
+        naissance: this.formatDate(this.state.date),
         payement: this.state.payement,
         consigne: this.state.consigne,
         carte_fede: this.state.carte_fede,
@@ -165,6 +166,7 @@ export class Ete_Session extends Component {
         adresse: this.state.adresse,
         telephone: this.state.telephone,
         tel_urgence: this.state.tel_urgence,
+        activite: this.state.activite,
         categorie: this.state.categorie,
         evaluation: this.state.evaluation,
         mode_payement: this.state.mode_payement,
@@ -187,6 +189,9 @@ export class Ete_Session extends Component {
       console.error("Error fetching data:", error);
     }
   };
+  formatDate(date) {
+    return dayjs(date).format("YYYY-MM-DD");
+  }
 
   render() {
     return (
@@ -231,7 +236,7 @@ export class Ete_Session extends Component {
               style={tw`bg-gray-300 border border-gray-100 rounded-md p-2 mb-4`}
             >
               <TextInput
-                value={this.state.date.toDateString()}
+                value={this.formatDate(this.state.date)}
                 editable={false}
                 style={{ flex: 1, color: "gray" }}
                 name="naissance"
@@ -335,7 +340,9 @@ export class Ete_Session extends Component {
             onChangeText={(t) => this.setState({ tel_urgence: t })}
             style={tw`bg-gray-300 border border-gray-100 rounded-md p-2 mb-4`}
           />
-          <Text>Choisissez votre activité</Text>
+          <Text style={tw`text-white text-lg font-bold mb-2`}>
+            Choisissez votre activité
+          </Text>
           <View
             style={tw`bg-gray-300 border border-gray-100 rounded-md p-2 mb-4`}
           >

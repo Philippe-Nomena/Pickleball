@@ -7,7 +7,30 @@ exports.getAllPratiquants = async (req, res, next) => {
 
   res.json(pratiquants);
 };
-
+exports.getAllPratiquantsEte = async (req, res, next) => {
+  const pratiquants = await Pratiquants.findAll({
+    where: {
+      session: "Ete",
+    },
+  });
+  res.json(pratiquants);
+};
+exports.getAllPratiquantsHiver = async (req, res, next) => {
+  const pratiquants = await Pratiquants.findAll({
+    where: {
+      session: "Hiver",
+    },
+  });
+  res.json(pratiquants);
+};
+exports.getAllPratiquantsAutomne = async (req, res, next) => {
+  const pratiquants = await Pratiquants.findAll({
+    where: {
+      session: "Automne",
+    },
+  });
+  res.json(pratiquants);
+};
 exports.getPratiquants = async (req, res, next) => {
   const id = req.params.id;
   let pratiquants = await Pratiquants.findOne({
@@ -44,6 +67,7 @@ exports.createPratiquants = async (req, res, next) => {
       adresse,
       telephone,
       tel_urgence,
+      activite,
       categorie,
       evaluation,
       mode_payement,
@@ -72,6 +96,7 @@ exports.createPratiquants = async (req, res, next) => {
       adresse: adresse,
       telephone: telephone,
       tel_urgence: tel_urgence,
+      activite: activite,
       categorie: categorie,
       evaluation: evaluation,
       mode_payement: mode_payement,
@@ -95,8 +120,8 @@ exports.updatePratiquants = async (req, res, next) => {
     });
 
     (pratiquants.session = req.body.session),
-    (pratiquants.nom = req.body.nom),
-    (pratiquants.sexe = req.body.sexe);
+      (pratiquants.nom = req.body.nom),
+      (pratiquants.sexe = req.body.sexe);
     pratiquants.naissance = req.body.naissance;
     pratiquants.payement = req.body.payement;
     pratiquants.consigne = req.body.consigne;
@@ -106,6 +131,7 @@ exports.updatePratiquants = async (req, res, next) => {
     pratiquants.adresse = req.body.adresse;
     pratiquants.telephone = req.body.telephone;
     pratiquants.tel_urgence = req.body.tel_urgence;
+    pratiquants.activite = req.body.activite;
     pratiquants.categorie = req.body.categorie;
     pratiquants.evaluation = req.body.evaluation;
     pratiquants.mode_payement = req.body.mode_payement;
