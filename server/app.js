@@ -5,6 +5,7 @@ const https = require("https");
 const fs = require("fs");
 const http = require("http");
 const cors = require("cors");
+const path = require("path")
 
 const PratiquantsRoute = require("./routes/pratiquantsRoute");
 const UtilisateurRoute = require("./routes/utilisateursRoute");
@@ -31,6 +32,7 @@ app.use((req, res, next) => {
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Routes
 app.use("/pratiquants", PratiquantsRoute);
@@ -42,7 +44,9 @@ app.use("/categorie", CategorieRoute);
 
 // Create an HTTPS server
 https
-  .createServer(sslOptions, app)
+  .createServer(
+    sslOptions,
+     app)
   .listen(process.env.APP_PORT, process.env.URL, () => {
     console.log("======================================");
     console.log(

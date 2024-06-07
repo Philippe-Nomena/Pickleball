@@ -13,14 +13,17 @@ import {
   AntDesign,
   Entypo,
   FontAwesome5,
+  MaterialCommunityIcons,
   MaterialIcons,
 } from "@expo/vector-icons";
 import { Picker } from "@react-native-picker/picker";
 import { Checkbox } from "../session/checkbox";
 import tw from "tailwind-react-native-classnames";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import url from "../url";
+
 import dayjs from "dayjs";
+import { Swipeable } from "react-native-gesture-handler";
+import { url } from "../url";
 const Ete_liste = () => {
   const [data, setData] = useState([]);
 
@@ -53,7 +56,7 @@ const Ete_liste = () => {
 
   useEffect(() => {
     fetchAllData();
-    fetchAllData2();
+    // fetchAllData2();
   }, []);
   const fetchAllData = async () => {
     try {
@@ -63,22 +66,22 @@ const Ete_liste = () => {
       console.error("Error fetching data:", error);
     }
   };
-  const fetchAllData2 = async () => {
-    try {
-      const res = await url.get("/activite");
-      setData(res.data);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
-  };
-  const fetchAllData1 = async (idActivite) => {
-    try {
-      const res = await url.get(`/categorie/byactivite/${idActivite}`);
-      setCategorie(res.data);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
-  };
+  // const fetchAllData2 = async () => {
+  //   try {
+  //     const res = await url.get("/activite");
+  //     setData(res.data);
+  //   } catch (error) {
+  //     console.error("Error fetching data:", error);
+  //   }
+  // };
+  // const fetchAllData1 = async (idActivite) => {
+  //   try {
+  //     const res = await url.get(`/categorie/byactivite/${idActivite}`);
+  //     setCategorie(res.data);
+  //   } catch (error) {
+  //     console.error("Error fetching data:", error);
+  //   }
+  // };
   const handleDateChange = (event, selectedDate) => {
     if (selectedDate) {
       setDate(selectedDate);
@@ -158,7 +161,8 @@ const Ete_liste = () => {
   );
 
   const renderItem = ({ item }) => (
-    <Swipeable renderRightActions={() => renderRightActions(item)}>
+    <Swipeable
+     renderRightActions={() => renderRightActions(item)}>
       <View
         style={tw`bg-gray-300 p-4 shadow-md rounded-md mb-4 flex-row p-2 ml-4 mr-4`}
       >
@@ -179,7 +183,7 @@ const Ete_liste = () => {
     setNom(item.nom);
     setSession(item.session);
     setSexe(item.sexe);
-    setNaissance(item.naissance);
+    setDate(item.naissance);
     setCourriel(item.courriel);
     setAdresse(item.adresse);
     setTelephone(item.telephone);

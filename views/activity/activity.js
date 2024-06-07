@@ -13,7 +13,7 @@ import { Checkbox } from "./checkbox";
 import { ScrollView, Swipeable } from "react-native-gesture-handler";
 import tw from "tailwind-react-native-classnames";
 import { AntDesign, Entypo, MaterialIcons } from "@expo/vector-icons";
-import url from "../url";
+import {url,stateUrl} from "../url";
 import * as ImagePicker from "expo-image-picker";
 
 const Activity = () => {
@@ -57,8 +57,10 @@ const Activity = () => {
   };
 
   const handleDelete = (item) => {
+    const imageUrl = `${stateUrl}/uploads/${item.imagePath}`
     setItemToDelete(item);
     setDeleteModalVisible(true);
+    setImage(imageUrl)
   };
 
   const confirmDeleteItem = async () => {
@@ -73,8 +75,10 @@ const Activity = () => {
   };
 
   const handleEdit = (item) => {
+    const imageUrl = `${stateUrl}/uploads/${item.imagePath}`
     setEditedItem(item);
     setNom(item.nom);
+    setImage(imageUrl)
 
     setModalVisible(true);
   };
@@ -88,11 +92,11 @@ const Activity = () => {
     try {
       const formData = new FormData();
       formData.append("nom", nom);
-      if (image) {
+      if (image && image.uri) {
         formData.append("imagePath", {
           uri: image.uri,
           type: getImageType(image.uri),
-          name: image.uri.split("/").pop(),
+          name: image.uri.split("/").pop().toLowerCase(),
         });
       }
 
@@ -106,7 +110,6 @@ const Activity = () => {
       fetchAllData();
       setNom("");
       setImage(null);
-
       Alert.alert("Edit réussi");
     } catch (error) {
       console.error("Error editing item:", error);
@@ -152,39 +155,26 @@ const Activity = () => {
       quality: 1,
     });
 
-    if (!result.cancelled && result.uri) {
-      setImage(result);
-      setImageName(result.uri.split("/").pop());
+    if (!result.cancelled && result.assets.length > 0) {
+      setImage(result.assets[0]);
+      setImageName(result.assets[0].uri.split("/").pop());
     }
-  };
+};
+
+  
   const addActivity = async () => {
     if (!nom || !image || !image.uri) {
       Alert.alert("Please fill in all fields and select an image");
-      console.log("Image sélectionnée:", image);
       return;
     }
-    const getImageType = (uri) => {
-      const extension = uri.split(".").pop();
-      switch (extension) {
-        case "jpg":
-        case "jpeg":
-          return "image/jpeg";
-        case "png":
-          return "image/png";
-        case "gif":
-          return "image/gif";
-        default:
-          return "image/jpeg";
-      }
-    };
     const formData = new FormData();
     formData.append("nom", nom);
     formData.append("imagePath", {
       uri: image.uri,
       type: getImageType(image.uri),
-      name: image.uri.split("/").pop(),
+      name: image.uri.split("/").pop().toLowerCase(),
     });
-
+  
     try {
       const res = await url.post("/activite", formData, {
         headers: {
@@ -203,6 +193,21 @@ const Activity = () => {
       Alert.alert("Failed to create activity. Please try again.");
     }
   };
+  const getImageType = (uri) => {
+    const extension = uri.split(".").pop().toLowerCase();
+    switch (extension) {
+      case "jpg":
+      case "jpeg":
+        return "image/jpeg";
+      case "png":
+        return "image/png";
+      case "gif":
+        return "image/gif";
+      default:
+        return "image/jpeg";
+    }
+  };
+
 
   const filteredData = data.filter((item) =>
     item.nom.toLowerCase().includes(searchQuery.toLowerCase())
@@ -231,16 +236,20 @@ const Activity = () => {
     </View>
   );
 
-  const renderItem = ({ item }) => (
+ const renderItem = ({ item }) => {
+  
+  const imageUrl = `${stateUrl}/uploads/${item.imagePath}`;
+ 
+  return (
     <Swipeable renderRightActions={() => renderRightActions(item)}>
-      <View
-        style={tw`bg-gray-600 p-4 shadow-md rounded-md mb-4 ml-4 mr-4 flex-row items-center`}
-      >
-        <Image source={{ uri: item.imagePath }} style={tw`w-44 h-20 mr-2`} />
-        <Text style={tw`text-lg text-white`}>{item.nom}</Text>
-      </View>
+       <View style={tw`bg-gray-900 p-2 shadow-md rounded-md mb-3 ml-4 mr-4 flex-col`}>
+      <Text style={tw`text-lg text-white`}>{item.nom}</Text>
+      <Image source={{ uri: imageUrl }} style={tw`w-full h-60 rounded-md`} />
+    </View>
     </Swipeable>
   );
+};
+
 
   return (
     <View style={tw`flex-1 bg-black`}>
@@ -300,19 +309,14 @@ const Activity = () => {
                   onPress={handleImagePick}
                   style={tw`bg-gray-200 rounded-md p-2 mb-2`}
                 >
-                  <Text style={tw`text-white`}>Inserer Photo</Text>
+                  <Text style={tw`text-center`}>Changer Photo</Text>
                 </TouchableOpacity>
-                {/* {imageName ? (
-                  <Text style={tw`text-white mb-10`}>
-                    Ya d'image dans le boutton
-                  </Text>
-                ) : null} */}
+               
                 {image && (
                   <Image
                     name="imagePath"
-                    source={{ uri: image.uri }}
-                    style={{ width: 200, height: 200 }}
-                  />
+                    source={{ uri: image }}
+                    style={tw`w-full h-44 rounded-md mb-2`}                  />
                 )}
               </View>
             </ScrollView>
@@ -408,7 +412,7 @@ const Activity = () => {
                   <Image
                     name="imagePath"
                     source={{ uri: image.uri }}
-                    style={{ width: 200, height: 200 }}
+                    style={tw`w-full h-44 mb-2 rounded-md`}
                   />
                 )}
               </View>
