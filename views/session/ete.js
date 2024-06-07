@@ -352,9 +352,9 @@ export class Ete_Session extends Component {
               style={{ color: "gray" }}
               name="activite"
             >
-              {/* {this.state.data.map((item) => (
+              {this.state.data.map((item) => (
                 <Picker.Item key={item.id} label={item.nom} value={item.id} />
-              ))} */}
+              ))}
             </Picker>
           </View>
           <Text style={tw`text-white text-lg font-bold mb-2`}>
@@ -369,27 +369,14 @@ export class Ete_Session extends Component {
               style={{ color: "gray" }}
               name="categorie"
             >
-              {/* {this.state.categories.map((item) => (
+              {this.state.categories.map((item) => (
                 <Picker.Item
                   key={item.id}
                   label={item.categorie}
                   value={item.id}
                 />
-              ))} */}
+              ))}
             </Picker>
-            {/* <Picker
-              selectedValue={this.state.categorie}
-              onValueChange={(itemValue, itemIndex) =>
-                this.setState({ categorie: itemValue })
-              }
-              style={{ color: "gray" }}
-              name="categorie"
-            >
-              <Picker.Item label="A" value="A" />
-              <Picker.Item label="B" value="B" />
-              <Picker.Item label="C" value="C" />
-              <Picker.Item label="D" value="D" />
-            </Picker> */}
           </View>
           <Text style={tw`text-white text-lg font-bold mb-2`}>Evaluation</Text>
           <View

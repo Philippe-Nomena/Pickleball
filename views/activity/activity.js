@@ -83,28 +83,13 @@ const Activity = () => {
     setId_activite(item.id);
     setCategorieModalVisible(true);
   };
-  // const saveEditedItem = async () => {
-  //   try {
-  //     await url.put(`/activite/${editedItem.id}`, {
-  //       nom,
-  //     });
-  //     setModalVisible(false);
-  //     fetchAllData();
-  //     setNom("");
-
-  //     Alert.alert("Edit réussi");
-  //   } catch (error) {
-  //     console.error("Error editing item:", error);
-  //     Alert.alert("Error editing item", error.message);
-  //   }
-  // };
 
   const saveEditedItem = async () => {
     try {
       const formData = new FormData();
       formData.append("nom", nom);
       if (image) {
-        formData.append("image", {
+        formData.append("imagePath", {
           uri: image.uri,
           type: getImageType(image.uri),
           name: image.uri.split("/").pop(),
@@ -173,19 +158,6 @@ const Activity = () => {
     }
   };
   const addActivity = async () => {
-    // try {
-    //   await url.post("/activite", {
-    //     nom,
-    //   });
-    //   setAjoutModal(false);
-    //   fetchAllData();
-    //   setNom("");
-
-    //   Alert.alert("Ajout d'activité réussi avec succès");
-    // } catch (error) {
-    //   console.error("Error adding activity:", error);
-    //   Alert.alert("Error adding activity", error.message);
-    // }
     if (!nom || !image || !image.uri) {
       Alert.alert("Please fill in all fields and select an image");
       console.log("Image sélectionnée:", image);
@@ -207,7 +179,7 @@ const Activity = () => {
     };
     const formData = new FormData();
     formData.append("nom", nom);
-    formData.append("image", {
+    formData.append("imagePath", {
       uri: image.uri,
       type: getImageType(image.uri),
       name: image.uri.split("/").pop(),
@@ -323,25 +295,21 @@ const Activity = () => {
                   name="nom"
                 />
                 <Text style={tw`text-white `}>Image:</Text>
-                {/* <TouchableOpacity
+
+                <TouchableOpacity
                   onPress={handleImagePick}
                   style={tw`bg-gray-200 rounded-md p-2 mb-2`}
                 >
-                  <Text style={tw`text-center`}>Inserer Photo</Text>
-                </TouchableOpacity> */}
-                <TouchableOpacity
-                  onPress={handleImagePick}
-                  // style={tw`bg-gray-200 rounded-md p-2 mb-2`}
-                >
                   <Text style={tw`text-white`}>Inserer Photo</Text>
                 </TouchableOpacity>
-                {imageName ? (
+                {/* {imageName ? (
                   <Text style={tw`text-white mb-10`}>
                     Ya d'image dans le boutton
                   </Text>
-                ) : null}
+                ) : null} */}
                 {image && (
                   <Image
+                    name="imagePath"
                     source={{ uri: image.uri }}
                     style={{ width: 200, height: 200 }}
                   />
@@ -429,12 +397,7 @@ const Activity = () => {
                   name="nom"
                 />
                 <Text style={tw`text-white `}>Image:</Text>
-                {/* <TouchableOpacity
-                  onPress={handleImagePick}
-                  style={tw`bg-gray-200 rounded-md p-2 mb-2`}
-                >
-                  <Text style={tw`text-center`}>Inserer Photo</Text>
-                </TouchableOpacity> */}
+
                 <TouchableOpacity
                   onPress={handleImagePick}
                   style={tw`bg-gray-200 rounded-md p-2 mb-2`}
@@ -442,11 +405,10 @@ const Activity = () => {
                   <Text style={tw`text-center`}>Inserer Photo</Text>
                 </TouchableOpacity>
                 {image && (
-                  // <Text value={{ uri: image.uri }} />
                   <Image
+                    name="imagePath"
                     source={{ uri: image.uri }}
-                    // style={tw`w-20 h-4`}
-                    style={{ width: 200, height: 20 }}
+                    style={{ width: 200, height: 200 }}
                   />
                 )}
               </View>

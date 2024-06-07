@@ -1,5 +1,6 @@
-const { Op, where } = require("sequelize");
+const { Op } = require("sequelize");
 const Activite = require("../models/Activite");
+require("dotenv").config();
 
 // Get all activities
 exports.getAllActivite = async (req, res, next) => {
@@ -49,9 +50,13 @@ exports.deleteActivite = async (req, res, next) => {
 // Create a new activity
 exports.createActivite = async (req, res, next) => {
   try {
-    const { nom, imagePath } = req.body;
+    const { nom } = req.body;
+    const imagePath = req.file.filename;
+
     const newActivity = await Activite.create({ nom, imagePath });
-    res.status(201).send("Ajout avec succès");
+    if (newActivity) {
+      res.status(201).send("Ajout avec succès");
+    }
   } catch (error) {
     res
       .status(400)
@@ -62,12 +67,14 @@ exports.createActivite = async (req, res, next) => {
 // Update an activity by ID
 exports.updateActivite = async (req, res) => {
   try {
-    const { name, imagePath } = req.body;
+    const { nom } = req.body;
+    const imagePath = req.file.filename;
+
     const activity = await Activite.findOne({ where: { id: req.params.id } });
     if (!activity) {
       return res.status(404).json({ error: "Activity not found" });
     }
-    await activity.update({ name, imagePath });
+    await activity.update({ nom, imagePath });
     res.status(200).json(activity);
   } catch (error) {
     console.error("Error updating activity:", error);
