@@ -13,14 +13,17 @@ import {
   AntDesign,
   Entypo,
   FontAwesome5,
+  MaterialCommunityIcons,
   MaterialIcons,
 } from "@expo/vector-icons";
 import { Picker } from "@react-native-picker/picker";
 import { Checkbox } from "../session/checkbox";
 import tw from "tailwind-react-native-classnames";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import url from "../url";
+
 import dayjs from "dayjs";
+import { Swipeable } from "react-native-gesture-handler";
+import { url } from "../url";
 const Ete_liste = () => {
   const [data, setData] = useState([]);
   const [data0, setData0] = useState([]);
@@ -206,7 +209,7 @@ const Ete_liste = () => {
     setNom(item.nom);
     setSession(item.session);
     setSexe(item.sexe);
-    setNaissance(item.naissance);
+    setDate(item.naissance);
     setCourriel(item.courriel);
     setAdresse(item.adresse);
     setTelephone(item.telephone);

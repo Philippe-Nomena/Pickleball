@@ -14,6 +14,7 @@ import { ScrollView, Swipeable } from "react-native-gesture-handler";
 import tw from "tailwind-react-native-classnames";
 import { AntDesign, Entypo, MaterialIcons } from "@expo/vector-icons";
 import { url, stateUrl } from "../url";
+import {url,stateUrl} from "../url";
 import * as ImagePicker from "expo-image-picker";
 
 const Activity = () => {
@@ -58,9 +59,11 @@ const Activity = () => {
 
   const handleDelete = (item) => {
     const imageUrl = `${stateUrl}/uploads/${item.imagePath}`;
+    const imageUrl = `${stateUrl}/uploads/${item.imagePath}`
     setItemToDelete(item);
     setDeleteModalVisible(true);
     setImage(imageUrl);
+    setImage(imageUrl)
   };
 
   const confirmDeleteItem = async () => {
@@ -76,9 +79,11 @@ const Activity = () => {
 
   const handleEdit = (item) => {
     const imageUrl = `${stateUrl}/uploads/${item.imagePath}`;
+    const imageUrl = `${stateUrl}/uploads/${item.imagePath}`
     setEditedItem(item);
     setNom(item.nom);
     setImage(imageUrl);
+    setImage(imageUrl)
 
     setModalVisible(true);
   };
@@ -93,9 +98,11 @@ const Activity = () => {
       const formData = new FormData();
       formData.append("nom", nom);
       if (image && image.uri) {
+      if (image && image.uri) {
         formData.append("imagePath", {
           uri: image.uri,
           type: getImageType(image.uri),
+          name: image.uri.split("/").pop().toLowerCase(),
           name: image.uri.split("/").pop().toLowerCase(),
         });
       }
@@ -158,9 +165,15 @@ const Activity = () => {
     if (!result.cancelled && result.assets.length > 0) {
       setImage(result.assets[0]);
       setImageName(result.assets[0].uri.split("/").pop());
+    if (!result.cancelled && result.assets.length > 0) {
+      setImage(result.assets[0]);
+      setImageName(result.assets[0].uri.split("/").pop());
     }
   };
 
+};
+
+  
   const addActivity = async () => {
     if (!nom || !image || !image.uri) {
       Alert.alert("Please fill in all fields and select an image");
@@ -172,8 +185,9 @@ const Activity = () => {
       uri: image.uri,
       type: getImageType(image.uri),
       name: image.uri.split("/").pop().toLowerCase(),
+      name: image.uri.split("/").pop().toLowerCase(),
     });
-
+  
     try {
       const res = await url.post("/activite", formData, {
         headers: {
@@ -206,6 +220,21 @@ const Activity = () => {
         return "image/jpeg";
     }
   };
+  const getImageType = (uri) => {
+    const extension = uri.split(".").pop().toLowerCase();
+    switch (extension) {
+      case "jpg":
+      case "jpeg":
+        return "image/jpeg";
+      case "png":
+        return "image/png";
+      case "gif":
+        return "image/gif";
+      default:
+        return "image/jpeg";
+    }
+  };
+
 
   const filteredData = data.filter((item) =>
     item.nom.toLowerCase().includes(searchQuery.toLowerCase())
@@ -251,6 +280,20 @@ const Activity = () => {
       </Swipeable>
     );
   };
+ const renderItem = ({ item }) => {
+  
+  const imageUrl = `${stateUrl}/uploads/${item.imagePath}`;
+ 
+  return (
+    <Swipeable renderRightActions={() => renderRightActions(item)}>
+       <View style={tw`bg-gray-900 p-2 shadow-md rounded-md mb-3 ml-4 mr-4 flex-col`}>
+      <Text style={tw`text-lg text-white`}>{item.nom}</Text>
+      <Image source={{ uri: imageUrl }} style={tw`w-full h-60 rounded-md`} />
+    </View>
+    </Swipeable>
+  );
+};
+
 
   return (
     <View style={tw`flex-1 bg-black`}>
@@ -311,14 +354,18 @@ const Activity = () => {
                   style={tw`bg-gray-200 rounded-md p-2 mb-2`}
                 >
                   <Text style={tw`text-center`}>Changer Photo</Text>
+                  <Text style={tw`text-center`}>Changer Photo</Text>
                 </TouchableOpacity>
 
+               
                 {image && (
                   <Image
                     name="imagePath"
                     source={{ uri: image }}
                     style={tw`w-full h-44 rounded-md mb-2`}
                   />
+                    source={{ uri: image }}
+                    style={tw`w-full h-44 rounded-md mb-2`}                  />
                 )}
               </View>
             </ScrollView>
@@ -414,6 +461,7 @@ const Activity = () => {
                   <Image
                     name="imagePath"
                     source={{ uri: image.uri }}
+                    style={tw`w-full h-44 mb-2 rounded-md`}
                     style={tw`w-full h-44 mb-2 rounded-md`}
                   />
                 )}
