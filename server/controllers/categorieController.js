@@ -1,6 +1,6 @@
 const { Op, NOW } = require("sequelize");
 const Categorie = require("../models/Categorie");
-const Activite = require("../models/Activite");
+// const Activite = require("../models/Activite");
 
 // Get single categorie by Activite
 exports.getCategoriebyActivite = async (req, res, next) => {
@@ -8,10 +8,13 @@ exports.getCategoriebyActivite = async (req, res, next) => {
   const categorie = await Categorie.findAll({
     where: { id_activite: id_activite },
   });
- res.json(categorie)
-
+  res.json(categorie);
 };
-
+// Get all categorie
+exports.getAllCategorie = async (req, res, next) => {
+  const categorie = await Categorie.findAll();
+  res.json(categorie);
+};
 // Delete an activity by ID
 exports.deleteCategorie = async (req, res, next) => {
   try {
@@ -32,7 +35,7 @@ exports.deleteCategorie = async (req, res, next) => {
 exports.createCategorie = async (req, res, next) => {
   try {
     let { categorie, horaire, prix, jour, id_activite } = req.body;
-   
+
     const newCategorie = await Categorie.create({
       categorie: categorie,
       horaire: horaire,
@@ -44,14 +47,12 @@ exports.createCategorie = async (req, res, next) => {
     if (newCategorie) {
       res.status(201).send("Ajout avec succès");
     }
-
   } catch (error) {
     res
       .status(400)
       .send({ message: "Error creating categorie", error: error.message });
   }
 };
-
 
 // Update an activity by ID
 exports.updateCategorie = async (req, res, next) => {

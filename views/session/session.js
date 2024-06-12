@@ -2,9 +2,10 @@ import React, { useState } from "react";
 import { View, StyleSheet, Dimensions, StatusBar, Text } from "react-native";
 import { TabView, TabBar, SceneMap } from "react-native-tab-view";
 import { MaterialIcons } from "@expo/vector-icons";
-import { Ete_Session } from "./ete";
+
 import Hiver_Session from "./hiver";
 import Automne_Session from "./automne";
+import Ete_Session from "./ete";
 
 const Ete = () => (
   <View style={styles.scene}>

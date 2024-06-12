@@ -23,6 +23,8 @@ import url from "../url";
 import dayjs from "dayjs";
 const Ete_liste = () => {
   const [data, setData] = useState([]);
+  const [data0, setData0] = useState([]);
+  const [data1, setData1] = useState([]);
 
   const [modalVisible, setModalVisible] = useState(false);
   const [editedItem, setEditedItem] = useState(null);
@@ -50,11 +52,25 @@ const Ete_liste = () => {
   const [eteVisible, setEteVisible] = useState(false);
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
-
+  const [filteredCategories, setFilteredCategories] = useState([]);
+  const updateGroupe = (itemValue) => {
+    let updatedGroupe = [...groupe];
+    const index = updatedGroupe.indexOf(itemValue);
+    if (index > -1) {
+      updatedGroupe.splice(index, 1);
+    } else {
+      updatedGroupe.push(itemValue);
+    }
+    setGroupe(updatedGroupe);
+  };
   useEffect(() => {
     fetchAllData();
-    fetchAllData2();
+    fetchAllData0();
+    fetchAllData1();
   }, []);
+  useEffect(() => {
+    filterCategories();
+  }, [activite]);
   const fetchAllData = async () => {
     try {
       const res = await url.get("/pratiquants/ete");
@@ -63,22 +79,33 @@ const Ete_liste = () => {
       console.error("Error fetching data:", error);
     }
   };
-  const fetchAllData2 = async () => {
+  const fetchAllData0 = async () => {
     try {
       const res = await url.get("/activite");
-      setData(res.data);
+      setData0(res.data);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
   };
-  const fetchAllData1 = async (idActivite) => {
+
+  const fetchAllData1 = async () => {
     try {
-      const res = await url.get(`/categorie/byactivite/${idActivite}`);
-      setCategorie(res.data);
+      const res = await url.get(`/categorie`);
+      setData1(res.data);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
   };
+
+  const filterCategories = () => {
+    if (activite) {
+      const filtered = data1.filter((cat) => cat.activite === activite);
+      setFilteredCategories(filtered);
+    } else {
+      setFilteredCategories([]);
+    }
+  };
+
   const handleDateChange = (event, selectedDate) => {
     if (selectedDate) {
       setDate(selectedDate);
@@ -394,9 +421,9 @@ const Ete_liste = () => {
                 style={{ color: "gray" }}
                 name="activite"
               >
-                {/* {data.map((d, index) => (
+                {data0.map((d, index) => (
                   <Picker.Item key={index} label={d.nom} value={d.id} />
-                ))} */}
+                ))}
               </Picker>
             </View>
 
@@ -410,9 +437,9 @@ const Ete_liste = () => {
                 style={{ color: "gray" }}
                 name="categorie"
               >
-                {/* {categorie.map((c, index) => (
+                {filteredCategories.map((c, index) => (
                   <Picker.Item key={index} label={c.nom} value={c.id} />
-                ))} */}
+                ))}
               </Picker>
             </View>
 
@@ -422,7 +449,7 @@ const Ete_liste = () => {
                 <Checkbox
                   name="groupe"
                   checked={groupe.includes("Jour")}
-                  onChange={() => setGroupe("Jour")}
+                  onChange={() => updateGroupe("Jour")}
                 />
                 <Text style={tw`text-white text-lg ml-2`}>Jour</Text>
               </View>
@@ -430,7 +457,7 @@ const Ete_liste = () => {
                 <Checkbox
                   name="groupe"
                   checked={groupe.includes("Nuit")}
-                  onChange={() => setGroupe("Nuit")}
+                  onChange={() => updateGroupe("Nuit")}
                 />
                 <Text style={tw`text-white text-lg ml-2`}>Nuit</Text>
               </View>
@@ -438,7 +465,7 @@ const Ete_liste = () => {
                 <Checkbox
                   name="groupe"
                   checked={groupe.includes("Mixte")}
-                  onChange={() => setGroupe("Mixte")}
+                  onChange={() => updateGroupe("Mixte")}
                 />
                 <Text style={tw`text-white text-lg ml-2`}>Mixte</Text>
               </View>
@@ -446,7 +473,7 @@ const Ete_liste = () => {
                 <Checkbox
                   name="groupe"
                   checked={groupe.includes("Weekend")}
-                  onChange={() => setGroupe("Weekend")}
+                  onChange={() => updateGroupe("Weekend")}
                 />
                 <Text style={tw`text-white text-lg ml-2`}>Weekend</Text>
               </View>

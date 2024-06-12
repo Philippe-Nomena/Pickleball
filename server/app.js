@@ -12,7 +12,7 @@ const AdminRoute = require("./routes/adminRoute");
 const CodeBarreRoute = require("./routes/codeBarreRoute");
 const ActiviteRoute = require("./routes/activiteRoute");
 const CategorieRoute = require("./routes/categorieRoute");
-
+const Sqlite_test = require("./routes/sqlite_testRoute");
 const app = express();
 
 // Load SSL key and certificate
@@ -39,6 +39,7 @@ app.use("/admin", AdminRoute);
 app.use("/codebarre", CodeBarreRoute);
 app.use("/activite", ActiviteRoute);
 app.use("/categorie", CategorieRoute);
+app.use("/sqlite_test", Sqlite_test);
 
 // Create an HTTPS server
 https

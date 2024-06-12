@@ -2,24 +2,32 @@ import React, { useState, useEffect, useRef } from "react";
 import { Camera } from "expo-camera";
 import { Button, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-export default function BarcodeScannerScreen() {
+export default function BarcodeScannerScreen({ onScan }) {
   const [hasPermission, setHasPermission] = useState(null);
   const [scanned, setScanned] = useState(false);
   const [facing, setFacing] = useState(Camera.Constants.Type.back);
-  const [barcodeData, setBarcodeData] = useState(null);
   const cameraRef = useRef(null);
 
   useEffect(() => {
-    (async () => {
+    const requestCameraPermission = async () => {
       const { status } = await Camera.requestCameraPermissionsAsync();
       setHasPermission(status === "granted");
-    })();
+    };
+
+    requestCameraPermission();
+
+    return () => {
+      if (cameraRef.current) {
+        cameraRef.current.pausePreview();
+        cameraRef.current = null;
+      }
+    };
   }, []);
 
   const handleBarCodeScanned = ({ type, data }) => {
-    alert(`Bar code with type ${type} and data ${data} has been scanned!`); // Log for debugging
+    alert(`Bar code with type ${type} and data ${data} has been scanned!`);
     setScanned(true);
-    setBarcodeData(data);
+    onScan(data);
   };
 
   const toggleCameraFacing = () => {
@@ -57,7 +65,7 @@ export default function BarcodeScannerScreen() {
       <Camera
         style={styles.camera}
         type={facing}
-        ref={cameraRef}
+        ref={(ref) => (cameraRef.current = ref)}
         onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
       >
         <View style={styles.buttonContainer}>
@@ -74,9 +82,6 @@ export default function BarcodeScannerScreen() {
           )}
         </View>
       </Camera>
-      {barcodeData && (
-        <Text style={styles.barcodeText}>Scanned Data: {barcodeData}</Text>
-      )}
     </View>
   );
 }
@@ -104,11 +109,5 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
     color: "white",
-  },
-  barcodeText: {
-    fontSize: 18,
-    fontWeight: "bold",
-    textAlign: "center",
-    margin: 16,
   },
 });

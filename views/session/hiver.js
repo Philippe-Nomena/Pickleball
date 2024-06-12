@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { useState, useEffect } from "react";
 import {
   SafeAreaView,
   ScrollView,
@@ -12,321 +12,411 @@ import { Picker } from "@react-native-picker/picker";
 import { Checkbox } from "./checkbox";
 import tw from "tailwind-react-native-classnames";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import url from "../url";
+import dayjs from "dayjs";
 
-export class Hiver_Session extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      categorie: "A",
-      sexe: "F",
-      evaluation: "NON",
-      groupe: "Jour",
-      payement: [],
-      carte_fede: [],
-      consigne: [],
-      etiquete: [],
-      hiverVisible: false,
-      date: new Date(),
-      showDatePicker: false,
-    };
-    this.setEvaluation = this.setEvaluation.bind(this);
-    this.setGroupe = this.setGroupe.bind(this);
-    this.setPayement = this.setPayement.bind(this);
-    this.setCarte_fede = this.setCarte_fede.bind(this);
-    this.setConsigne = this.setConsigne.bind(this);
-    this.setEtiquete = this.setEtiquete.bind(this);
-    this.setSexe = this.setSexe.bind(this);
-    this.handleDateChange = this.handleDateChange.bind(this);
-    this.showDatePicker = this.showDatePicker.bind(this);
-  }
+const Hiver_Session = () => {
+  const [session] = useState("Hiver");
+  const [nom, setNom] = useState("");
+  const [categorie, setCategorie] = useState("");
+  const [activite, setActivite] = useState("");
+  const [sexe, setSexe] = useState("F");
+  const [adresse, setAdresse] = useState("");
+  const [telUrgence, setTelUrgence] = useState("");
+  const [evaluation, setEvaluation] = useState("NON");
 
-  setEvaluation(itemValue) {
-    this.setState({ evaluation: itemValue });
-  }
-  setEtiquete(option) {
-    const updatedEtiquete = [...this.state.etiquete];
-    const index = updatedEtiquete.indexOf(option);
-    if (index > -1) {
-      updatedEtiquete.splice(index, 1);
-    } else {
-      updatedEtiquete.push(option);
-    }
-    this.setState({ etiquete: updatedEtiquete });
-  }
-  setConsigne(option) {
-    const updatedConsigne = [...this.state.consigne];
-    const index = updatedConsigne.indexOf(option);
-    if (index > -1) {
-      updatedConsigne.splice(index, 1);
-    } else {
-      updatedConsigne.push(option);
-    }
-    this.setState({ consigne: updatedConsigne });
-  }
-  setPayement(option) {
-    const updatedPayement = [...this.state.payement];
-    const index = updatedPayement.indexOf(option);
-    if (index > -1) {
-      updatedPayement.splice(index, 1);
-    } else {
-      updatedPayement.push(option);
-    }
-    this.setState({ payement: updatedPayement });
-  }
-  setCarte_fede(option) {
-    const updatedCarte_fede = [...this.state.carte_fede];
-    const index = updatedCarte_fede.indexOf(option);
-    if (index > -1) {
-      updatedCarte_fede.splice(index, 1);
-    } else {
-      updatedCarte_fede.push(option);
-    }
-    this.setState({ carte_fede: updatedCarte_fede });
-  }
-
-  setGroupe(itemValue) {
-    let updatedGroupe = [...this.state.groupe];
+  const [payement, setPayement] = useState([]);
+  const [cartePayement, setCartePayement] = useState("");
+  const [modePayement, setModePayement] = useState("");
+  const [telephone, setTelephone] = useState("");
+  const [courriel, setCourriel] = useState("");
+  const [carte_fede, setCarte_fede] = useState([]);
+  const [consigne, setConsigne] = useState([]);
+  const [etiquete, setEtiquete] = useState([]);
+  const [data, setData] = useState([]);
+  const [data1, setData1] = useState([]);
+  const [hiverVisible, setHiverVisible] = useState(false);
+  const [date, setDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [filteredCategories, setFilteredCategories] = useState([]);
+  const [groupe, setGroupe] = useState([]);
+  const updateGroupe = (itemValue) => {
+    let updatedGroupe = [...groupe];
     const index = updatedGroupe.indexOf(itemValue);
     if (index > -1) {
       updatedGroupe.splice(index, 1);
     } else {
       updatedGroupe.push(itemValue);
     }
-    this.setState({ groupe: updatedGroupe });
-  }
-  setSexe(itemValue) {
-    this.setState({ sexe: itemValue });
-  }
-
-  handleDateChange(event, selectedDate) {
-    if (selectedDate) {
-      this.setState({ date: selectedDate, showDatePicker: false });
-    } else {
-      this.setState({ showDatePicker: false });
+    setGroupe(updatedGroupe);
+  };
+  useEffect(() => {
+    fetchAllData();
+    fetchAllData1();
+  }, []);
+  useEffect(() => {
+    filterCategories();
+  }, [activite]);
+  const fetchAllData = async () => {
+    try {
+      const res = await url.get("/activite");
+      setData(res.data);
+    } catch (error) {
+      console.error("Error fetching data:", error);
     }
-  }
+  };
 
-  showDatePicker() {
-    this.setState({ showDatePicker: true });
-  }
+  const fetchAllData1 = async () => {
+    try {
+      const res = await url.get(`/categorie`);
+      setData1(res.data);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
 
-  render() {
-    return (
-      <SafeAreaView style={tw`bg-black flex-1  p-4`}>
-        <ScrollView style={tw`mb-2`}>
-          {this.state.hiverVisible && (
+  const filterCategories = () => {
+    if (activite) {
+      const filtered = data1.filter((cat) => cat.activite === activite);
+      setFilteredCategories(filtered);
+    } else {
+      setFilteredCategories([]);
+    }
+  };
+
+  const handleDateChange = (event, selectedDate) => {
+    if (selectedDate) {
+      setDate(selectedDate);
+      setShowDatePicker(false);
+      console.log("Selected date:", selectedDate.toDateString());
+    } else {
+      setShowDatePicker(false);
+    }
+  };
+
+  const formatDate = (date) => {
+    return dayjs(date).format("YYYY-MM-DD");
+  };
+  const annulHiver = async () => {
+    setNom("");
+    setAdresse("");
+    setTelUrgence("");
+    setCartePayement("");
+    setModePayement("");
+    setTelephone("");
+    setCourriel("");
+  };
+  const ajoutHiver = async () => {
+    try {
+      const newPratiquants = await url.post("/pratiquants", {
+        session,
+        nom,
+        sexe,
+        naissance: formatDate(date),
+        payement,
+        consigne,
+        carte_fede: carte_fede,
+        etiquete,
+        courriel,
+        adresse,
+        telephone,
+        tel_urgence: telUrgence,
+        activite,
+        categorie,
+        evaluation,
+        mode_payement: modePayement,
+        carte_payement: cartePayement,
+        groupe,
+      });
+      if (newPratiquants) {
+        setNom("");
+        setAdresse("");
+        setTelUrgence("");
+        setCartePayement("");
+        setModePayement("");
+        setTelephone("");
+        setCourriel("");
+        alert("Ajout avec succès");
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+
+  return (
+    <SafeAreaView style={tw`bg-black flex-1  p-4`}>
+      <ScrollView style={tw`mb-2`}>
+        {hiverVisible && (
+          <TextInput
+            name="session"
+            value={session}
+            style={tw`bg-gray-300 border border-gray-100 rounded-md p-2 mb-4`}
+          />
+        )}
+
+        <Text style={tw`text-white text-lg font-bold mb-2`}>Nom</Text>
+        <TextInput
+          placeholderTextColor="gray"
+          placeholder="Nom"
+          name="nom"
+          value={nom}
+          onChangeText={(t) => setNom(t)}
+          style={tw` bg-gray-300 border border-gray-100 rounded-md p-2 mb-4`}
+        />
+
+        <Text style={tw`text-white text-lg font-bold mb-2`}>Sexe</Text>
+        <View
+          style={tw`bg-gray-300 border border-gray-100 rounded-md p-2 mb-4`}
+        >
+          <Picker
+            selectedValue={sexe}
+            onValueChange={(itemValue, itemIndex) => setSexe(itemValue)}
+            style={{ color: "gray" }}
+            name="sexe"
+          >
+            <Picker.Item label="F" value="F" />
+            <Picker.Item label="M" value="M" />
+          </Picker>
+        </View>
+
+        <Text style={tw`text-white text-lg font-bold mb-2`}>Naissance</Text>
+        <TouchableOpacity onPress={() => setShowDatePicker(true)}>
+          <View
+            style={tw`bg-gray-300 border border-gray-100 rounded-md p-2 mb-4`}
+          >
             <TextInput
-              value="Hiver"
-              style={tw`bg-gray-300 border border-gray-300 rounded-md p-2 mb-4`}
+              value={formatDate(date)}
+              editable={false}
+              style={{ flex: 1, color: "gray" }}
+              name="naissance"
             />
-          )}
-
-          <Text style={tw`text-white text-lg font-bold mb-2`}>Nom</Text>
-          <TextInput
-            placeholder="Nom"
-            style={tw` bg-gray-300 border border-gray-300 rounded-md p-2 mb-4`}
-          />
-
-          <Text style={tw`text-white text-lg font-bold mb-2`}>Sexe</Text>
-          <View
-            style={tw`bg-gray-300 border border-gray-300 rounded-md p-2 mb-4`}
-          >
-            <Picker
-              selectedValue={this.state.sexe}
-              onValueChange={(itemValue, itemIndex) => this.setSexe(itemValue)}
-            >
-              <Picker.Item label="F" value="F" />
-              <Picker.Item label="M" value="M" />
-            </Picker>
           </View>
+        </TouchableOpacity>
 
-          <Text style={tw`text-white text-lg font-bold mb-2`}>Naissance</Text>
-          <TouchableOpacity onPress={this.showDatePicker}>
-            <View
-              style={tw`bg-gray-300 border border-gray-300 rounded-md p-2 mb-4`}
-            >
-              <TextInput
-                value={this.state.date.toDateString()}
-                editable={false}
-                style={{ flex: 1, color: "gray" }}
+        {showDatePicker && (
+          <DateTimePicker
+            value={date}
+            mode="date"
+            display="spinner"
+            onChange={handleDateChange}
+            style={{ backgroundColor: "white", color: "black" }}
+          />
+        )}
+        <View style={tw`flex-row items-center mb-2`}>
+          <View style={tw`flex-col`}>
+            <View style={tw`flex-row`}>
+              <Checkbox
+                name="payement"
+                checked={payement.includes("Payement")}
+                onChange={() => setPayement("Payement")}
               />
+              <Text style={tw`text-white text-lg font-bold mb-2`}>
+                Payement
+              </Text>
             </View>
-          </TouchableOpacity>
 
-          {this.state.showDatePicker && (
-            <DateTimePicker
-              value={this.state.date}
-              mode="date"
-              display="spinner"
-              onChange={this.handleDateChange}
-              style={{ backgroundColor: "white", color: "black" }}
-            />
-          )}
+            <View style={tw`flex-row`}>
+              <Checkbox
+                name="carte_fede"
+                checked={carte_fede.includes("Carte Fédé")}
+                onChange={() => setCarte_fede("Carte Fédé")}
+              />
+              <Text style={tw`text-white text-lg font-bold mb-2`}>
+                Carte Fédé
+              </Text>
+            </View>
+          </View>
+          <View style={tw`flex-col ml-4`}>
+            <View style={tw`flex-row`}>
+              <Checkbox
+                name="consigne"
+                checked={consigne.includes("Consigne")}
+                onChange={() => setConsigne("Consigne")}
+              />
+              <Text style={tw`text-white text-lg font-bold mb-2`}>
+                Consigne
+              </Text>
+            </View>
+            <View style={tw`flex-row`}>
+              <Checkbox
+                name="etiquete"
+                checked={etiquete.includes("Etiquete")}
+                onChange={() => setEtiquete("Etiquete")}
+              />
+              <Text style={tw`text-white text-lg font-bold mb-2`}>
+                Etiquete
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        <Text style={tw`text-white text-lg font-bold mb-2`}>Courriel</Text>
+        <TextInput
+          name="courriel"
+          placeholderTextColor="gray"
+          placeholder="Courriel"
+          value={courriel}
+          onChangeText={(t) => setCourriel(t)}
+          style={tw`bg-gray-300 border border-gray-100 rounded-md p-2 mb-4`}
+        />
+        <Text style={tw`text-white text-lg font-bold mb-2`}>Adresse</Text>
+        <TextInput
+          name="adresse"
+          placeholderTextColor="gray"
+          value={adresse}
+          onChangeText={(t) => setAdresse(t)}
+          placeholder="Adresse"
+          style={tw`bg-gray-300 border border-gray-100 rounded-md p-2 mb-4`}
+        />
+        <Text style={tw`text-white text-lg font-bold mb-2`}>Telephone</Text>
+        <TextInput
+          name="telephone"
+          placeholderTextColor="gray"
+          placeholder="Telephone"
+          value={telephone}
+          onChangeText={(t) => setTelephone(t)}
+          style={tw`bg-gray-300 border border-gray-100 rounded-md p-2 mb-4`}
+        />
+
+        <Text style={tw`text-white text-lg font-bold mb-2`}>
+          En cas d'urgence
+        </Text>
+        <TextInput
+          name="tel_urgence"
+          placeholderTextColor="gray"
+          placeholder="Numero en cas d'urgence"
+          value={telUrgence}
+          onChangeText={(t) => setTelUrgence(t)}
+          style={tw`bg-gray-300 border border-gray-100 rounded-md p-2 mb-4`}
+        />
+        <Text style={tw`text-white text-lg font-bold mb-2`}>
+          Choisissez votre activité
+        </Text>
+        <View
+          style={tw`bg-gray-300 border border-gray-100 rounded-md p-2 mb-4`}
+        >
+          <Picker
+            selectedValue={activite}
+            onValueChange={(itemValue) => setActivite(itemValue)}
+            style={{ color: "gray" }}
+            name="activite"
+          >
+            {data.map((item) => (
+              <Picker.Item key={item.id} label={item.nom} value={item.id} />
+            ))}
+          </Picker>
+        </View>
+        <Text style={tw`text-white text-lg font-bold mb-2`}>
+          Dans quelle catégorie avez-vous joué auparavant ?
+        </Text>
+        <View
+          style={tw`bg-gray-300 border border-gray-100 rounded-md p-2 mb-4`}
+        >
+          <Picker
+            selectedValue={categorie}
+            onValueChange={(itemValue) => setCategorie(itemValue)}
+            style={{ color: "gray" }}
+            name="categorie"
+          >
+            {filteredCategories.map((item) => (
+              <Picker.Item
+                key={item.id}
+                label={item.categorie}
+                value={item.id}
+              />
+            ))}
+          </Picker>
+        </View>
+        <Text style={tw`text-white text-lg font-bold mb-2`}>Evaluation</Text>
+        <View
+          style={tw`bg-gray-300 border border-gray-100 rounded-md p-2 mb-4`}
+        >
+          <Picker
+            selectedValue={evaluation}
+            onValueChange={(itemValue, itemIndex) => setEvaluation(itemValue)}
+            style={{ color: "gray" }}
+            name="evaluation"
+          >
+            <Picker.Item label="NON" value="NON" />
+            <Picker.Item label="OUI" value="OUI" />
+          </Picker>
+        </View>
+        <Text style={tw`text-white text-lg font-bold mb-2`}>
+          Mode de payement
+        </Text>
+        <TextInput
+          name="mode_payement"
+          value={modePayement}
+          onChangeText={(t) => setModePayement(t)}
+          placeholderTextColor="gray"
+          placeholder="Mode de payement"
+          style={tw`bg-gray-300 border border-gray-100 rounded-md p-2 mb-4`}
+        />
+        <Text style={tw`text-white text-lg font-bold mb-2`}>
+          Carte bancaire
+        </Text>
+        <TextInput
+          name="carte_payement"
+          placeholderTextColor="gray"
+          placeholder="Carte bancaire"
+          value={cartePayement}
+          onChangeText={(t) => setCartePayement(t)}
+          style={tw`bg-gray-300 border border-gray-100 rounded-md p-2 mb-4`}
+        />
+        <Text style={tw`text-white text-lg font-bold mb-2`}>Groupe</Text>
+        <View>
           <View style={tw`flex-row items-center mb-2`}>
-            <View style={tw`flex-col`}>
-              <View style={tw`flex-row`}>
-                <Checkbox
-                  checked={this.state.payement.includes("Payement")}
-                  onChange={() => this.setPayement("Payement")}
-                />
-                <Text style={tw`text-white text-lg font-bold mb-2`}>
-                  Payement
-                </Text>
-              </View>
-
-              <View style={tw`flex-row`}>
-                <Checkbox
-                  checked={this.state.carte_fede.includes("Carte Fédé")}
-                  onChange={() => this.setCarte_fede("Carte Fédé")}
-                />
-                <Text style={tw`text-white text-lg font-bold mb-2`}>
-                  Carte Fédé
-                </Text>
-              </View>
-            </View>
-            <View style={tw`flex-col ml-4`}>
-              <View style={tw`flex-row`}>
-                <Checkbox
-                  checked={this.state.consigne.includes("Consigne")}
-                  onChange={() => this.setConsigne("Consigne")}
-                />
-                <Text style={tw`text-white text-lg font-bold mb-2`}>
-                  Consigne
-                </Text>
-              </View>
-              <View style={tw`flex-row`}>
-                <Checkbox
-                  checked={this.state.etiquete.includes("Etiquete")}
-                  onChange={() => this.setEtiquete("Etiquete")}
-                />
-                <Text style={tw`text-white text-lg font-bold mb-2`}>
-                  Etiquete
-                </Text>
-              </View>
-            </View>
+            <Checkbox
+              name="groupe"
+              checked={groupe.includes("Jour")}
+              onChange={() => updateGroupe("Jour")}
+            />
+            <Text style={tw`text-white text-lg ml-2`}>Jour</Text>
           </View>
-
-          <Text style={tw`text-white text-lg font-bold mb-2`}>Courriel</Text>
-          <TextInput
-            placeholder="Courriel"
-            style={tw`bg-gray-300 border border-gray-300 rounded-md p-2 mb-4`}
-          />
-          <Text style={tw`text-white text-lg font-bold mb-2`}>Adresse</Text>
-          <TextInput
-            placeholder="Adresse"
-            style={tw`bg-gray-300 border border-gray-300 rounded-md p-2 mb-4`}
-          />
-          <Text style={tw`text-white text-lg font-bold mb-2`}>Telephone</Text>
-          <TextInput
-            placeholder="Telephone"
-            style={tw`bg-gray-300 border border-gray-300 rounded-md p-2 mb-4`}
-          />
-
-          <Text style={tw`text-white text-lg font-bold mb-2`}>
-            En cas d'urgence
-          </Text>
-          <TextInput
-            placeholder="Numero en cas d'urgence"
-            style={tw`bg-gray-300 border border-gray-300 rounded-md p-2 mb-4`}
-          />
-          <Text style={tw`text-white text-lg font-bold mb-2`}>
-            Dans quelle catégorie avez-vous joué auparavant ?
-          </Text>
-          <View
-            style={tw`bg-gray-300 border border-gray-300 rounded-md p-2 mb-4`}
+          <View style={tw`flex-row items-center mb-2`}>
+            <Checkbox
+              name="groupe"
+              checked={groupe.includes("Nuit")}
+              onChange={() => updateGroupe("Nuit")}
+            />
+            <Text style={tw`text-white text-lg ml-2`}>Nuit</Text>
+          </View>
+          <View style={tw`flex-row items-center mb-2`}>
+            <Checkbox
+              name="groupe"
+              checked={groupe.includes("Mixte")}
+              onChange={() => updateGroupe("Mixte")}
+            />
+            <Text style={tw`text-white text-lg ml-2`}>Mixte</Text>
+          </View>
+          <View style={tw`flex-row items-center mb-2`}>
+            <Checkbox
+              name="groupe"
+              checked={groupe.includes("Weekend")}
+              onChange={() => updateGroupe("Weekend")}
+            />
+            <Text style={tw`text-white text-lg ml-2`}>Weekend</Text>
+          </View>
+        </View>
+        <View style={tw`flex-row justify-center`}>
+          <TouchableOpacity
+            onPress={ajoutHiver}
+            style={tw`bg-blue-500 py-2 px-4 rounded-md flex-row items-center justify-center mr-4`}
           >
-            <Picker
-              selectedValue={this.state.categorie}
-              onValueChange={(itemValue, itemIndex) =>
-                this.setState({ categorie: itemValue })
-              }
-              style={{ color: "gray" }}
-            >
-              <Picker.Item label="A" value="A" />
-              <Picker.Item label="B" value="B" />
-              <Picker.Item label="C" value="C" />
-              <Picker.Item label="D" value="D" />
-            </Picker>
-          </View>
-          <Text style={tw`text-white text-lg font-bold mb-2`}>Evaluation</Text>
-          <View
-            style={tw`bg-gray-300 border border-gray-300 rounded-md p-2 mb-4`}
+            <FontAwesome5 name="save" size={24} color="white" />
+            <Text style={tw`text-white ml-2`}>Ajouter</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={annulHiver}
+            style={tw`bg-red-500 py-2 px-4 rounded-md flex-row items-center justify-center`}
           >
-            <Picker
-              selectedValue={this.state.evaluation}
-              onValueChange={(itemValue, itemIndex) =>
-                this.setEvaluation(itemValue)
-              }
-              style={{ color: "gray" }}
-            >
-              <Picker.Item label="NON" value="NON" />
-              <Picker.Item label="OUI" value="OUI" />
-            </Picker>
-          </View>
-          <Text style={tw`text-white text-lg font-bold mb-2`}>
-            Mode de payement
-          </Text>
-          <TextInput
-            placeholder="Mode de payement"
-            style={tw`bg-gray-300 border border-gray-300 rounded-md p-2 mb-4`}
-          />
-          <Text style={tw`text-white text-lg font-bold mb-2`}>
-            Carte bancaire
-          </Text>
-          <TextInput
-            placeholder="Carte bancaire"
-            style={tw`bg-gray-300 border border-gray-300 rounded-md p-2 mb-4`}
-          />
-          <Text style={tw`text-white text-lg font-bold mb-2`}>Groupe</Text>
-          <View>
-            <View style={tw`flex-row items-center mb-2`}>
-              <Checkbox
-                checked={this.state.groupe.includes("Jour")}
-                onChange={() => this.setGroupe("Jour")}
-              />
-              <Text style={tw`text-white text-lg ml-2`}>Jour</Text>
-            </View>
-            <View style={tw`flex-row items-center mb-2`}>
-              <Checkbox
-                checked={this.state.groupe.includes("Nuit")}
-                onChange={() => this.setGroupe("Nuit")}
-              />
-              <Text style={tw`text-white text-lg ml-2`}>Nuit</Text>
-            </View>
-            <View style={tw`flex-row items-center mb-2`}>
-              <Checkbox
-                checked={this.state.groupe.includes("Mixte")}
-                onChange={() => this.setGroupe("Mixte")}
-              />
-              <Text style={tw`text-white text-lg ml-2`}>Mixte</Text>
-            </View>
-            <View style={tw`flex-row items-center mb-2`}>
-              <Checkbox
-                checked={this.state.groupe.includes("Weekend")}
-                onChange={() => this.setGroupe("Weekend")}
-              />
-              <Text style={tw`text-white text-lg ml-2`}>Weekend</Text>
-            </View>
-          </View>
-
-          <View style={tw`flex-row justify-center`}>
-            <TouchableOpacity
-              style={tw`bg-blue-500 py-2 px-4 rounded-md flex-row items-center justify-center mr-4`}
-            >
-              <FontAwesome5 name="save" size={24} color="white" />
-              <Text style={tw`text-white ml-2`}>Ajouter</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={tw`bg-red-500 py-2 px-4 rounded-md flex-row items-center justify-center`}
-            >
-              <MaterialIcons name="cancel" size={24} color="white" />
-              <Text style={tw`text-white ml-2`}>Annuler</Text>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
-      </SafeAreaView>
-    );
-  }
-}
+            <MaterialIcons name="cancel" size={24} color="white" />
+            <Text style={tw`text-white ml-2`}>Annuler</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+};
 
 export default Hiver_Session;

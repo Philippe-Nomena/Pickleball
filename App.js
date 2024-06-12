@@ -17,6 +17,7 @@ import {
 } from "@expo/vector-icons";
 import Forget_pass from "./views/connexion/forget_pass";
 import Activity from "./views/activity/activity";
+import Test_sqlite from "./views/bonus/test_sqlite";
 
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
@@ -103,6 +104,7 @@ export default function App() {
             drawerIcon: () => <AntDesign name="gift" size={24} color="white" />,
           }}
         />
+
         <Drawer.Screen
           name="Présence"
           component={Presence}
@@ -123,6 +125,13 @@ export default function App() {
                 color="white"
               />
             ),
+          }}
+        />
+        <Drawer.Screen
+          name="Sqlite_test"
+          component={Test_sqlite}
+          options={{
+            drawerIcon: () => <AntDesign name="gift" size={24} color="white" />,
           }}
         />
       </Drawer.Navigator>
