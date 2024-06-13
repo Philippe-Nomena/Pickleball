@@ -12,8 +12,9 @@ import { Picker } from "@react-native-picker/picker";
 import { Checkbox } from "./checkbox";
 import tw from "tailwind-react-native-classnames";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import url from "../url";
+
 import dayjs from "dayjs";
+import { url } from "../url";
 
 const Ete_Session = () => {
   const [session] = useState("Ete");

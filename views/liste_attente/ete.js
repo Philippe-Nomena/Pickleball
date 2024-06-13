@@ -120,7 +120,7 @@ const Ete_liste = () => {
   };
   const handleActiviteChange = (value) => {
     setActivite(value);
-    fetchAllData1(value);
+    // fetchAllData1(value);
   };
   const formatDate = (date) => {
     return dayjs(date).format("YYYY-MM-DD");
@@ -424,8 +424,12 @@ const Ete_liste = () => {
                 style={{ color: "gray" }}
                 name="activite"
               >
-                {data0.map((d, index) => (
-                  <Picker.Item key={index} label={d.nom} value={d.id} />
+                {data0.map((index) => (
+                  <Picker.Item
+                    key={index.id}
+                    label={index.nom}
+                    value={index.id}
+                  />
                 ))}
               </Picker>
             </View>
@@ -435,13 +439,12 @@ const Ete_liste = () => {
               style={tw`bg-gray-300 border border-gray-100 rounded-md p-2 mb-4`}
             >
               <Picker
+                style={tw`text-white`}
                 selectedValue={categorie}
-                onValueChange={setCategorie}
-                style={{ color: "gray" }}
-                name="categorie"
+                onValueChange={(itemValue) => setCategorie(itemValue)}
               >
-                {filteredCategories.map((c, index) => (
-                  <Picker.Item key={index} label={c.nom} value={c.id} />
+                {filteredCategories.map((item) => (
+                  <Picker.Item key={item.id} label={item.nom} value={item.id} />
                 ))}
               </Picker>
             </View>
