@@ -58,6 +58,10 @@ const Pratiquants = database.define("pratiquants", {
   tel_urgence: {
     type: Sequelize.STRING,
     allowNull: true,
+  }, 
+  activite: {
+    type: Sequelize.STRING,
+    allowNull: true,
   },
   categorie: {
     type: Sequelize.STRING,

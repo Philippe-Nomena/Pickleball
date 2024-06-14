@@ -16,6 +16,7 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import dayjs from "dayjs";
 import { url } from "../url";
 
+
 const Ete_Session = () => {
   const [session] = useState("Ete");
   const [nom, setNom] = useState("");
@@ -23,12 +24,12 @@ const Ete_Session = () => {
   const [activite, setActivite] = useState("");
   const [sexe, setSexe] = useState("F");
   const [adresse, setAdresse] = useState("");
-  const [telUrgence, setTelUrgence] = useState("");
+  const [tel_urgence, setTel_urgence] = useState("");
   const [evaluation, setEvaluation] = useState("NON");
 
   const [payement, setPayement] = useState([]);
-  const [cartePayement, setCartePayement] = useState("");
-  const [modePayement, setModePayement] = useState("");
+  const [carte_payement, setCarte_payement] = useState("");
+  const [mode_payement, setMode_payement] = useState("");
   const [telephone, setTelephone] = useState("");
   const [courriel, setCourriel] = useState("");
   const [carte_fede, setCarte_fede] = useState([]);
@@ -53,7 +54,7 @@ const Ete_Session = () => {
   };
   useEffect(() => {
     fetchAllData();
-    fetchAllData1();
+    // fetchAllData1();
   }, []);
   useEffect(() => {
     filterCategories();
@@ -71,6 +72,9 @@ const Ete_Session = () => {
     try {
       const res = await url.get(`/categorie`);
       setData1(res.data);
+      if(res){
+        console.log(data1)
+      }
     } catch (error) {
       console.error("Error fetching data:", error);
     }
@@ -101,9 +105,9 @@ const Ete_Session = () => {
   const annulEte = async () => {
     setNom("");
     setAdresse("");
-    setTelUrgence("");
-    setCartePayement("");
-    setModePayement("");
+    setTel_urgence("");
+    setCarte_payement("");
+    setMode_payement("");
     setTelephone("");
     setCourriel("");
   };
@@ -121,20 +125,21 @@ const Ete_Session = () => {
         courriel,
         adresse,
         telephone,
-        tel_urgence: telUrgence,
+        tel_urgence: tel_urgence,
         activite,
         categorie,
         evaluation,
-        mode_payement: modePayement,
-        carte_payement: cartePayement,
+        mode_payement: mode_payement,
+        carte_payement: carte_payement,
         groupe,
       });
       if (newPratiquants) {
+        console.log()
         setNom("");
         setAdresse("");
-        setTelUrgence("");
-        setCartePayement("");
-        setModePayement("");
+        setTel_urgence("");
+        setCarte_payement("");
+        setMode_payement("");
         setTelephone("");
         setCourriel("");
         alert("Ajout avec succès");
@@ -286,8 +291,8 @@ const Ete_Session = () => {
           name="tel_urgence"
           placeholderTextColor="gray"
           placeholder="Numero en cas d'urgence"
-          value={telUrgence}
-          onChangeText={(t) => setTelUrgence(t)}
+          value={tel_urgence}
+          onChangeText={(t) => setTel_urgence(t)}
           style={tw`bg-gray-300 border border-gray-100 rounded-md p-2 mb-4`}
         />
         <Text style={tw`text-white text-lg font-bold mb-2`}>
@@ -303,7 +308,7 @@ const Ete_Session = () => {
             name="activite"
           >
             {data.map((item) => (
-              <Picker.Item key={item.id} label={item.nom} value={item.id} />
+              <Picker.Item key={item.id} label={item.nom} value={item.nom} />
             ))}
           </Picker>
         </View>
@@ -347,8 +352,8 @@ const Ete_Session = () => {
         </Text>
         <TextInput
           name="mode_payement"
-          value={modePayement}
-          onChangeText={(t) => setModePayement(t)}
+          value={mode_payement}
+          onChangeText={(t) => setMode_payement(t)}
           placeholderTextColor="gray"
           placeholder="Mode de payement"
           style={tw`bg-gray-300 border border-gray-100 rounded-md p-2 mb-4`}
@@ -360,8 +365,8 @@ const Ete_Session = () => {
           name="carte_payement"
           placeholderTextColor="gray"
           placeholder="Carte bancaire"
-          value={cartePayement}
-          onChangeText={(t) => setCartePayement(t)}
+          value={carte_payement}
+          onChangeText={(t) => setCarte_payement(t)}
           style={tw`bg-gray-300 border border-gray-100 rounded-md p-2 mb-4`}
         />
         <Text style={tw`text-white text-lg font-bold mb-2`}>Groupe</Text>

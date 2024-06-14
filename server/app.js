@@ -17,10 +17,10 @@ const Sqlite_test = require("./routes/sqlite_testRoute");
 const app = express();
 
 // Load SSL key and certificate
-const sslOptions = {
-  key: fs.readFileSync("key.pem"),
-  cert: fs.readFileSync("cert.pem"),
-};
+// const sslOptions = {
+//   key: fs.readFileSync("key.pem"),
+//   cert: fs.readFileSync("cert.pem"),
+// };
 
 // Middlewares
 app.use((req, res, next) => {
@@ -44,9 +44,9 @@ app.use("/categorie", CategorieRoute);
 app.use("/sqlite_test", Sqlite_test);
 
 // Create an HTTPS server
-https
+http
   .createServer(
-    sslOptions,
+    // sslOptions,
      app)
   .listen(process.env.APP_PORT, process.env.URL, () => {
     console.log("======================================");
@@ -58,11 +58,11 @@ https
   });
 
 // Redirect HTTP to HTTPS
-http
-  .createServer((req, res) => {
-    res.writeHead(301, {
-      Location: "https://" + req.headers["host"] + req.url,
-    });
-    res.end();
-  })
-  .listen(80);
+// http
+//   .createServer((req, res) => {
+//     res.writeHead(301, {
+//       Location: "https://" + req.headers["host"] + req.url,
+//     });
+//     res.end();
+//   })
+//   .listen(80);
