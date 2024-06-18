@@ -5,7 +5,7 @@ const https = require("https");
 const fs = require("fs");
 const http = require("http");
 const cors = require("cors");
-const path = require("path")
+const path = require("path");
 
 const PratiquantsRoute = require("./routes/pratiquantsRoute");
 const UtilisateurRoute = require("./routes/utilisateursRoute");
@@ -17,10 +17,10 @@ const Sqlite_test = require("./routes/sqlite_testRoute");
 const app = express();
 
 // Load SSL key and certificate
-// const sslOptions = {
-//   key: fs.readFileSync("key.pem"),
-//   cert: fs.readFileSync("cert.pem"),
-// };
+const sslOptions = {
+  key: fs.readFileSync("key.pem"),
+  cert: fs.readFileSync("cert.pem"),
+};
 
 // Middlewares
 app.use((req, res, next) => {
@@ -32,7 +32,7 @@ app.use((req, res, next) => {
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Routes
 app.use("/pratiquants", PratiquantsRoute);
@@ -47,7 +47,8 @@ app.use("/sqlite_test", Sqlite_test);
 http
   .createServer(
     // sslOptions,
-     app)
+    app
+  )
   .listen(process.env.APP_PORT, process.env.URL, () => {
     console.log("======================================");
     console.log(

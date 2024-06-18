@@ -28,6 +28,7 @@ const Automne_liste = () => {
   const [data, setData] = useState([]);
   const [data0, setData0] = useState([]);
   const [data1, setData1] = useState([]);
+  const [actId, setActId] = useState(null);
 
   const [modalVisible, setModalVisible] = useState(false);
   const [editedItem, setEditedItem] = useState(null);
@@ -51,7 +52,13 @@ const Automne_liste = () => {
   const [carte_fede, setCarte_fede] = useState([]);
   const [consigne, setConsigne] = useState([]);
   const [etiquete, setEtiquete] = useState([]);
-
+  const handleToggleCheckbox = (state, setState, value) => {
+    if (state.includes(value)) {
+      setState(state.filter((item) => item !== value));
+    } else {
+      setState([...state, value]);
+    }
+  };
   const [eteVisible, setEteVisible] = useState(false);
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -69,11 +76,12 @@ const Automne_liste = () => {
   useEffect(() => {
     fetchAllData();
     fetchAllData0();
-    fetchAllData1();
   }, []);
   useEffect(() => {
-    filterCategories();
-  }, [activite]);
+    if (actId) {
+      fetchAllData1(actId);
+    }
+  }, [actId]);
   const fetchAllData = async () => {
     try {
       const res = await url.get("/pratiquants/automne");
@@ -90,25 +98,14 @@ const Automne_liste = () => {
       console.error("Error fetching data:", error);
     }
   };
-
-  const fetchAllData1 = async () => {
+  const fetchAllData1 = async (activiteId) => {
     try {
-      const res = await url.get(`/categorie`);
+      const res = await url.get(`/categorie/byactivite/${activiteId}`);
       setData1(res.data);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
   };
-
-  const filterCategories = () => {
-    if (activite) {
-      const filtered = data1.filter((cat) => cat.activite === activite);
-      setFilteredCategories(filtered);
-    } else {
-      setFilteredCategories([]);
-    }
-  };
-
   const handleDateChange = (event, selectedDate) => {
     if (selectedDate) {
       setDate(selectedDate);
@@ -118,12 +115,9 @@ const Automne_liste = () => {
       setShowDatePicker(false);
     }
   };
-  const handleActiviteChange = (value) => {
-    setActivite(value);
-    // fetchAllData1(value);
-  };
+
   const formatDate = (date) => {
-    return dayjs(date).format("YYYY-MM-DD");
+    return dayjs(date).format("DD-MM-YYYY");
   };
   const handleDelete = (item) => {
     setItemToDelete(item);
@@ -168,7 +162,15 @@ const Automne_liste = () => {
     }
   };
   const confirmDeleteItem = () => {
-    setDeleteModalVisible(false);
+    try {
+      url.delete(`/pratiquants/${itemToDelete.id}`);
+      setDeleteModalVisible(false);
+      fetchAllData();
+      Alert.alert("Suppression de pratiquants réussi");
+    } catch (error) {
+      console.error("Error de suppression item:", error);
+      Alert.alert("Error suppression item", error.message);
+    }
   };
   const renderRightActions = (item) => (
     <View style={tw`flex-row mr-5`}>
@@ -209,7 +211,7 @@ const Automne_liste = () => {
     setNom(item.nom);
     setSession(item.session);
     setSexe(item.sexe);
-    setDate(item.naissance);
+    setDate(new Date(item.naissance));
     setCourriel(item.courriel);
     setAdresse(item.adresse);
     setTelephone(item.telephone);
@@ -413,75 +415,86 @@ const Automne_liste = () => {
               placeholder="Telephone d'urgence"
               style={tw`bg-gray-300 border border-gray-100 rounded-md p-2 mb-4`}
             />
-
-            <Text style={tw`text-white text-lg font-bold mb-2`}>Activite</Text>
+            <Text style={tw`text-white text-lg font-bold mb-2`}>Activité</Text>
             <View
               style={tw`bg-gray-300 border border-gray-100 rounded-md p-2 mb-4`}
             >
               <Picker
                 selectedValue={activite}
-                onValueChange={handleActiviteChange}
+                onValueChange={(itemValue, itemIndex) => {
+                  setActivite(itemValue);
+                  const selectedActivity = data0.find(
+                    (item) => item.nom === itemValue
+                  );
+                  setActId(selectedActivity ? selectedActivity.id : null);
+                }}
                 style={{ color: "gray" }}
                 name="activite"
               >
-                {data0.map((index) => (
+                {data0.map((item) => (
                   <Picker.Item
-                    key={index.id}
-                    label={index.nom}
-                    value={index.id}
+                    key={item.id}
+                    label={item.nom}
+                    value={item.nom}
+                  />
+                ))}
+              </Picker>
+            </View>
+            <Text style={tw`text-white text-lg font-bold mb-2`}>Catégorie</Text>
+            <View
+              style={tw`bg-gray-300 border border-gray-100 rounded-md p-2 mb-4`}
+            >
+              <Picker
+                selectedValue={categorie}
+                onValueChange={(itemValue, itemIndex) =>
+                  setCategorie(itemValue)
+                }
+                style={{ color: "gray" }}
+                name="categorie"
+              >
+                {data1.map((item) => (
+                  <Picker.Item
+                    key={item.id}
+                    label={item.categorie}
+                    value={item.categorie}
                   />
                 ))}
               </Picker>
             </View>
 
-            <Text style={tw`text-white text-lg font-bold mb-2`}>Categorie</Text>
-            <View
-              style={tw`bg-gray-300 border border-gray-100 rounded-md p-2 mb-4`}
-            >
-              <Picker
-                style={tw`text-white`}
-                selectedValue={categorie}
-                onValueChange={(itemValue) => setCategorie(itemValue)}
-              >
-                {filteredCategories.map((item) => (
-                  <Picker.Item key={item.id} label={item.nom} value={item.id} />
-                ))}
-              </Picker>
-            </View>
-
             <Text style={tw`text-white text-lg font-bold mb-2`}>Groupe</Text>
-            <View>
-              <View style={tw`flex-row items-center mb-2`}>
+            <View style={tw`flex-row items-center `}>
+              <View style={tw`flex-row items-center mb-2 mr-2`}>
                 <Checkbox
                   name="groupe"
                   checked={groupe.includes("Jour")}
                   onChange={() => updateGroupe("Jour")}
                 />
-                <Text style={tw`text-white text-lg ml-2`}>Jour</Text>
+                <Text style={tw`text-white text-lg ml-1`}>Jour</Text>
               </View>
-              <View style={tw`flex-row items-center mb-2`}>
+              <View style={tw`flex-row items-center mb-2 mr-2`}>
                 <Checkbox
                   name="groupe"
                   checked={groupe.includes("Nuit")}
                   onChange={() => updateGroupe("Nuit")}
                 />
-                <Text style={tw`text-white text-lg ml-2`}>Nuit</Text>
+                <Text style={tw`text-white text-lg ml-1`}>Nuit</Text>
               </View>
-              <View style={tw`flex-row items-center mb-2`}>
+              <View style={tw`flex-row items-center mb-2 mr-2`}>
                 <Checkbox
                   name="groupe"
                   checked={groupe.includes("Mixte")}
                   onChange={() => updateGroupe("Mixte")}
                 />
-                <Text style={tw`text-white text-lg ml-2`}>Mixte</Text>
+                <Text style={tw`text-white text-lg ml-1`}>Mixte</Text>
               </View>
-              <View style={tw`flex-row items-center mb-2`}>
+              <View style={tw`flex-row items-center mb-2 mr-2`}>
                 <Checkbox
                   name="groupe"
                   checked={groupe.includes("Weekend")}
                   onChange={() => updateGroupe("Weekend")}
                 />
-                <Text style={tw`text-white text-lg ml-2`}>Weekend</Text>
+                <Text style={tw`text-white text-lg ml-1`}>Weekend</Text>
               </View>
             </View>
 
@@ -528,14 +541,14 @@ const Automne_liste = () => {
           <View style={tw`flex-row justify-center`}>
             <TouchableOpacity
               onPress={saveEditedItem}
-              style={tw`bg-green-500 p-4 rounded-full flex flex-row items-center justify-center mb-4`}
+              style={tw`bg-blue-500 p-2 rounded-md flex flex-row items-center justify-center mr-4`}
             >
               <FontAwesome5 name="user-plus" size={24} color="white" />
               <Text style={tw`text-white font-bold text-lg ml-2`}>Editer</Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => setModalVisible(false)}
-              style={tw`bg-red-500 py-2 px-4 rounded-md flex-row items-center justify-center`}
+              style={tw`bg-red-500 p-2  rounded-md flex-row items-center justify-center`}
             >
               <MaterialIcons name="cancel" size={24} color="white" />
               <Text style={tw`text-white ml-2`}>Annuler</Text>

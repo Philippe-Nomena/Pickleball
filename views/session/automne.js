@@ -25,7 +25,7 @@ const Automne_Session = () => {
   const [adresse, setAdresse] = useState("");
   const [telUrgence, setTelUrgence] = useState("");
   const [evaluation, setEvaluation] = useState("NON");
-
+  const [actId, setActId] = useState(null);
   const [payement, setPayement] = useState([]);
   const [cartePayement, setCartePayement] = useState("");
   const [modePayement, setModePayement] = useState("");
@@ -53,11 +53,14 @@ const Automne_Session = () => {
   };
   useEffect(() => {
     fetchAllData();
-    fetchAllData1();
   }, []);
+
   useEffect(() => {
-    filterCategories();
-  }, [activite]);
+    if (actId) {
+      fetchAllData1(actId);
+    }
+  }, [actId]);
+
   const fetchAllData = async () => {
     try {
       const res = await url.get("/activite");
@@ -67,24 +70,14 @@ const Automne_Session = () => {
     }
   };
 
-  const fetchAllData1 = async () => {
+  const fetchAllData1 = async (activiteId) => {
     try {
-      const res = await url.get(`/categorie`);
+      const res = await url.get(`/categorie/byactivite/${activiteId}`);
       setData1(res.data);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
   };
-
-  const filterCategories = () => {
-    if (activite) {
-      const filtered = data1.filter((cat) => cat.activite === activite);
-      setFilteredCategories(filtered);
-    } else {
-      setFilteredCategories([]);
-    }
-  };
-
   const handleDateChange = (event, selectedDate) => {
     if (selectedDate) {
       setDate(selectedDate);
@@ -96,7 +89,7 @@ const Automne_Session = () => {
   };
 
   const formatDate = (date) => {
-    return dayjs(date).format("YYYY-MM-DD");
+    return dayjs(date).format("DD-MM-YYYY");
   };
   const annulAutomne = async () => {
     setNom("");
@@ -298,12 +291,18 @@ const Automne_Session = () => {
         >
           <Picker
             selectedValue={activite}
-            onValueChange={(itemValue) => setActivite(itemValue)}
+            onValueChange={(itemValue, itemIndex) => {
+              setActivite(itemValue);
+              const selectedActivity = data.find(
+                (item) => item.nom === itemValue
+              );
+              setActId(selectedActivity ? selectedActivity.id : null);
+            }}
             style={{ color: "gray" }}
             name="activite"
           >
             {data.map((item) => (
-              <Picker.Item key={item.id} label={item.nom} value={item.id} />
+              <Picker.Item key={item.id} label={item.nom} value={item.nom} />
             ))}
           </Picker>
         </View>
@@ -315,15 +314,15 @@ const Automne_Session = () => {
         >
           <Picker
             selectedValue={categorie}
-            onValueChange={(itemValue) => setCategorie(itemValue)}
+            onValueChange={(itemValue, itemIndex) => setCategorie(itemValue)}
             style={{ color: "gray" }}
             name="categorie"
           >
-            {filteredCategories.map((item) => (
+            {data1.map((item) => (
               <Picker.Item
                 key={item.id}
                 label={item.categorie}
-                value={item.id}
+                value={item.categorie}
               />
             ))}
           </Picker>

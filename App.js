@@ -139,3 +139,7 @@ export default function App() {
     </NavigationContainer>
   );
 }
+
+// PAGE DETAILS
+// NAVIGATION PUSH
+//

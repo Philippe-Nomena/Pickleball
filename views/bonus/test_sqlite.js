@@ -1,14 +1,23 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, Button, TextInput, StyleSheet, Alert } from "react-native";
+import {
+  View,
+  Text,
+  Button,
+  TextInput,
+  StyleSheet,
+  Alert,
+  FlatList,
+} from "react-native";
 import SQLite from "react-native-sqlite-storage";
 import NetInfo from "@react-native-community/netinfo";
-import axios from "axios";
-import { url } from "../url"; // Assurez-vous que votre URL est correctement définie
+import { url } from "../url";
+
+const db = SQLite.openDatabase({ name: "my.db", location: "default" });
 
 const Test_sqlite = () => {
-  const db = SQLite.openDatabase({ name: "my.db", location: "default" });
   const [items, setItems] = useState([]);
   const [input, setInput] = useState("");
+  const [editItem, setEditItem] = useState(null);
 
   useEffect(() => {
     createTable();
@@ -24,7 +33,7 @@ const Test_sqlite = () => {
         () => {
           console.log("Table 'test_sqlite' created successfully");
         },
-        (error) => {
+        (tx, error) => {
           console.log("Error creating table:", error);
         }
       );
@@ -39,10 +48,8 @@ const Test_sqlite = () => {
         (tx, results) => {
           const rows = results.rows;
           let items = [];
-          if (rows && rows.length > 0) {
-            for (let i = 0; i < rows.length; i++) {
-              items.push(rows.item(i));
-            }
+          for (let i = 0; i < rows.length; i++) {
+            items.push(rows.item(i));
           }
           setItems(items);
         },
@@ -89,6 +96,8 @@ const Test_sqlite = () => {
           () => {
             console.log("Item updated successfully");
             fetchData();
+            setEditItem(null);
+            setInput("");
           },
           (tx, error) => {
             console.log("Error updating item:", error);
@@ -137,8 +146,8 @@ const Test_sqlite = () => {
                   localData.push(rows.item(i));
                 }
 
-                axios
-                  .post(`${url}/sqlite_test/sync`, localData)
+                url
+                  .post(`/sqlite_test/sync`, localData)
                   .then((response) => {
                     console.log("Data synced successfully");
                   })
@@ -160,6 +169,19 @@ const Test_sqlite = () => {
       });
   };
 
+  const handleEdit = (item) => {
+    setEditItem(item);
+    setInput(item.name);
+  };
+
+  const handleSave = () => {
+    if (editItem) {
+      updateItem(editItem.id, input);
+    } else {
+      addItem();
+    }
+  };
+
   return (
     <View style={styles.container}>
       <TextInput
@@ -168,19 +190,23 @@ const Test_sqlite = () => {
         placeholder="Enter item"
         style={styles.input}
       />
-      <Button title="Add Item" onPress={addItem} />
-      {items.map((item) => (
-        <View key={item.id} style={styles.itemContainer}>
-          <Text>{item.name}</Text>
-          <View style={styles.buttonContainer}>
-            <Button
-              title="Update"
-              onPress={() => updateItem(item.id, "New Name")}
-            />
-            <Button title="Delete" onPress={() => deleteItem(item.id)} />
+      <Button
+        title={editItem ? "Update Item" : "Add Item"}
+        onPress={handleSave}
+      />
+      <FlatList
+        data={items}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => (
+          <View style={styles.itemContainer}>
+            <Text>{item.name}</Text>
+            <View style={styles.buttonContainer}>
+              <Button title="Edit" onPress={() => handleEdit(item)} />
+              <Button title="Delete" onPress={() => deleteItem(item.id)} />
+            </View>
           </View>
-        </View>
-      ))}
+        )}
+      />
     </View>
   );
 };

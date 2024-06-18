@@ -12,7 +12,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import BarcodeScannerScreen from "./qrcode";
-import url from "../url";
+import { url } from "../url";
 
 const Ete_Presence = () => {
   const [data, setData] = useState([]);

@@ -16,7 +16,6 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import dayjs from "dayjs";
 import { url } from "../url";
 
-
 const Ete_Session = () => {
   const [session] = useState("Ete");
   const [nom, setNom] = useState("");
@@ -37,10 +36,11 @@ const Ete_Session = () => {
   const [etiquete, setEtiquete] = useState([]);
   const [data, setData] = useState([]);
   const [data1, setData1] = useState([]);
+  const [actId, setActId] = useState(null);
   const [eteVisible, setEteVisible] = useState(false);
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [filteredCategories, setFilteredCategories] = useState([]);
+
   const [groupe, setGroupe] = useState([]);
   const updateGroupe = (itemValue) => {
     let updatedGroupe = [...groupe];
@@ -54,11 +54,14 @@ const Ete_Session = () => {
   };
   useEffect(() => {
     fetchAllData();
-    // fetchAllData1();
   }, []);
+
   useEffect(() => {
-    filterCategories();
-  }, [activite]);
+    if (actId) {
+      fetchAllData1(actId);
+    }
+  }, [actId]);
+
   const fetchAllData = async () => {
     try {
       const res = await url.get("/activite");
@@ -68,27 +71,14 @@ const Ete_Session = () => {
     }
   };
 
-  const fetchAllData1 = async () => {
+  const fetchAllData1 = async (activiteId) => {
     try {
-      const res = await url.get(`/categorie`);
+      const res = await url.get(`/categorie/byactivite/${activiteId}`);
       setData1(res.data);
-      if(res){
-        console.log(data1)
-      }
     } catch (error) {
       console.error("Error fetching data:", error);
     }
   };
-
-  const filterCategories = () => {
-    if (activite) {
-      const filtered = data1.filter((cat) => cat.activite === activite);
-      setFilteredCategories(filtered);
-    } else {
-      setFilteredCategories([]);
-    }
-  };
-
   const handleDateChange = (event, selectedDate) => {
     if (selectedDate) {
       setDate(selectedDate);
@@ -100,7 +90,7 @@ const Ete_Session = () => {
   };
 
   const formatDate = (date) => {
-    return dayjs(date).format("YYYY-MM-DD");
+    return dayjs(date).format("DD-MM-YYYY");
   };
   const annulEte = async () => {
     setNom("");
@@ -134,7 +124,6 @@ const Ete_Session = () => {
         groupe,
       });
       if (newPratiquants) {
-        console.log()
         setNom("");
         setAdresse("");
         setTel_urgence("");
@@ -295,6 +284,7 @@ const Ete_Session = () => {
           onChangeText={(t) => setTel_urgence(t)}
           style={tw`bg-gray-300 border border-gray-100 rounded-md p-2 mb-4`}
         />
+
         <Text style={tw`text-white text-lg font-bold mb-2`}>
           Choisissez votre activité
         </Text>
@@ -303,7 +293,13 @@ const Ete_Session = () => {
         >
           <Picker
             selectedValue={activite}
-            onValueChange={(itemValue) => setActivite(itemValue)}
+            onValueChange={(itemValue, itemIndex) => {
+              setActivite(itemValue);
+              const selectedActivity = data.find(
+                (item) => item.nom === itemValue
+              );
+              setActId(selectedActivity ? selectedActivity.id : null);
+            }}
             style={{ color: "gray" }}
             name="activite"
           >
@@ -320,15 +316,15 @@ const Ete_Session = () => {
         >
           <Picker
             selectedValue={categorie}
-            onValueChange={(itemValue) => setCategorie(itemValue)}
+            onValueChange={(itemValue, itemIndex) => setCategorie(itemValue)}
             style={{ color: "gray" }}
             name="categorie"
           >
-            {filteredCategories.map((item) => (
+            {data1.map((item) => (
               <Picker.Item
                 key={item.id}
                 label={item.categorie}
-                value={item.id}
+                value={item.categorie}
               />
             ))}
           </Picker>
