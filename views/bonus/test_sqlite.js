@@ -65,7 +65,6 @@ const TestSqlite = () => {
       const state = await NetInfo.fetch();
       if (state.isConnected) {
         try {
-          console.log(`Envoi des données au serveur: { name: ${nom} }`);
           await url.post(`/sqlite_test`, { name: nom });
           console.log("Données insérées avec succès dans MySQL");
           setNom("");
@@ -116,7 +115,7 @@ const TestSqlite = () => {
       if (state.isConnected) {
         try {
           const response = await url.get(`/sqlite_test`);
-          console.log("Données récupérées du serveur :", response.data);
+          // console.log("Données récupérées du serveur :", response.data);
           setData(response.data);
           setUsers([]);
           checkUnsyncedData();

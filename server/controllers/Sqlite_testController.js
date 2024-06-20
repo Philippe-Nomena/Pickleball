@@ -45,22 +45,38 @@ exports.createSqlite_test = async (req, res, next) => {
       .send({ message: "Error creating sqlite_test", error: error.message });
   }
 };
-// Create a new sqlite_test after synchronise
+
 exports.createSqlite_testSync = async (req, res, next) => {
   try {
     const { localData } = req.body;
-    if (localData == null) {
-      console.log("Pas de données à synchroniser");
-      return res.status(400).send("Pas de données à synchroniser");
+    if (localData == null || !Array.isArray(localData)) {
+      console.log("Pas de données valides à synchroniser");
+      return res.status(400).send("Pas de données valides à synchroniser");
     }
+
+    // Boucle pour traiter chaque élément de localData
     for (let data of localData) {
-      const newSqlite_test = await Sqlite_test.upsert(data);
-      if (!newSqlite_test) {
-        return res
-          .status(400)
-          .send("Erreur lors de la synchronisation des données");
+      try {
+        // upsert pour insérer ou mettre à jour une entrée dans la base de données
+        const [result, created] = await Sqlite_test.upsert({
+          name: data.name,
+        });
+
+        if (created) {
+          console.log(`Nouvelle entrée insérée : ${result.name}`);
+        } else {
+          console.log(`Entrée mise à jour : ${result.name}`);
+        }
+      } catch (error) {
+        console.error("Erreur lors de l'upsert :", error);
+        return res.status(500).send({
+          message: "Erreur lors de la synchronisation des données",
+          error: error.message,
+        });
       }
     }
+
+    // Réponse de succès
     res.status(201).send("Données synchronisées avec succès");
   } catch (error) {
     console.error("Erreur lors de la synchronisation des données :", error);
