@@ -1,241 +1,295 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
-  View,
+  ScrollView,
   Text,
-  Button,
   TextInput,
-  StyleSheet,
-  Alert,
-  FlatList,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import SQLite from "react-native-sqlite-storage";
 import NetInfo from "@react-native-community/netinfo";
+import * as SQLite from "expo-sqlite";
+import tw from "tailwind-react-native-classnames";
 import { url } from "../url";
 
-const db = SQLite.openDatabase({ name: "my.db", location: "default" });
+const db = SQLite.openDatabase("Test.db");
 
-const Test_sqlite = () => {
-  const [items, setItems] = useState([]);
-  const [input, setInput] = useState("");
-  const [editItem, setEditItem] = useState(null);
+const TestSqlite = () => {
+  const [nom, setNom] = useState("");
+  const [users, setUsers] = useState([]);
+  const [data, setData] = useState([]);
+  const [hasUnsyncedData, setHasUnsyncedData] = useState(false);
 
   useEffect(() => {
-    createTable();
-    fetchData();
-    syncData();
-  }, []);
+    initializeDatabase();
+    const intervalId = setInterval(() => {
+      if (hasUnsyncedData) {
+        syncData();
+      }
+    }, 10000);
 
-  const createTable = () => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        "CREATE TABLE IF NOT EXISTS test_sqlite (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT)",
-        [],
-        () => {
-          console.log("Table 'test_sqlite' created successfully");
-        },
-        (tx, error) => {
-          console.log("Error creating table:", error);
-        }
-      );
+    return () => clearInterval(intervalId);
+  }, [hasUnsyncedData]);
+
+  const executeSqlAsync = (sqlStatement, params = []) => {
+    return new Promise((resolve, reject) => {
+      db.transaction((tx) => {
+        tx.executeSql(
+          sqlStatement,
+          params,
+          (_, results) => resolve(results),
+          (_, error) => reject(error)
+        );
+      });
     });
   };
 
-  const fetchData = () => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        "SELECT * FROM test_sqlite",
-        [],
-        (tx, results) => {
-          const rows = results.rows;
-          let items = [];
-          for (let i = 0; i < rows.length; i++) {
-            items.push(rows.item(i));
-          }
-          setItems(items);
-        },
-        (tx, error) => {
-          console.log("Error fetching data:", error);
-        }
+  const initializeDatabase = async () => {
+    try {
+      await executeSqlAsync(
+        "CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, synced INTEGER);"
       );
-    });
+      console.log("Table créée avec succès");
+      fetchAllData();
+    } catch (error) {
+      console.log("Erreur lors de la création de la table :", error);
+    }
   };
 
-  const addItem = () => {
-    if (!input) {
-      Alert.alert("Input cannot be empty.");
+  const addTest = async () => {
+    if (!nom) {
+      console.log("Le nom ne peut pas être vide");
       return;
     }
 
-    db.transaction(
-      (tx) => {
-        tx.executeSql(
-          "INSERT INTO test_sqlite (name) VALUES (?)",
-          [input],
-          () => {
-            console.log("Item added successfully");
-            fetchData();
-            setInput("");
-          },
-          (tx, error) => {
-            console.log("Error adding item:", error);
-          }
-        );
-      },
-      (error) => {
-        console.log("Transaction error:", error);
-      }
-    );
-  };
-
-  const updateItem = (id, newName) => {
-    db.transaction(
-      (tx) => {
-        tx.executeSql(
-          "UPDATE test_sqlite SET name = ? WHERE id = ?",
-          [newName, id],
-          () => {
-            console.log("Item updated successfully");
-            fetchData();
-            setEditItem(null);
-            setInput("");
-          },
-          (tx, error) => {
-            console.log("Error updating item:", error);
-          }
-        );
-      },
-      (error) => {
-        console.log("Transaction error:", error);
-      }
-    );
-  };
-
-  const deleteItem = (id) => {
-    db.transaction(
-      (tx) => {
-        tx.executeSql(
-          "DELETE FROM test_sqlite WHERE id = ?",
-          [id],
-          () => {
-            console.log("Item deleted successfully");
-            fetchData();
-          },
-          (tx, error) => {
-            console.log("Error deleting item:", error);
-          }
-        );
-      },
-      (error) => {
-        console.log("Transaction error:", error);
-      }
-    );
-  };
-
-  const syncData = () => {
-    NetInfo.fetch()
-      .then((state) => {
-        if (state.isConnected) {
-          db.transaction((tx) => {
-            tx.executeSql(
-              "SELECT * FROM test_sqlite",
-              [],
-              (tx, results) => {
-                const rows = results.rows;
-                let localData = [];
-                for (let i = 0; i < rows.length; i++) {
-                  localData.push(rows.item(i));
-                }
-
-                url
-                  .post(`/sqlite_test/sync`, localData)
-                  .then((response) => {
-                    console.log("Data synced successfully");
-                  })
-                  .catch((error) => {
-                    console.log("Sync error:", error);
-                  });
-              },
-              (tx, error) => {
-                console.log("Error fetching data for sync:", error);
-              }
-            );
-          });
-        } else {
-          console.log("No internet connection. Cannot sync data.");
+    try {
+      const state = await NetInfo.fetch();
+      if (state.isConnected) {
+        try {
+          console.log(`Envoi des données au serveur: { name: ${nom} }`);
+          await url.post(`/sqlite_test`, { name: nom });
+          console.log("Données insérées avec succès dans MySQL");
+          setNom("");
+          fetchAllData();
+        } catch (error) {
+          console.log(
+            "Erreur lors de l'insertion des données dans MySQL, insertion locale :",
+            error
+          );
+          await insertLocalData(nom, 0);
         }
-      })
-      .catch((error) => {
-        console.log("Error fetching network state:", error);
-      });
+      } else {
+        console.log(
+          "Pas de connexion Internet. Insertion des données localement."
+        );
+        await insertLocalData(nom, 0);
+      }
+    } catch (error) {
+      console.log(
+        "Erreur lors de la récupération de l'état du réseau :",
+        error
+      );
+      await insertLocalData(nom, 0);
+    }
   };
 
-  const handleEdit = (item) => {
-    setEditItem(item);
-    setInput(item.name);
+  const insertLocalData = async (name, synced) => {
+    try {
+      await executeSqlAsync("INSERT INTO users (name, synced) VALUES (?, ?);", [
+        name,
+        synced,
+      ]);
+      console.log("Données insérées avec succès dans SQLite");
+      setNom("");
+      fetchAllData();
+      setHasUnsyncedData(true);
+    } catch (error) {
+      console.log(
+        "Erreur lors de l'insertion des données dans SQLite :",
+        error
+      );
+    }
   };
 
-  const handleSave = () => {
-    if (editItem) {
-      updateItem(editItem.id, input);
-    } else {
-      addItem();
+  const fetchAllData = async () => {
+    try {
+      const state = await NetInfo.fetch();
+      if (state.isConnected) {
+        try {
+          const response = await url.get(`/sqlite_test`);
+          console.log("Données récupérées du serveur :", response.data);
+          setData(response.data);
+          setUsers([]);
+          checkUnsyncedData();
+        } catch (error) {
+          console.log(
+            "Erreur lors de la récupération des données de MySQL :",
+            error
+          );
+          fetchUsers();
+        }
+      } else {
+        fetchUsers();
+      }
+    } catch (error) {
+      console.log(
+        "Erreur lors de la récupération de l'état du réseau :",
+        error
+      );
+      fetchUsers();
+    }
+  };
+
+  const fetchUsers = async () => {
+    try {
+      const results = await executeSqlAsync("SELECT * FROM users;");
+      let rows = results.rows._array;
+      console.log("Données récupérées de SQLite :", rows);
+      setUsers(rows);
+      setData([]);
+      checkUnsyncedData();
+    } catch (error) {
+      console.log("Erreur lors de la récupération des données :", error);
+    }
+  };
+
+  const checkUnsyncedData = async () => {
+    try {
+      const results = await executeSqlAsync(
+        "SELECT * FROM users WHERE synced = 0;"
+      );
+      const rows = results.rows._array;
+      setHasUnsyncedData(rows.length > 0);
+    } catch (error) {
+      console.log(
+        "Erreur lors de la vérification des données non synchronisées :",
+        error
+      );
+    }
+  };
+
+  const syncData = async () => {
+    try {
+      const state = await NetInfo.fetch();
+      if (state.isConnected) {
+        try {
+          const results = await executeSqlAsync(
+            "SELECT * FROM users WHERE synced = 0;"
+          );
+          const rows = results.rows._array;
+
+          console.log("Données locales non synchronisées :", rows);
+
+          let localData = rows.map((row) => ({
+            id: row.id,
+            name: row.name,
+          }));
+
+          console.log("localData avant filtrage :", localData);
+
+          if (localData.length === 0) {
+            console.log("Aucune donnée locale à synchroniser.");
+            setHasUnsyncedData(false);
+            return;
+          }
+
+          const nonEmptyLocalData = localData.filter((data) => {
+            console.log("Data before filter: ", data);
+            return data.name && data.name.trim() !== "";
+          });
+
+          console.log("nonEmptyLocalData après filtrage :", nonEmptyLocalData);
+
+          if (nonEmptyLocalData.length === 0) {
+            console.log(
+              "Toutes les données locales sont vides après filtrage. Rien à synchroniser."
+            );
+            setHasUnsyncedData(false);
+            return;
+          }
+
+          console.log(
+            "Envoi des données locales à synchroniser :",
+            nonEmptyLocalData
+          );
+          await url.post(`/sqlite_test/sync`, nonEmptyLocalData);
+          console.log("Données synchronisées avec succès");
+          await executeSqlAsync(
+            "UPDATE users SET synced = 1 WHERE synced = 0;"
+          );
+          fetchUsers();
+          setHasUnsyncedData(false);
+        } catch (error) {
+          console.log("Erreur lors de la synchronisation des données :", error);
+          console.log("Détails de l'erreur : ", error.message);
+          if (error.response) {
+            console.log("Réponse du serveur : ", error.response.data);
+          } else if (error.request) {
+            console.log(
+              "Requête envoyée mais aucune réponse reçue : ",
+              error.request
+            );
+          } else {
+            console.log(
+              "Erreur dans la configuration de la requête : ",
+              error.message
+            );
+          }
+        }
+      } else {
+        console.log(
+          "Pas de connexion Internet. Impossible de synchroniser les données."
+        );
+      }
+    } catch (error) {
+      console.log(
+        "Erreur lors de la récupération de l'état du réseau :",
+        error
+      );
     }
   };
 
   return (
-    <View style={styles.container}>
-      <TextInput
-        value={input}
-        onChangeText={setInput}
-        placeholder="Enter item"
-        style={styles.input}
-      />
-      <Button
-        title={editItem ? "Update Item" : "Add Item"}
-        onPress={handleSave}
-      />
-      <FlatList
-        data={items}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
-          <View style={styles.itemContainer}>
-            <Text>{item.name}</Text>
-            <View style={styles.buttonContainer}>
-              <Button title="Edit" onPress={() => handleEdit(item)} />
-              <Button title="Delete" onPress={() => deleteItem(item.id)} />
-            </View>
-          </View>
-        )}
-      />
+    <View style={tw`flex-1 bg-black`}>
+      <Text style={tw`text-white text-lg text-center mb-2`}>
+        Test de sqlite
+      </Text>
+      <View style={tw`flex w-80 ml-10`}>
+        <TextInput
+          value={nom}
+          onChangeText={setNom}
+          style={tw`bg-gray-400 rounded-md p-2 mb-4`}
+          placeholder="Nom"
+          placeholderTextColor="white"
+        />
+        <TouchableOpacity
+          onPress={addTest}
+          style={tw`bg-green-500 w-24 p-2 rounded-md mt-4 items-center ml-20`}
+        >
+          <Text style={tw`text-white text-lg`}>Ajouter</Text>
+        </TouchableOpacity>
+      </View>
+      <ScrollView style={tw`mt-10`}>
+        {data.length > 0
+          ? data.map((item) => (
+              <Text
+                key={item.id}
+                style={tw`bg-gray-400 p-2 rounded-md text-center mb-2`}
+              >
+                {item.name} (MySQL)
+              </Text>
+            ))
+          : users.map((user) => (
+              <Text
+                key={user.id}
+                style={tw`text-white bg-gray-400 p-2 rounded-md text-center mb-2`}
+              >
+                {user.name}{" "}
+                {user.synced ? "(Synchronisé)" : "(Non Synchronisé)"}
+              </Text>
+            ))}
+      </ScrollView>
     </View>
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
-  },
-  input: {
-    height: 40,
-    width: "80%",
-    borderColor: "gray",
-    borderWidth: 1,
-    marginBottom: 10,
-    paddingHorizontal: 10,
-  },
-  itemContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 10,
-    width: "80%",
-  },
-  buttonContainer: {
-    flexDirection: "row",
-  },
-});
-
-export default Test_sqlite;
+export default TestSqlite;

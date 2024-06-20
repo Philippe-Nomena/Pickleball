@@ -49,17 +49,28 @@ exports.createSqlite_test = async (req, res, next) => {
 exports.createSqlite_testSync = async (req, res, next) => {
   try {
     const { localData } = req.body;
-
-    const newSqlite_test = await Sqlite_test.upsert({ localData });
-    if (newSqlite_test) {
-      res.status(201).send("Data synchroniser");
+    if (localData == null) {
+      console.log("Pas de données à synchroniser");
+      return res.status(400).send("Pas de données à synchroniser");
     }
+    for (let data of localData) {
+      const newSqlite_test = await Sqlite_test.upsert(data);
+      if (!newSqlite_test) {
+        return res
+          .status(400)
+          .send("Erreur lors de la synchronisation des données");
+      }
+    }
+    res.status(201).send("Données synchronisées avec succès");
   } catch (error) {
-    res
-      .status(400)
-      .send({ message: "Error creating sqlite_test", error: error.message });
+    console.error("Erreur lors de la synchronisation des données :", error);
+    res.status(500).send({
+      message: "Erreur lors de la synchronisation des données",
+      error: error.message,
+    });
   }
 };
+
 // Update an sqlite_test by ID
 exports.updateSqlite_test = async (req, res) => {
   try {
