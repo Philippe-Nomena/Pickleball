@@ -62,7 +62,6 @@ const Activity = () => {
     setItemToDelete(item);
     setDeleteModalVisible(true);
     setImage(imageUrl);
-    setImage(imageUrl);
   };
 
   const confirmDeleteItem = async () => {
@@ -81,8 +80,6 @@ const Activity = () => {
     setEditedItem(item);
     setNom(item.nom);
     setImage(imageUrl);
-    setImage(imageUrl);
-
     setModalVisible(true);
   };
   const handleCategorie = (item) => {

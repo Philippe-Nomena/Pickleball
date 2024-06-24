@@ -17,10 +17,10 @@ const Sqlite_test = require("./routes/sqlite_testRoute");
 const app = express();
 
 // Load SSL key and certificate
-const sslOptions = {
-  key: fs.readFileSync("key.pem"),
-  cert: fs.readFileSync("cert.pem"),
-};
+// const sslOptions = {
+//   key: fs.readFileSync("key.pem"),
+//   cert: fs.readFileSync("cert.pem"),
+// };
 
 // Middlewares
 app.use((req, res, next) => {

@@ -54,7 +54,6 @@ exports.createSqlite_testSync = async (req, res, next) => {
       return res.status(400).send("Pas de données valides à synchroniser");
     }
 
-    // Boucle pour traiter chaque élément de localData
     for (let data of localData) {
       try {
         // upsert pour insérer ou mettre à jour une entrée dans la base de données

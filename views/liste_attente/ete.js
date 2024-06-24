@@ -25,12 +25,17 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import dayjs from "dayjs";
 import { Swipeable } from "react-native-gesture-handler";
 import { url } from "../url";
+
+////////debut util sur synchronisation de donnees sqlite
+import * as SQLite from "expo-sqlite";
+const db = SQLite.openDatabase("Test.db");
+import NetInfo from "@react-native-community/netinfo";
+////////fin util sur synchronisation de donnees sqlite
 const Ete_liste = () => {
   const [data, setData] = useState([]);
   const [data0, setData0] = useState([]);
   const [data1, setData1] = useState([]);
   const [actId, setActId] = useState(null);
-
   const [modalVisible, setModalVisible] = useState(false);
   const [editedItem, setEditedItem] = useState(null);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
@@ -53,7 +58,6 @@ const Ete_liste = () => {
   const [carte_fede, setCarte_fede] = useState([]);
   const [consigne, setConsigne] = useState([]);
   const [etiquete, setEtiquete] = useState([]);
-
   const [eteVisible, setEteVisible] = useState(false);
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -84,12 +88,33 @@ const Ete_liste = () => {
       fetchAllData1(actId);
     }
   }, [actId]);
+
   const fetchAllData = async () => {
     try {
-      const res = await url.get("/pratiquants/ete");
-      setData(res.data);
+      const state = await NetInfo.fetch();
+      if (state.isConnected) {
+        try {
+          const response = await url.get(`/pratiquants/ete`);
+          console.log("Données récupérées de MySQL :", response.data);
+          setData(response.data);
+          setUsers([]);
+          checkUnsyncedData();
+        } catch (error) {
+          console.log(
+            "Erreur lors de la récupération des données de MySQL :",
+            error
+          );
+          fetchSession();
+        }
+      } else {
+        fetchSession();
+      }
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.log(
+        "Erreur lors de la récupération de l'état du réseau :",
+        error
+      );
+      fetchSession();
     }
   };
 
@@ -194,23 +219,39 @@ const Ete_liste = () => {
     </View>
   );
 
-  const renderItem = ({ item }) => (
-    <Swipeable renderRightActions={() => renderRightActions(item)}>
-      <View
-        style={tw`bg-gray-300 p-4 shadow-md rounded-md mb-4 flex-row p-2 ml-4 mr-4`}
-      >
-        <MaterialCommunityIcons
-          name="face-man-profile"
-          size={24}
-          color="black"
-          style={tw`mr-2`}
-        />
-        <Text style={tw`text-lg text-gray-800 mr-2`}>{item.id}</Text>
-        <Text style={tw`text-lg text-gray-800 mr-8`}>{item.nom}</Text>
-      </View>
-    </Swipeable>
-  );
+  const renderItem = ({ item }) => {
+    const isSynced = item.synced === 1;
 
+    return (
+      <Swipeable renderRightActions={() => renderRightActions(item)}>
+        <View
+          style={tw`bg-gray-900 p-2 shadow-md rounded-md mb-3 ml-4 flex-row items-center`}
+        >
+          <View style={tw`flex-1 flex-row items-center`}>
+            <Text style={tw`text-lg text-white mr-4`}>{item.id}</Text>
+            <Text style={tw`text-lg text-white`}>{item.nom}</Text>
+          </View>
+          <View style={tw`flex-row items-center`}>
+            {!isSynced ? (
+              <MaterialIcons
+                name="sync"
+                size={24}
+                color="white"
+                style={tw`mr-2`}
+              />
+            ) : (
+              <AntDesign
+                name="checkcircleo"
+                size={24}
+                color="white"
+                style={tw`mr-2`}
+              />
+            )}
+          </View>
+        </View>
+      </Swipeable>
+    );
+  };
   const handleEdit = (item) => {
     setEditedItem(item);
     setNom(item.nom);
@@ -228,11 +269,65 @@ const Ete_liste = () => {
     setCarte_payement(item.carte_payement);
     setModalVisible(true);
   };
+  const [users, setUsers] = useState([]);
+  const [hasUnsyncedData, setHasUnsyncedData] = useState(false);
 
-  const filteredData = data.filter((item) =>
-    item.nom.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const dataToRender = (data.length > 0 ? data : users) || [];
+  const filteredData = () => {
+    dataToRender.filter((item) =>
+      item.nom.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  };
 
+  // const filteredData = () =>
+  //   data.filter((item) =>
+  //     item.nom.toLowerCase().includes(searchQuery.toLowerCase())
+  //   );
+
+  ///////////////////////////debut sqlite
+
+  const executeSqlAsync = (sqlStatement, params = []) => {
+    return new Promise((resolve, reject) => {
+      db.transaction((tx) => {
+        tx.executeSql(
+          sqlStatement,
+          params,
+          (_, results) => resolve(results),
+          (_, error) => reject(error)
+        );
+      });
+    });
+  };
+
+  const fetchSession = async () => {
+    try {
+      const results = await executeSqlAsync(
+        "SELECT * FROM session where session='Ete' ;"
+      );
+      let rows = results.rows._array;
+      console.log("Données récupérées de SQLite :", rows);
+      setUsers(rows);
+      setData([]);
+      checkUnsyncedData();
+    } catch (error) {
+      console.log("Erreur lors de la récupération des données :", error);
+    }
+  };
+  const checkUnsyncedData = async () => {
+    try {
+      const results = await executeSqlAsync(
+        "SELECT * FROM session WHERE synced = 0;"
+      );
+      const rows = results.rows._array;
+      setHasUnsyncedData(rows.length > 0);
+    } catch (error) {
+      console.log(
+        "Erreur lors de la vérification des données non synchronisées :",
+        error
+      );
+    }
+  };
+  ///////////////////////////fin sqlite
   return (
     <View>
       <View style={tw`bg-black p-2 flex-row items-center`}>
@@ -249,7 +344,7 @@ const Ete_liste = () => {
       </View>
       <FlatList
         style={tw`mt-1`}
-        data={filteredData}
+        data={filteredData()}
         renderItem={renderItem}
         keyExtractor={(item) => item.id.toString()}
       />

@@ -12,9 +12,14 @@ import { Picker } from "@react-native-picker/picker";
 import { Checkbox } from "./checkbox";
 import tw from "tailwind-react-native-classnames";
 import DateTimePicker from "@react-native-community/datetimepicker";
-
 import dayjs from "dayjs";
 import { url } from "../url";
+
+////////debut util sur synchronisation de donnees sqlite
+import * as SQLite from "expo-sqlite";
+const db = SQLite.openDatabase("Test.db");
+import NetInfo from "@react-native-community/netinfo";
+////////fin util sur synchronisation de donnees sqlite
 
 const Ete_Session = () => {
   const [session] = useState("Ete");
@@ -103,41 +108,257 @@ const Ete_Session = () => {
   };
   const ajoutEte = async () => {
     try {
-      const newPratiquants = await url.post("/pratiquants", {
+      const state = await NetInfo.fetch();
+      if (state.isConnected) {
+        try {
+          const newPratiquants = await url.post("/pratiquants", {
+            session,
+            nom,
+            sexe,
+            naissance: formatDate(date),
+            payement,
+            consigne,
+            carte_fede: carte_fede,
+            etiquete,
+            courriel,
+            adresse,
+            telephone,
+            tel_urgence: tel_urgence,
+            activite,
+            categorie,
+            evaluation,
+            mode_payement: mode_payement,
+            carte_payement: carte_payement,
+            groupe,
+          });
+          if (newPratiquants) {
+            setNom("");
+            setAdresse("");
+            setTel_urgence("");
+            setCarte_payement("");
+            setMode_payement("");
+            setTelephone("");
+            setCourriel("");
+            alert("Ajout avec succès");
+          }
+        } catch (error) {
+          console.log(
+            "Erreur lors de l'insertion des données dans MySQL :",
+            error
+          );
+          await insertLocalData(
+            session,
+            nom,
+            sexe,
+            formatDate(date),
+            payement,
+            consigne,
+            carte_fede,
+            etiquete,
+            courriel,
+            adresse,
+            telephone,
+            tel_urgence,
+            activite,
+            categorie,
+            evaluation,
+            mode_payement,
+            carte_payement,
+            groupe,
+            0
+          );
+        }
+      } else {
+        console.log(
+          "Pas de connexion Internet. Insertion des données localement."
+        );
+        await insertLocalData(
+          session,
+          nom,
+          sexe,
+          formatDate(date),
+          payement,
+          consigne,
+          carte_fede,
+          etiquete,
+          courriel,
+          adresse,
+          telephone,
+          tel_urgence,
+          activite,
+          categorie,
+          evaluation,
+          mode_payement,
+          carte_payement,
+          groupe,
+          0
+        );
+      }
+    } catch (error) {
+      console.log(
+        "Erreur lors de la récupération de l'état du réseau :",
+        error
+      );
+      await insertLocalData(
         session,
         nom,
         sexe,
-        naissance: formatDate(date),
+        formatDate(date),
         payement,
         consigne,
-        carte_fede: carte_fede,
+        carte_fede,
         etiquete,
         courriel,
         adresse,
         telephone,
-        tel_urgence: tel_urgence,
+        tel_urgence,
         activite,
         categorie,
         evaluation,
-        mode_payement: mode_payement,
-        carte_payement: carte_payement,
+        mode_payement,
+        carte_payement,
         groupe,
-      });
-      if (newPratiquants) {
-        setNom("");
-        setAdresse("");
-        setTel_urgence("");
-        setCarte_payement("");
-        setMode_payement("");
-        setTelephone("");
-        setCourriel("");
-        alert("Ajout avec succès");
+        0
+      );
+    }
+  };
+  ///////////////////////////////////////////////////Debut sqlite
+  const [hasUnsyncedData, setHasUnsyncedData] = useState(false);
+  useEffect(() => {
+    initializeDatabase();
+    const intervalId = setInterval(() => {
+      if (hasUnsyncedData) {
+        // syncData();
       }
+    }, 100000);
+
+    return () => clearInterval(intervalId);
+  }, [hasUnsyncedData]);
+
+  const executeSqlAsync = (sqlStatement, params = []) => {
+    return new Promise((resolve, reject) => {
+      db.transaction((tx) => {
+        tx.executeSql(
+          sqlStatement,
+          params,
+          (_, results) => resolve(results),
+          (_, error) => reject(error)
+        );
+      });
+    });
+  };
+  const initializeDatabase = async () => {
+    try {
+      await executeSqlAsync(
+        `CREATE TABLE IF NOT EXISTS session (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          session TEXT,
+          nom TEXT,
+          sexe TEXT,
+          naissance TEXT,
+          payement TEXT,
+          consigne TEXT,
+          carte_fede TEXT,
+          etiquete TEXT,
+          courriel TEXT,
+          adresse TEXT,
+          telephone TEXT,
+          tel_urgence TEXT,
+          activite TEXT,
+          categorie TEXT,
+          evaluation TEXT,
+          mode_payement TEXT,
+          groupe TEXT,
+          synced INTEGER
+        );`
+      );
+
+      console.log("Table créée avec succès");
+      fetchAllData();
     } catch (error) {
-      console.error("Error fetching data:", error);
+      if (!error.message.includes("duplicate column name: synced")) {
+        console.log(
+          "Erreur lors de la création de la table ou ajout de colonne :",
+          error
+        );
+      } else {
+        console.log("La colonne 'synced' existe déjà.");
+      }
     }
   };
 
+  const insertLocalData = async (
+    session,
+    nom,
+    sexe,
+    naissance,
+    payement,
+    consigne,
+    carte_fede,
+    etiquete,
+    courriel,
+    adresse,
+    telephone,
+    tel_urgence,
+    activite,
+    categorie,
+    evaluation,
+    mode_payement,
+    groupe,
+    synced
+  ) => {
+    try {
+      await executeSqlAsync(
+        "INSERT INTO session (session,nom,sexe,naissance,payement,consigne,carte_fede,etiquete,courriel,adresse,telephone,tel_urgence,activite,categorie,evaluation,mode_payement,groupe,synced) VALUES (?, ?,?, ?,?, ?,?, ?,?, ?,?, ?,?, ?,?, ?,?, ?);",
+        [
+          session,
+          nom,
+          sexe,
+          naissance,
+          payement,
+          consigne,
+          carte_fede,
+          etiquete,
+          courriel,
+          adresse,
+          telephone,
+          tel_urgence,
+          activite,
+          categorie,
+          evaluation,
+          mode_payement,
+          groupe,
+          synced,
+        ]
+      );
+      fetchAllData();
+      setNom("");
+      setSexe("");
+      setPayement("");
+      setConsigne("");
+      setCarte_fede("");
+      setEtiquete("");
+      setCourriel("");
+      setAdresse("");
+      setTelephone("");
+      setTel_urgence("");
+      setActivite("");
+      setCategorie("");
+      setEvaluation("");
+      setMode_payement("");
+      setCarte_payement("");
+      setGroupe("");
+      setHasUnsyncedData(true);
+      alert("Données insérées avec succès");
+    } catch (error) {
+      console.log(
+        "Erreur lors de l'insertion ou de la vérification des données :",
+        error
+      );
+    }
+  };
+
+  ///////////////////////////////////////////////////Fin sqlite
   return (
     <SafeAreaView style={tw`bg-black flex-1  p-4`}>
       <ScrollView style={tw`mb-2`}>
