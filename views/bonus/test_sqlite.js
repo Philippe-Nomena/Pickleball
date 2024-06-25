@@ -13,6 +13,7 @@ import tw from "tailwind-react-native-classnames";
 import { url } from "../url";
 import { Swipeable } from "react-native-gesture-handler";
 import { AntDesign, Entypo, MaterialIcons } from "@expo/vector-icons";
+// import Barcode from "react-native-barcode-builder";
 
 const db = SQLite.openDatabase("Test.db");
 
@@ -26,6 +27,7 @@ const TestSqlite = () => {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
   const [editedItem, setEditedItem] = useState(null);
+  // const [itemToDisplayBarcodeId, setItemToDisplayBarcodeId] = useState(null);
 
   useEffect(() => {
     initializeDatabase();
@@ -76,6 +78,7 @@ const TestSqlite = () => {
           await url.post(`/sqlite_test`, { name: nom });
           console.log("Données insérées avec succès dans MySQL");
           setNom("");
+
           fetchAllData();
         } catch (error) {
           console.log(
@@ -338,7 +341,6 @@ const TestSqlite = () => {
 
   const renderItem = ({ item }) => {
     const isSynced = item.synced === 1;
-
     return (
       <Swipeable renderRightActions={() => renderRightActions(item)}>
         <View
@@ -366,6 +368,16 @@ const TestSqlite = () => {
             )}
           </View>
         </View>
+        {/* <View
+              style={tw`flex-1 justify-center items-center h-20 w-24 bg-white`}
+            >
+              {itemToDisplayBarcodeId === item.id && (
+                <>
+                  <Text style={tw`text-lg`}>{item.name}</Text>
+                  <Barcode value={item.name || "default"} format="CODE128" />
+                </>
+              )}
+            </View> */}
       </Swipeable>
     );
   };
@@ -396,6 +408,7 @@ const TestSqlite = () => {
                 placeholder="Nom"
                 placeholderTextColor="white"
               />
+
               <View style={tw`flex-row justify-center`}>
                 <TouchableOpacity
                   onPress={addTest}
