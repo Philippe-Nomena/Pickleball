@@ -42,6 +42,7 @@ exports.createPresence = async (req, res, next) => {
       jour: jour,
       id_pratiquant: id_pratiquant,
       present: true,
+      absent: false,
     });
 
     if (newPresence) {

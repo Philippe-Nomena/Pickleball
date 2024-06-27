@@ -19,7 +19,8 @@ import * as ImagePicker from "expo-image-picker";
 
 const Activity = () => {
   const [data, setData] = useState([]);
-
+  const [liste_categorie, setListe_categorie] = useState([]);
+  const [modalListe_categorie, setModalListe_categorie] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [ajoutModal, setAjoutModal] = useState(false);
   const [editedItem, setEditedItem] = useState(null);
@@ -63,7 +64,15 @@ const Activity = () => {
     setDeleteModalVisible(true);
     setImage(imageUrl);
   };
-
+  const handleListeCategorie = async (item) => {
+    try {
+      const response = await url.get(`/categorie/byactivite/${item.id}`);
+      setListe_categorie(response.data);
+      setModalListe_categorie(true);
+    } catch (error) {
+      console.error("Erreur lors de la récupération des catégories :", error);
+    }
+  };
   const confirmDeleteItem = async () => {
     try {
       await url.delete(`/activite/${itemToDelete.id}`);
@@ -231,14 +240,35 @@ const Activity = () => {
         <AntDesign name="edit" size={24} color="white" />
       </TouchableOpacity>
       <TouchableOpacity
-        style={tw`bg-red-500 p-2 h-10 rounded-md`}
+        style={tw`bg-red-500 p-2 h-10 mr-1 rounded-md`}
+        onPress={() => handleDelete(item)}
+      >
+        <Entypo name="trash" size={24} color="white" />
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={tw`bg-gray-500 p-2 h-10 rounded-md`}
+        onPress={() => handleListeCategorie(item)}
+      >
+        <Entypo name="list" size={24} color="white" />
+      </TouchableOpacity>
+    </View>
+  );
+  const renderRightActions1 = (item) => (
+    <View style={tw`flex-row mr-5`}>
+      <TouchableOpacity
+        style={tw`bg-blue-500 p-2 h-10 mr-1 rounded-md`}
+        onPress={() => handleEdit(item)}
+      >
+        <AntDesign name="edit" size={24} color="white" />
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={tw`bg-red-500 p-2 h-10 mr-1 rounded-md`}
         onPress={() => handleDelete(item)}
       >
         <Entypo name="trash" size={24} color="white" />
       </TouchableOpacity>
     </View>
   );
-
   const renderItem = ({ item }) => {
     const imageUrl = `${stateUrl}/uploads/${item.imagePath}`;
 
@@ -256,7 +286,19 @@ const Activity = () => {
       </Swipeable>
     );
   };
-
+  const renderItem1 = ({ item }) => {
+    return (
+      <Swipeable renderRightActions={() => renderRightActions1(item)}>
+        <View
+          style={tw`bg-gray-900 p-2 shadow-md rounded-md mb-3 ml-4 mr-4 flex-col`}
+        >
+          <Text style={tw`text-lg text-white text-center`}>
+            {item.categorie}
+          </Text>
+        </View>
+      </Swipeable>
+    );
+  };
   return (
     <View style={tw`flex-1 bg-black`}>
       <View>
@@ -441,6 +483,35 @@ const Activity = () => {
                 <Text style={tw`text-white text-center ml-2`}>Annuler</Text>
               </TouchableOpacity>
             </View>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalListe_categorie}
+        onRequestClose={() => setModalListe_categorie(false)}
+      >
+        <View
+          style={tw`flex-1 justify-center items-center bg-gray-800 bg-opacity-50`}
+        >
+          <View style={[tw`bg-gray-700 w-64 p-2 rounded-md`]}>
+            <Text style={tw`text-lg text-white text-center`}>
+              Liste de categorie
+            </Text>
+
+            <FlatList
+              data={liste_categorie}
+              renderItem={renderItem1}
+              keyExtractor={(item) => item.id.toString()}
+            />
+            <TouchableOpacity
+              style={tw`bg-red-500 p-1 w-24 items-center rounded-md ml-16`}
+              onPress={() => setModalListe_categorie(false)}
+            >
+              <Text style={tw`text-white text-lg`}>Fermer</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>

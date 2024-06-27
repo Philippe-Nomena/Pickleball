@@ -28,6 +28,10 @@ const Presence = database.define("presence", {
     type: Sequelize.BOOLEAN,
     default: false,
   },
+  absence: {
+    type: Sequelize.BOOLEAN,
+    default: true,
+  },
 });
 Presence.belongsTo(Pratiquants, {
   foreignKey: "id_pratiquant",

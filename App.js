@@ -18,6 +18,7 @@ import {
 import Forget_pass from "./views/connexion/forget_pass";
 import Activity from "./views/activity/activity";
 import Test_sqlite from "./views/bonus/test_sqlite";
+import Scheduler from "./views/scheduler/scheduler";
 
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
@@ -130,6 +131,13 @@ export default function App() {
         <Drawer.Screen
           name="Sqlite_test"
           component={Test_sqlite}
+          options={{
+            drawerIcon: () => <AntDesign name="gift" size={24} color="white" />,
+          }}
+        />
+        <Drawer.Screen
+          name="Scheduler"
+          component={Scheduler}
           options={{
             drawerIcon: () => <AntDesign name="gift" size={24} color="white" />,
           }}

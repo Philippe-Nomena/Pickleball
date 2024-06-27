@@ -15,6 +15,7 @@ import BarcodeScannerScreen from "./qrcode";
 import { url } from "../url";
 import NetInfo from "@react-native-community/netinfo";
 import * as SQLite from "expo-sqlite";
+
 const Ete_Presence = () => {
   const [data, setData] = useState([]);
   const [nom, setNom] = useState("jean");
@@ -25,6 +26,7 @@ const Ete_Presence = () => {
   const [id_pratiquant, setId_pratiquant] = useState("");
   const [barcodeData, setBarcodeData] = useState(null);
   const [eteVisible] = useState(false);
+  const [present, setPresent] = useState(true);
 
   const updateGroupe = (itemValue) => {
     let updatedGroupe = [...groupe];
@@ -66,32 +68,57 @@ const Ete_Presence = () => {
             activite,
             jour: groupe,
             id_pratiquant,
+            present,
           });
           console.log("Données insérées avec succès dans MySQL");
           setNom("");
-
           fetchAllData();
         } catch (error) {
           console.log(
             "Erreur lors de l'insertion des données dans MySQL :",
             error
           );
-          await insertLocalData(nom, session, activite, groupe, 0, 4, 0);
+          await insertLocalData(
+            nom,
+            session,
+            activite,
+            groupe,
+            present,
+            id_pratiquant,
+            0
+          );
         }
       } else {
         console.log(
           "Pas de connexion Internet. Insertion des données localement."
         );
-        await insertLocalData(nom, session, activite, groupe, 0, 4, 0);
+        await insertLocalData(
+          nom,
+          session,
+          activite,
+          groupe,
+          present,
+          id_pratiquant,
+          0
+        );
       }
     } catch (error) {
       console.log(
         "Erreur lors de la récupération de l'état du réseau :",
         error
       );
-      await insertLocalData(nom, session, activite, groupe, 0, 4, 0);
+      await insertLocalData(
+        nom,
+        session,
+        activite,
+        groupe,
+        present,
+        id_pratiquant,
+        0
+      );
     }
   };
+
   const handleScan = async (data) => {
     console.log("Données scannées :", data);
     setBarcodeData(data);
@@ -109,6 +136,7 @@ const Ete_Presence = () => {
       console.error("Erreur lors de la récupération des données :", error);
     }
   };
+
   ////////////////////////////debut sqlite
   const db = SQLite.openDatabase("Test.db");
   const [hasUnsyncedData, setHasUnsyncedData] = useState(false);
@@ -148,6 +176,7 @@ const Ete_Presence = () => {
       console.log("Erreur lors de la création de la table :", error);
     }
   };
+
   const insertLocalData = async (
     nom,
     session,
@@ -176,6 +205,7 @@ const Ete_Presence = () => {
     }
   };
   ///////////////////////////fin sqlite
+
   return (
     <SafeAreaView style={tw`bg-black flex-1  p-4`}>
       <ScrollView style={tw`mb-2`}>
@@ -299,7 +329,17 @@ const Ete_Presence = () => {
             </View>
           </View>
         </View>
-
+        <Text style={tw`text-white text-lg font-bold mb-2`}>Statut</Text>
+        <View style={tw`flex-row items-center mb-4`}>
+          <Checkbox
+            name="present"
+            checked={present}
+            onChange={() => setPresent(!present)}
+          />
+          <Text style={tw`text-white text-lg ml-2`}>
+            {present ? "Présent" : "Absent"}
+          </Text>
+        </View>
         <View style={tw`flex-row justify-center`}>
           <TouchableOpacity
             style={tw`bg-blue-500 py-2 px-4 rounded-md flex-row items-center justify-center mr-4`}
