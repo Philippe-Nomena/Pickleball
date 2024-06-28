@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   SafeAreaView,
   ScrollView,
@@ -11,7 +11,7 @@ import { Calendar } from "react-native-calendars";
 
 import { Checkbox } from "../presence/checkbox";
 import tw from "tailwind-react-native-classnames";
-
+import { url } from "../url";
 const Scheduler = () => {
   const [selectedDate, setSelectedDate] = useState("");
   const [events, setEvents] = useState({});
@@ -19,6 +19,36 @@ const Scheduler = () => {
   const [eventTime, setEventTime] = useState("10:00");
   const [isRecurring, setIsRecurring] = useState(false);
   const [recurrenceDays, setRecurrenceDays] = useState([]);
+  const [perDate, setPerDate] = useState([]);
+  const [pratiquant, setPratiquant] = useState([]);
+  const [perPratiquant, setPerPratiquant] = useState([]);
+
+  useEffect(() => {
+    fetchAllPratiquant();
+  }, []);
+  useEffect(
+    (selectedDate) => {
+      fetchPerDate(selectedDate);
+    },
+    [selectedDate]
+  );
+  const fetchAllPratiquant = async () => {
+    try {
+      const response = await url.get(`/presence`);
+      setPratiquant(response.data);
+    } catch (error) {
+      console.error("Error fetching All pratiquant data:", error);
+    }
+  };
+
+  const fetchPerDate = async (date) => {
+    try {
+      const response = await url.get(`/presence/bydate?createdAt=${date}`);
+      setPerDate(response.data);
+    } catch (error) {
+      console.error("Error fetching per pratiquant data:", error);
+    }
+  };
 
   const handleAddEvent = () => {
     if (!eventName || !selectedDate) {
@@ -139,10 +169,19 @@ const Scheduler = () => {
         </View>
         <View style={tw`mt-4`}>
           <Text style={tw`text-lg text-white font-bold`}>
-            Events on {selectedDate}
+            Pratiquants qui était présent le {selectedDate}
           </Text>
-          {renderEvents(selectedDate)}
+          {/* {renderEvents(selectedDate)} */}
         </View>
+        <FlatList
+          data={perDate}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={({ item }) => (
+            <View>
+              <Text>{item.nom}</Text>
+            </View>
+          )}
+        />
       </ScrollView>
     </SafeAreaView>
   );

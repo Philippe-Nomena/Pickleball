@@ -1,6 +1,6 @@
 const Sequelize = require("sequelize");
 const database = require("../utils/database");
-const Activite = require("../models/Activite")
+const Activite = require("../models/Activite");
 
 const Categorie = database.define("categorie", {
   id: {
@@ -25,14 +25,18 @@ const Categorie = database.define("categorie", {
     type: Sequelize.JSON,
     allowNull: false,
   },
+  nbjour: {
+    type: Sequelize.INTEGER,
+    allowNull: true,
+  },
 });
 
-Categorie.belongsTo(Activite,{
-  foreignKey:"id_activite",
-  as:"activite",
-  onDelete:"CASCADE",
-  onUpdate:"CASCADE"
-})
+Categorie.belongsTo(Activite, {
+  foreignKey: "id_activite",
+  as: "activite",
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
+});
 
 database
   .sync()

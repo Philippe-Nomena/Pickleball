@@ -44,11 +44,14 @@ const Ete_Presence = () => {
   }, []);
 
   const fetchAllData = async () => {
-    try {
-      const res = await url.get("/activite");
-      setData(res.data);
-    } catch (error) {
-      console.error("Error fetching data:", error);
+    const state = await NetInfo.fetch();
+    if (state.isConnected) {
+      try {
+        const res = await url.get("/activite");
+        setData(res.data);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
     }
   };
 

@@ -77,7 +77,7 @@ export default function BarcodeScannerScreen({ onScan }) {
               style={styles.button}
               onPress={() => setScanned(false)}
             >
-              <Text style={styles.text}>Tap to Scan Again</Text>
+              <Text style={styles.text}>Cliquer pour scanner un nouveau</Text>
             </TouchableOpacity>
           )}
         </View>

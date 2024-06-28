@@ -22,7 +22,7 @@ const Presence = database.define("presence", {
   },
   jour: {
     type: Sequelize.JSON,
-    allowNull: false,
+    allowNull: true,
   },
   present: {
     type: Sequelize.BOOLEAN,

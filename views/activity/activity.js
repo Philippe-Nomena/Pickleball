@@ -505,6 +505,8 @@ const Activity = () => {
               data={liste_categorie}
               renderItem={renderItem1}
               keyExtractor={(item) => item.id.toString()}
+              vertical={true}
+              showsVerticalScrollIndicator={false}
             />
             <TouchableOpacity
               style={tw`bg-red-500 p-1 w-24 items-center rounded-md ml-16`}

@@ -11,8 +11,36 @@ exports.getPresencebyPratiquant = async (req, res, next) => {
 };
 // Get all presence
 exports.getAllPresence = async (req, res, next) => {
-  const presence = await Presence.findAll();
+  const presence = await Presence.findAll({});
   res.json(presence);
+};
+exports.getAllPresenceDate = async (req, res, next) => {
+  try {
+    if (!req.body.date) {
+      return res.status(400).json({ error: "La date est requise" });
+    }
+    const date = req.body.date;
+    const isValidDate = (date) => {
+      return /\d{4}-\d{2}-\d{2}/.test(date);
+    };
+
+    if (!isValidDate(date)) {
+      return res.status(400).json({ error: "Format de date invalide" });
+    }
+
+    const presence = await Presence.findAll({
+      where: {
+        createdAt: {
+          [Op.eq]: date,
+        },
+      },
+    });
+
+    res.json(presence);
+  } catch (error) {
+    console.error("Erreur lors de la récupération des présences : ", error);
+    next(error);
+  }
 };
 // Delete an activity by ID
 exports.deletePresence = async (req, res, next) => {
@@ -42,7 +70,7 @@ exports.createPresence = async (req, res, next) => {
       jour: jour,
       id_pratiquant: id_pratiquant,
       present: true,
-      absent: false,
+      absence: false,
     });
 
     if (newPresence) {

@@ -30,7 +30,6 @@ const Ete_Session = () => {
   const [adresse, setAdresse] = useState("");
   const [tel_urgence, setTel_urgence] = useState("");
   const [evaluation, setEvaluation] = useState("NON");
-
   const [payement, setPayement] = useState([]);
   const [carte_payement, setCarte_payement] = useState("");
   const [mode_payement, setMode_payement] = useState("");
@@ -140,6 +139,32 @@ const Ete_Session = () => {
             setTelephone("");
             setCourriel("");
             alert("Ajout avec succès");
+            for (let i = 0; i < data1.length; i++) {
+              const categorie = data1[i];
+              const numberOfDays = categorie.nbjour;
+              for (let j = 0; j < numberOfDays; j++) {
+                // const currentDate = new Date();
+                // currentDate.setDate(currentDate.getDate() + j);
+                // const formattedDate = currentDate.toISOString().split("T")[0];
+                try {
+                  await url.post("/presence", {
+                    nom: nom,
+                    session: session,
+                    activite: activite,
+                    jour,
+                    id_pratiquant: newPratiquants.data.id,
+                    present: false,
+                    absence: true,
+                  });
+                  // console.log(`Présence créée pour ${formattedDate}`);
+                } catch (error) {
+                  console.error(
+                    "Erreur lors de l'insertion des données de présence :",
+                    error
+                  );
+                }
+              }
+            }
           }
         } catch (error) {
           console.log(
