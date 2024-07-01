@@ -272,17 +272,17 @@ const Ete_liste = () => {
   const [users, setUsers] = useState([]);
   const [hasUnsyncedData, setHasUnsyncedData] = useState(false);
 
-  const dataToRender = (data.length > 0 ? data : users) || [];
-  const filteredData = () => {
-    dataToRender.filter((item) =>
-      item.nom.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  };
-
-  // const filteredData = () =>
-  //   data.filter((item) =>
+  // const dataToRender = (data.length > 0 ? data : users) || [];
+  // const filteredData = () => {
+  //   dataToRender.filter((item) =>
   //     item.nom.toLowerCase().includes(searchQuery.toLowerCase())
   //   );
+  // };
+
+  const filteredData = () =>
+    data.filter((item) =>
+      item.nom.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
   ///////////////////////////debut sqlite
 

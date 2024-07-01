@@ -35,7 +35,8 @@ const Activity = () => {
   const [groupe, setGroupe] = useState([]);
   const [horaire, SetHoraire] = useState("");
   const [prix, setPrix] = useState("");
-  const [imageName, setImageName] = useState("");
+  const [nbjour, setNbjour] = useState("");
+  // const [imageName, setImageName] = useState("");
   useEffect(() => {
     fetchAllData();
   }, []);
@@ -133,12 +134,14 @@ const Activity = () => {
         horaire,
         prix,
         categorie,
+        nbjour,
         jour: groupe,
       });
       setCategorieModalVisible(false);
       fetchAllData();
       SetHoraire("");
       setPrix("");
+      setNbjour("");
       setCategorie("");
       setGroupe([]);
 
@@ -166,11 +169,13 @@ const Activity = () => {
     });
 
     if (!result.cancelled && result.assets.length > 0) {
-      setImage(result.assets[0]);
-      setImageName(result.assets[0].uri.split("/").pop());
+      // setImage(result.assets[0]);
+      setImage(result.assets[0].uri.split("/").pop());
+
+      // setImageName(result.assets[0].uri.split("/").pop());
       if (!result.cancelled && result.assets.length > 0) {
-        setImage(result.assets[0]);
-        setImageName(result.assets[0].uri.split("/").pop());
+        setImage(result.assets[0].uri.split("/").pop());
+        // setImageName(result.assets[0].uri.split("/").pop());
       }
     }
   };
@@ -565,6 +570,17 @@ const Activity = () => {
                 value={prix}
                 onChangeText={setPrix}
                 name="prix"
+              />
+            </View>
+
+            <View>
+              <Text style={tw`text-white `}>Nombre de jour:</Text>
+              <TextInput
+                style={tw`bg-gray-200 border border-gray-600 rounded-md p-2 mb-2 text-center`}
+                placeholder="nbjour"
+                value={nbjour}
+                onChangeText={setNbjour}
+                name="nbjour"
               />
             </View>
             <View>

@@ -12,6 +12,7 @@ import { Calendar } from "react-native-calendars";
 import { Checkbox } from "../presence/checkbox";
 import tw from "tailwind-react-native-classnames";
 import { url } from "../url";
+import { FlatList } from "react-native";
 const Scheduler = () => {
   const [selectedDate, setSelectedDate] = useState("");
   const [events, setEvents] = useState({});
