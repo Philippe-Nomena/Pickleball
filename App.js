@@ -128,15 +128,15 @@ export default function App() {
             ),
           }}
         />
-        <Drawer.Screen
+        {/* <Drawer.Screen
           name="Sqlite_test"
           component={Test_sqlite}
           options={{
             drawerIcon: () => <AntDesign name="gift" size={24} color="white" />,
           }}
-        />
+        /> */}
         <Drawer.Screen
-          name="Scheduler"
+          name="Liste de presence"
           component={Scheduler}
           options={{
             drawerIcon: () => <AntDesign name="gift" size={24} color="white" />,

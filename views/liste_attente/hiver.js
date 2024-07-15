@@ -103,10 +103,10 @@ const Hiver_liste = () => {
   };
 
   const handleToggleCheckbox = (state, setState, value) => {
-    if (state.includes(value)) {
-      setState(state.filter((item) => item !== value));
+    if (state === value) {
+      setState("");
     } else {
-      setState([...state, value]);
+      setState(value);
     }
   };
   const handleDateChange = (event, selectedDate) => {

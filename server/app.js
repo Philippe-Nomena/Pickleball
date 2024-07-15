@@ -34,7 +34,7 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-
+app.use("/barcodes", express.static(path.join(__dirname, "barcodes")));
 // Routes
 app.use("/pratiquants", PratiquantsRoute);
 app.use("/utilisateur", UtilisateurRoute);

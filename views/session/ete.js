@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   SafeAreaView,
   ScrollView,
@@ -9,39 +9,45 @@ import {
 } from "react-native";
 import { FontAwesome5, MaterialIcons } from "@expo/vector-icons";
 import { Picker } from "@react-native-picker/picker";
-import { Checkbox } from "./checkbox";
 import tw from "tailwind-react-native-classnames";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import dayjs from "dayjs";
 import { url } from "../url";
 
-////////debut util sur synchronisation de donnees sqlite
 import * as SQLite from "expo-sqlite";
-const db = SQLite.openDatabase("Test.db");
 import NetInfo from "@react-native-community/netinfo";
+import { Checkbox } from "./checkbox";
+
+////////debut util sur synchronisation de donnees sqlite
+
+const db = SQLite.openDatabase("Test.db");
+
 ////////fin util sur synchronisation de donnees sqlite
 
 const Ete_Session = () => {
   const [session] = useState("Ete");
   const [nom, setNom] = useState("");
   const [categorie, setCategorie] = useState("");
+  const [selectedCategorie, setSelectedCategorie] = useState(null);
+
   const [activite, setActivite] = useState("");
   const [sexe, setSexe] = useState("F");
   const [adresse, setAdresse] = useState("");
   const [tel_urgence, setTel_urgence] = useState("");
   const [evaluation, setEvaluation] = useState("NON");
-  const [payement, setPayement] = useState([]);
+  const [payement, setPayement] = useState("");
   const [carte_payement, setCarte_payement] = useState("");
   const [mode_payement, setMode_payement] = useState("");
   const [telephone, setTelephone] = useState("");
   const [courriel, setCourriel] = useState("");
-  const [carte_fede, setCarte_fede] = useState([]);
-  const [consigne, setConsigne] = useState([]);
-  const [etiquete, setEtiquete] = useState([]);
+  const [carte_fede, setCarte_fede] = useState("");
+  const [consigne, setConsigne] = useState("");
+  const [etiquete, setEtiquete] = useState("");
   const [data, setData] = useState([]);
   const [data1, setData1] = useState([]);
   const [actId, setActId] = useState(null);
-  const [eteVisible, setEteVisible] = useState(false);
+
+  const [eteVisible] = useState(false);
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
 
@@ -83,6 +89,13 @@ const Ete_Session = () => {
       console.error("Error fetching data:", error);
     }
   };
+  const handleToggleCheckbox = (state, setState, value) => {
+    if (state === value) {
+      setState("");
+    } else {
+      setState(value);
+    }
+  };
   const handleDateChange = (event, selectedDate) => {
     if (selectedDate) {
       setDate(selectedDate);
@@ -94,7 +107,7 @@ const Ete_Session = () => {
   };
 
   const formatDate = (date) => {
-    return dayjs(date).format("DD-MM-YYYY");
+    return dayjs(date).format("YYYY-MM-DD");
   };
   const annulEte = async () => {
     setNom("");
@@ -105,77 +118,86 @@ const Ete_Session = () => {
     setTelephone("");
     setCourriel("");
   };
+  const handlePresenceInsertion = async (IdPratiquant) => {
+    try {
+      if (selectedCategorie) {
+        const datedebut = selectedCategorie.datedebut;
+        const datefin = selectedCategorie.datefin;
+
+        const startDate = dayjs(datedebut);
+        const endDate = dayjs(datefin);
+
+        for (
+          let date = startDate;
+          date.isBefore(endDate) || date.isSame(endDate);
+          date = date.add(1, "day")
+        ) {
+          try {
+            const presencePayload = {
+              nom,
+              session,
+              activite,
+              categorie,
+              jour: date.format("YYYY-MM-DD"),
+              id_pratiquant: IdPratiquant,
+            };
+
+            console.log("Presence payload being sent:", presencePayload);
+
+            await url.post("/presence", presencePayload);
+          } catch (error) {
+            console.error(
+              "Erreur lors de l'insertion des données de présence :",
+              error.response ? error.response.data : error
+            );
+          }
+        }
+      } else {
+        console.error(
+          "Aucune catégorie sélectionnée pour insérer les données de présence"
+        );
+      }
+    } catch (error) {
+      console.error(
+        "Erreur générale lors de l'insertion des présences :",
+        error
+      );
+    }
+  };
+
+  const insertLocalPractitioner = async () => {
+    await insertLocalData(
+      session,
+      nom,
+      sexe,
+      formatDate(date),
+      payement,
+      consigne,
+      carte_fede,
+      etiquete,
+      courriel,
+      adresse,
+      telephone,
+      tel_urgence,
+      activite,
+      categorie,
+      evaluation,
+      mode_payement,
+      carte_payement,
+      groupe,
+      0
+    );
+  };
   const ajoutEte = async () => {
     try {
       const state = await NetInfo.fetch();
       if (state.isConnected) {
         try {
-          const newPratiquants = await url.post("/pratiquants", {
+          const response = await url.post("/pratiquants", {
             session,
             nom,
             sexe,
             naissance: formatDate(date),
-            payement,
-            consigne,
-            carte_fede: carte_fede,
-            etiquete,
-            courriel,
-            adresse,
-            telephone,
-            tel_urgence: tel_urgence,
-            activite,
-            categorie,
-            evaluation,
-            mode_payement: mode_payement,
-            carte_payement: carte_payement,
-            groupe,
-          });
-          if (newPratiquants) {
-            setNom("");
-            setAdresse("");
-            setTel_urgence("");
-            setCarte_payement("");
-            setMode_payement("");
-            setTelephone("");
-            setCourriel("");
-            alert("Ajout avec succès");
-            for (let i = 0; i < data1.length; i++) {
-              const categorie = data1[i];
-              const numberOfDays = categorie.nbjour;
-              for (let j = 0; j < numberOfDays; j++) {
-                // const currentDate = new Date();
-                // currentDate.setDate(currentDate.getDate() + j);
-                // const formattedDate = currentDate.toISOString().split("T")[0];
-                try {
-                  await url.post("/presence", {
-                    nom: nom,
-                    session: session,
-                    activite: activite,
-                    jour,
-                    id_pratiquant: newPratiquants.data.id,
-                    present: false,
-                    absence: true,
-                  });
-                  // console.log(`Présence créée pour ${formattedDate}`);
-                } catch (error) {
-                  console.error(
-                    "Erreur lors de l'insertion des données de présence :",
-                    error
-                  );
-                }
-              }
-            }
-          }
-        } catch (error) {
-          console.log(
-            "Erreur lors de l'insertion des données dans MySQL :",
-            error
-          );
-          await insertLocalData(
-            session,
-            nom,
-            sexe,
-            formatDate(date),
             payement,
             consigne,
             carte_fede,
@@ -190,63 +212,62 @@ const Ete_Session = () => {
             mode_payement,
             carte_payement,
             groupe,
-            0
+          });
+
+          const newPratiquants = response.data;
+          console.log("Réponse de l'API :", newPratiquants);
+
+          if (
+            newPratiquants &&
+            newPratiquants.message &&
+            newPratiquants.pratiquant &&
+            newPratiquants.pratiquant.id
+          ) {
+            console.log("Message de l'API :", newPratiquants.message);
+            console.log(
+              "ID du nouveau pratiquant :",
+              newPratiquants.pratiquant.id
+            );
+
+            setNom("");
+            setAdresse("");
+            setTel_urgence("");
+            setCarte_payement("");
+            setMode_payement("");
+            setTelephone("");
+            setCourriel("");
+
+            alert(newPratiquants.message);
+
+            await handlePresenceInsertion(newPratiquants.pratiquant.id);
+          } else {
+            console.error("Réponse de l'API invalide :", newPratiquants);
+          }
+        } catch (error) {
+          console.error(
+            "Erreur lors de l'insertion des données dans MySQL :",
+            error
           );
+
+          await insertLocalPractitioner();
         }
       } else {
         console.log(
           "Pas de connexion Internet. Insertion des données localement."
         );
-        await insertLocalData(
-          session,
-          nom,
-          sexe,
-          formatDate(date),
-          payement,
-          consigne,
-          carte_fede,
-          etiquete,
-          courriel,
-          adresse,
-          telephone,
-          tel_urgence,
-          activite,
-          categorie,
-          evaluation,
-          mode_payement,
-          carte_payement,
-          groupe,
-          0
-        );
+
+        await insertLocalPractitioner();
       }
     } catch (error) {
-      console.log(
+      console.error(
         "Erreur lors de la récupération de l'état du réseau :",
         error
       );
-      await insertLocalData(
-        session,
-        nom,
-        sexe,
-        formatDate(date),
-        payement,
-        consigne,
-        carte_fede,
-        etiquete,
-        courriel,
-        adresse,
-        telephone,
-        tel_urgence,
-        activite,
-        categorie,
-        evaluation,
-        mode_payement,
-        carte_payement,
-        groupe,
-        0
-      );
+
+      await insertLocalPractitioner();
     }
   };
+
   ///////////////////////////////////////////////////Debut sqlite
   const [hasUnsyncedData, setHasUnsyncedData] = useState(false);
   useEffect(() => {
@@ -449,7 +470,9 @@ const Ete_Session = () => {
               <Checkbox
                 name="payement"
                 checked={payement.includes("Payement")}
-                onChange={() => setPayement("Payement")}
+                onChange={() =>
+                  handleToggleCheckbox(payement, setPayement, "Payement")
+                }
               />
               <Text style={tw`text-white text-lg font-bold mb-2`}>
                 Payement
@@ -460,7 +483,9 @@ const Ete_Session = () => {
               <Checkbox
                 name="carte_fede"
                 checked={carte_fede.includes("Carte Fédé")}
-                onChange={() => setCarte_fede("Carte Fédé")}
+                onChange={() =>
+                  handleToggleCheckbox(carte_fede, setCarte_fede, "Carte Fédé")
+                }
               />
               <Text style={tw`text-white text-lg font-bold mb-2`}>
                 Carte Fédé
@@ -472,7 +497,9 @@ const Ete_Session = () => {
               <Checkbox
                 name="consigne"
                 checked={consigne.includes("Consigne")}
-                onChange={() => setConsigne("Consigne")}
+                onChange={() =>
+                  handleToggleCheckbox(consigne, setConsigne, "Consigne")
+                }
               />
               <Text style={tw`text-white text-lg font-bold mb-2`}>
                 Consigne
@@ -482,7 +509,9 @@ const Ete_Session = () => {
               <Checkbox
                 name="etiquete"
                 checked={etiquete.includes("Etiquete")}
-                onChange={() => setEtiquete("Etiquete")}
+                onChange={() =>
+                  handleToggleCheckbox(etiquete, setEtiquete, "Etiquete")
+                }
               />
               <Text style={tw`text-white text-lg font-bold mb-2`}>
                 Etiquete
@@ -562,7 +591,13 @@ const Ete_Session = () => {
         >
           <Picker
             selectedValue={categorie}
-            onValueChange={(itemValue, itemIndex) => setCategorie(itemValue)}
+            onValueChange={(itemValue, itemIndex) => {
+              setCategorie(itemValue);
+              const selectedCat = data1.find(
+                (item) => item.categorie === itemValue
+              );
+              setSelectedCategorie(selectedCat);
+            }}
             style={{ color: "gray" }}
             name="categorie"
           >
@@ -646,6 +681,7 @@ const Ete_Session = () => {
             <Text style={tw`text-white text-lg ml-2`}>Weekend</Text>
           </View>
         </View>
+
         <View style={tw`flex-row justify-center`}>
           <TouchableOpacity
             onPress={ajoutEte}

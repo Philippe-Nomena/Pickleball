@@ -1,6 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Camera } from "expo-camera";
-import { Button, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  Button,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  Alert,
+} from "react-native";
 
 export default function BarcodeScannerScreen({ onScan }) {
   const [hasPermission, setHasPermission] = useState(null);
@@ -25,7 +32,9 @@ export default function BarcodeScannerScreen({ onScan }) {
   }, []);
 
   const handleBarCodeScanned = ({ type, data }) => {
-    alert(`Bar code with type ${type} and data ${data} has been scanned!`);
+    Alert.alert(
+      `Bar code with type ${type} and data ${data} has been scanned!`
+    );
     setScanned(true);
     onScan(data);
   };
@@ -77,7 +86,7 @@ export default function BarcodeScannerScreen({ onScan }) {
               style={styles.button}
               onPress={() => setScanned(false)}
             >
-              <Text style={styles.text}>Cliquer pour scanner un nouveau</Text>
+              <Text style={styles.text}>Scan again</Text>
             </TouchableOpacity>
           )}
         </View>

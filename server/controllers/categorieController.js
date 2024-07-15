@@ -34,15 +34,26 @@ exports.deleteCategorie = async (req, res, next) => {
 // Create a new categorie
 exports.createCategorie = async (req, res, next) => {
   try {
-    let { categorie, horaire, prix, jour, nbjour, id_activite } = req.body;
+    let {
+      categorie,
+      horaire,
+      prix,
+      jour,
+      // nbjour,
+      id_activite,
+      datedebut,
+      datefin,
+    } = req.body;
 
     const newCategorie = await Categorie.create({
       categorie: categorie,
       horaire: horaire,
       prix: prix,
       jour: jour,
-      nbjour: nbjour,
+      // nbjour: nbjour,
       id_activite: id_activite,
+      datedebut: datedebut,
+      datefin: datefin,
     });
 
     if (newCategorie) {
@@ -63,8 +74,10 @@ exports.updateCategorie = async (req, res, next) => {
       categorie.categorie = req.body.categorie;
       categorie.horaire = req.body.horaire;
       categorie.prix = req.body.prix;
-      categorie.nbjour = req.body.nbjour;
+      // categorie.nbjour = req.body.nbjour;
       categorie.jour = req.body.jour;
+      categorie.datedebut = req.body.datedebut;
+      categorie.datefin = req.body.datefin;
       await categorie.save();
       res.status(200).send("Mise à jour avec succès");
     } else {

@@ -53,10 +53,10 @@ const Automne_liste = () => {
   const [consigne, setConsigne] = useState([]);
   const [etiquete, setEtiquete] = useState([]);
   const handleToggleCheckbox = (state, setState, value) => {
-    if (state.includes(value)) {
-      setState(state.filter((item) => item !== value));
+    if (state === value) {
+      setState("");
     } else {
-      setState([...state, value]);
+      setState(value);
     }
   };
   const [eteVisible, setEteVisible] = useState(false);

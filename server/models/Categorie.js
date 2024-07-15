@@ -25,8 +25,16 @@ const Categorie = database.define("categorie", {
     type: Sequelize.JSON,
     allowNull: false,
   },
-  nbjour: {
-    type: Sequelize.INTEGER,
+  // nbjour: {
+  //   type: Sequelize.INTEGER,
+  //   allowNull: true,
+  // },
+  datedebut: {
+    type: Sequelize.DATE,
+    allowNull: true,
+  },
+  datefin: {
+    type: Sequelize.DATE,
     allowNull: true,
   },
 });

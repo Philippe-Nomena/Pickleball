@@ -24,7 +24,7 @@ const Pratiquants = database.define("pratiquants", {
   },
 
   naissance: {
-    type: Sequelize.DATE,
+    type: Sequelize.DATEONLY,
     allowNull: true,
   },
   payement: {
@@ -58,7 +58,7 @@ const Pratiquants = database.define("pratiquants", {
   tel_urgence: {
     type: Sequelize.STRING,
     allowNull: true,
-  }, 
+  },
   activite: {
     type: Sequelize.STRING,
     allowNull: true,

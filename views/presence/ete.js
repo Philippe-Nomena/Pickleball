@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, act } from "react";
 import tw from "tailwind-react-native-classnames";
 import { FontAwesome5, MaterialIcons } from "@expo/vector-icons";
-import { Picker } from "@react-native-picker/picker";
-import { Checkbox } from "./checkbox";
+import DateTimePicker from "@react-native-community/datetimepicker";
+
+// import { Checkbox } from "./checkbox";
 import {
   SafeAreaView,
   ScrollView,
@@ -10,51 +11,52 @@ import {
   TextInput,
   View,
   TouchableOpacity,
+  Alert,
 } from "react-native";
 import BarcodeScannerScreen from "./qrcode";
 import { url } from "../url";
 import NetInfo from "@react-native-community/netinfo";
 import * as SQLite from "expo-sqlite";
+import dayjs from "dayjs";
 
 const Ete_Presence = () => {
-  const [data, setData] = useState([]);
-  const [nom, setNom] = useState("jean");
-  const [session, setSession] = useState("Ete");
+  const [nom, setNom] = useState("");
+  const [session] = useState("Ete");
   const [remarque, setRemarque] = useState("");
   const [activite, setActivite] = useState("");
+  const [categorie, setCategorie] = useState("");
   const [groupe, setGroupe] = useState(["Lundi"]);
   const [id_pratiquant, setId_pratiquant] = useState("");
   const [barcodeData, setBarcodeData] = useState(null);
   const [eteVisible] = useState(false);
-  const [present, setPresent] = useState(true);
+  const [present] = useState(true);
+  const [absence] = useState(false);
+  const [date, setDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
-  const updateGroupe = (itemValue) => {
-    let updatedGroupe = [...groupe];
-    const index = updatedGroupe.indexOf(itemValue);
-    if (index > -1) {
-      updatedGroupe.splice(index, 1);
+  // const updateGroupe = (itemValue) => {
+  //   let updatedGroupe = [...groupe];
+  //   const index = updatedGroupe.indexOf(itemValue);
+  //   if (index > -1) {
+  //     updatedGroupe.splice(index, 1);
+  //   } else {
+  //     updatedGroupe.push(itemValue);
+  //   }
+  //   setGroupe(updatedGroupe);
+  // };
+  const handleDateChange = (event, selectedDate) => {
+    if (selectedDate) {
+      setDate(selectedDate);
+      setShowDatePicker(false);
+      console.log("Selected date:", selectedDate.toDateString());
     } else {
-      updatedGroupe.push(itemValue);
-    }
-    setGroupe(updatedGroupe);
-  };
-
-  useEffect(() => {
-    fetchAllData();
-  }, []);
-
-  const fetchAllData = async () => {
-    const state = await NetInfo.fetch();
-    if (state.isConnected) {
-      try {
-        const res = await url.get("/activite");
-        setData(res.data);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
+      setShowDatePicker(false);
     }
   };
 
+  const formatDate = (date) => {
+    return dayjs(date).format("YYYY-MM-DD");
+  };
   const Ajout = async () => {
     if (!nom) {
       console.log("Le nom ne peut pas être vide");
@@ -65,26 +67,31 @@ const Ete_Presence = () => {
       const state = await NetInfo.fetch();
       if (state.isConnected) {
         try {
-          await url.post(`/presence`, {
+          const response = await url.put(`/presence/${id_pratiquant}`, {
             nom,
             session,
             activite,
-            jour: groupe,
-            id_pratiquant,
+            jour: formatDate(date),
             present,
+            absence,
+            categorie,
           });
+          console.log(id_pratiquant);
           console.log("Données insérées avec succès dans MySQL");
-          setNom("");
-          fetchAllData();
+          Alert.alert(response.data);
+
+          setBarcodeData(null);
         } catch (error) {
-          console.log(
-            "Erreur lors de l'insertion des données dans MySQL :",
-            error
-          );
+          // console.log(
+          //   "Erreur lors de l'insertion des données dans MySQL :",
+          //   error.response ? error.response.data : error
+          // );
+          Alert.alert(error.response.data);
           await insertLocalData(
             nom,
             session,
             activite,
+            categorie,
             groupe,
             present,
             id_pratiquant,
@@ -99,6 +106,7 @@ const Ete_Presence = () => {
           nom,
           session,
           activite,
+          categorie,
           groupe,
           present,
           id_pratiquant,
@@ -114,6 +122,7 @@ const Ete_Presence = () => {
         nom,
         session,
         activite,
+        categorie,
         groupe,
         present,
         id_pratiquant,
@@ -123,16 +132,20 @@ const Ete_Presence = () => {
   };
 
   const handleScan = async (data) => {
-    console.log("Données scannées :", data);
     setBarcodeData(data);
 
     try {
-      const getNom = await url.get(`/pratiquants/${data}`);
+      const getNom = await url.get(`/pratiquants/ete/${data}`);
       if (getNom) {
         const nom = getNom.data.nom;
         const Id = getNom.data.id;
-        console.log(nom, Id);
-        setBarcodeData({ nom, Id });
+        const activite = getNom.data.activite;
+        const categorie = getNom.data.categorie;
+        setBarcodeData({ nom, Id, activite, categorie });
+        setNom(nom);
+        setActivite(activite);
+        setCategorie(categorie);
+        setId_pratiquant(Id.toString());
       }
     } catch (error) {
       setBarcodeData(null);
@@ -171,10 +184,9 @@ const Ete_Presence = () => {
   const initializeDatabase = async () => {
     try {
       await executeSqlAsync(
-        "CREATE TABLE IF NOT EXISTS presence (id INTEGER PRIMARY KEY AUTOINCREMENT, nom TEXT, session TEXT,activite TEXT,jour TEXT,present INTEGER,id_pratiquant INTEGER,synced INTEGER);"
+        "CREATE TABLE IF NOT EXISTS presence (id INTEGER PRIMARY KEY AUTOINCREMENT, nom TEXT, session TEXT,activite TEXT,categorie TEXT,jour TEXT,present INTEGER,id_pratiquant INTEGER,synced INTEGER);"
       );
       console.log("Table presence créée avec succès");
-      fetchAllData();
     } catch (error) {
       console.log("Erreur lors de la création de la table :", error);
     }
@@ -184,6 +196,7 @@ const Ete_Presence = () => {
     nom,
     session,
     activite,
+    categorie,
     jour,
     present,
     id_pratiquant,
@@ -191,11 +204,19 @@ const Ete_Presence = () => {
   ) => {
     try {
       await executeSqlAsync(
-        "INSERT INTO presence (nom,session,activite,jour,present,id_pratiquant, synced) VALUES (?, ?,?, ?,?, ?,?);",
-        [nom, session, activite, jour, present, id_pratiquant, synced]
+        "INSERT INTO presence (nom,session,activite,categorie,jour,present,id_pratiquant, synced) VALUES (?, ?,?,?, ?,?, ?,?);",
+        [
+          nom,
+          session,
+          activite,
+          categorie,
+          jour,
+          present,
+          id_pratiquant,
+          synced,
+        ]
       );
-      fetchAllData();
-      setNom("");
+
       setRemarque("");
 
       setHasUnsyncedData(true);
@@ -225,25 +246,73 @@ const Ete_Presence = () => {
           Scan votre code barre
         </Text>
         <BarcodeScannerScreen onScan={handleScan} />
-        {barcodeData && barcodeData.nom && barcodeData.Id && (
-          <View>
-            <Text style={tw`text-white text-lg font-bold mb-2`}>Nom:</Text>
-            <TextInput
-              name="nom"
-              value={barcodeData.nom}
-              editable={false}
-              style={tw`bg-gray-300 border border-gray-300 rounded-md p-2 mb-2`}
-            />
+        {barcodeData &&
+          barcodeData.nom &&
+          barcodeData.Id &&
+          barcodeData.activite &&
+          barcodeData.categorie && (
+            <View>
+              <Text style={tw`text-white text-lg font-bold mb-2`}>Nom:</Text>
+              <TextInput
+                name="nom"
+                value={barcodeData.nom}
+                editable={false}
+                style={tw`bg-gray-300 border border-gray-300 rounded-md p-2 mb-2`}
+              />
+              <Text style={tw`text-white text-lg font-bold mb-2`}>
+                Activite:
+              </Text>
+              <TextInput
+                name="activite"
+                value={barcodeData.activite}
+                editable={false}
+                style={tw`bg-gray-300 border border-gray-300 rounded-md p-2 mb-2`}
+              />
+              <Text style={tw`text-white text-lg font-bold mb-2`}>
+                Categorie:
+              </Text>
+              <TextInput
+                name="categorie"
+                value={barcodeData.categorie}
+                editable={false}
+                style={tw`bg-gray-300 border border-gray-300 rounded-md p-2 mb-2`}
+              />
+              <TextInput
+                name="id_pratiquant"
+                value={barcodeData.Id.toString()}
+                editable={false}
+                style={{ display: "none" }}
+                // style={tw`bg-gray-300 border border-gray-300 rounded-md p-2 mb-2`}
+              />
+            </View>
+          )}
 
+        <Text style={tw`text-white text-lg font-bold mb-2`}>Jour</Text>
+        <TouchableOpacity onPress={() => setShowDatePicker(true)}>
+          <View
+            style={tw`bg-gray-300 border border-gray-100 rounded-md p-2 mb-4`}
+          >
             <TextInput
-              name="id_pratiquant"
-              value={barcodeData.Id.toString()}
+              value={formatDate(date)}
               editable={false}
-              style={{ display: "none" }}
+              style={{ flex: 1, color: "gray" }}
+              name="jour"
             />
           </View>
+        </TouchableOpacity>
+
+        {showDatePicker && (
+          <DateTimePicker
+            value={date}
+            mode="date"
+            display="spinner"
+            onChange={handleDateChange}
+            style={{ backgroundColor: "white", color: "black" }}
+          />
         )}
-        <Text style={tw`text-white text-lg font-bold mb-2`}>Remarque</Text>
+        <Text style={tw`text-white text-lg font-bold mb-2`}>
+          Remarque (facultatif)
+        </Text>
         <TextInput
           placeholder="Remarque"
           name="remarque"
@@ -251,98 +320,7 @@ const Ete_Presence = () => {
           onChangeText={(text) => setRemarque(text)}
           style={tw`bg-gray-300 border border-gray-300 rounded-md p-2 mb-4`}
         />
-        <Text style={tw`text-white text-lg font-bold mb-2`}>
-          Votre activité
-        </Text>
-        <View
-          style={tw`bg-gray-300 border border-gray-300 rounded-md p-2 mb-4`}
-        >
-          <Picker
-            selectedValue={activite}
-            onValueChange={(itemValue) => setActivite(itemValue)}
-            style={{ color: "gray" }}
-            name="activite"
-          >
-            {data.map((item) => (
-              <Picker.Item key={item.id} label={item.nom} value={item.id} />
-            ))}
-          </Picker>
-        </View>
-        <Text style={tw`text-white text-lg font-bold mb-2`}>Jour</Text>
-        <View style={tw`flex-row`}>
-          <View style={tw`flex-col mr-4`}>
-            <View style={tw`flex-row items-center mb-2`}>
-              <Checkbox
-                name="jour"
-                checked={groupe.includes("Lundi")}
-                onChange={() => updateGroupe("Lundi")}
-              />
-              <Text style={tw`text-white text-lg ml-2`}>Lundi</Text>
-            </View>
-            <View style={tw`flex-row items-center mb-2`}>
-              <Checkbox
-                name="jour"
-                checked={groupe.includes("Mardi")}
-                onChange={() => updateGroupe("Mardi")}
-              />
-              <Text style={tw`text-white text-lg ml-2`}>Mardi</Text>
-            </View>
-            <View style={tw`flex-row items-center mb-2`}>
-              <Checkbox
-                name="jour"
-                checked={groupe.includes("Mercredi")}
-                onChange={() => updateGroupe("Mercredi")}
-              />
-              <Text style={tw`text-white text-lg ml-2`}>Mercredi</Text>
-            </View>
-            <View style={tw`flex-row items-center mb-2`}>
-              <Checkbox
-                name="jour"
-                checked={groupe.includes("Jeudi")}
-                onChange={() => updateGroupe("Jeudi")}
-              />
-              <Text style={tw`text-white text-lg ml-2`}>Jeudi</Text>
-            </View>
-          </View>
 
-          <View style={tw`flex-col`}>
-            <View style={tw`flex-row items-center mb-2`}>
-              <Checkbox
-                name="jour"
-                checked={groupe.includes("Vendredi")}
-                onChange={() => updateGroupe("Vendredi")}
-              />
-              <Text style={tw`text-white text-lg ml-2`}>Vendredi</Text>
-            </View>
-            <View style={tw`flex-row items-center mb-2`}>
-              <Checkbox
-                name="jour"
-                checked={groupe.includes("Samedi")}
-                onChange={() => updateGroupe("Samedi")}
-              />
-              <Text style={tw`text-white text-lg ml-2`}>Samedi</Text>
-            </View>
-            <View style={tw`flex-row items-center mb-2`}>
-              <Checkbox
-                name="jour"
-                checked={groupe.includes("Dimanche")}
-                onChange={() => updateGroupe("Dimanche")}
-              />
-              <Text style={tw`text-white text-lg ml-2`}>Dimanche</Text>
-            </View>
-          </View>
-        </View>
-        <Text style={tw`text-white text-lg font-bold mb-2`}>Statut</Text>
-        <View style={tw`flex-row items-center mb-4`}>
-          <Checkbox
-            name="present"
-            checked={present}
-            onChange={() => setPresent(!present)}
-          />
-          <Text style={tw`text-white text-lg ml-2`}>
-            {present ? "Présent" : "Absent"}
-          </Text>
-        </View>
         <View style={tw`flex-row justify-center`}>
           <TouchableOpacity
             style={tw`bg-blue-500 py-2 px-4 rounded-md flex-row items-center justify-center mr-4`}

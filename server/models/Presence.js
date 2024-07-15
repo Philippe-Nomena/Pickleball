@@ -20,8 +20,12 @@ const Presence = database.define("presence", {
     type: Sequelize.STRING,
     allowNull: false,
   },
+  categorie: {
+    type: Sequelize.STRING,
+    allowNull: false,
+  },
   jour: {
-    type: Sequelize.JSON,
+    type: Sequelize.DATEONLY,
     allowNull: true,
   },
   present: {

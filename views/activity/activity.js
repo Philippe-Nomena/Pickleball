@@ -14,6 +14,7 @@ import { ScrollView, Swipeable } from "react-native-gesture-handler";
 import tw from "tailwind-react-native-classnames";
 import { AntDesign, Entypo, MaterialIcons } from "@expo/vector-icons";
 import { url, stateUrl } from "../url";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 import * as ImagePicker from "expo-image-picker";
 
@@ -37,6 +38,30 @@ const Activity = () => {
   const [prix, setPrix] = useState("");
   const [nbjour, setNbjour] = useState("");
   // const [imageName, setImageName] = useState("");
+
+  const [date1, setDate1] = useState(new Date());
+  const [date2, setDate2] = useState(new Date());
+  const [showDatePicker1, setShowDatePicker1] = useState(false);
+  const [showDatePicker2, setShowDatePicker2] = useState(false);
+
+  const formatDate = (date) => {
+    const day = date.getDate().toString().padStart(2, "0");
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const year = date.getFullYear();
+    return `${year}-${month}-${day}`;
+  };
+
+  const handleDateChange1 = (event, selectedDate) => {
+    const currentDate = selectedDate || date1;
+    setShowDatePicker1(false);
+    setDate1(currentDate);
+  };
+
+  const handleDateChange2 = (event, selectedDate) => {
+    const currentDate = selectedDate || date2;
+    setShowDatePicker2(false);
+    setDate2(currentDate);
+  };
   useEffect(() => {
     fetchAllData();
   }, []);
@@ -136,6 +161,8 @@ const Activity = () => {
         categorie,
         nbjour,
         jour: groupe,
+        datedebut: formatDate(date1),
+        datefin: formatDate(date2),
       });
       setCategorieModalVisible(false);
       fetchAllData();
@@ -169,14 +196,8 @@ const Activity = () => {
     });
 
     if (!result.cancelled && result.assets.length > 0) {
-      // setImage(result.assets[0]);
-      setImage(result.assets[0].uri.split("/").pop());
-
-      // setImageName(result.assets[0].uri.split("/").pop());
-      if (!result.cancelled && result.assets.length > 0) {
-        setImage(result.assets[0].uri.split("/").pop());
-        // setImageName(result.assets[0].uri.split("/").pop());
-      }
+      setImage(result.assets[0]);
+      console.log(result.assets[0]);
     }
   };
 
@@ -539,7 +560,7 @@ const Activity = () => {
               value={id_activite.toString()}
               editable={false}
               name="id_activite"
-              // style={{display:"none"}}
+              style={{ display: "none" }}
             />
             <Text style={tw`text-white mb-2`}>Categorie:</Text>
             <View style={tw`flex-row items-center`}>
@@ -582,6 +603,59 @@ const Activity = () => {
                 onChangeText={setNbjour}
                 name="nbjour"
               />
+            </View>
+            <View>
+              <Text style={tw`text-white text-lg font-bold mb-2`}>
+                Date de debut
+              </Text>
+              <TouchableOpacity onPress={() => setShowDatePicker1(true)}>
+                <View
+                  style={tw`bg-gray-200 border border-gray-600 rounded-md p-2 mb-2 text-center`}
+                >
+                  <TextInput
+                    value={formatDate(date1)}
+                    editable={false}
+                    name="datedebut"
+                  />
+                </View>
+              </TouchableOpacity>
+
+              {showDatePicker1 && (
+                <DateTimePicker
+                  value={date1}
+                  mode="date"
+                  display="spinner"
+                  onChange={handleDateChange1}
+                  style={{ backgroundColor: "white", color: "black" }}
+                />
+              )}
+            </View>
+
+            <View>
+              <Text style={tw`text-white text-lg font-bold mb-2`}>
+                Date de fin
+              </Text>
+              <TouchableOpacity onPress={() => setShowDatePicker2(true)}>
+                <View
+                  style={tw`bg-gray-300 border border-gray-100 rounded-md p-2 mb-4`}
+                >
+                  <TextInput
+                    value={formatDate(date2)}
+                    editable={false}
+                    name="datefin"
+                  />
+                </View>
+              </TouchableOpacity>
+
+              {showDatePicker2 && (
+                <DateTimePicker
+                  value={date2}
+                  mode="date"
+                  display="spinner"
+                  onChange={handleDateChange2}
+                  style={{ backgroundColor: "white", color: "black" }}
+                />
+              )}
             </View>
             <View>
               <Text style={tw`text-white text-lg font-bold mb-2`}>Jours</Text>

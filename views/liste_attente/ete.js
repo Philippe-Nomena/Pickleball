@@ -73,14 +73,16 @@ const Ete_liste = () => {
     setGroupe(updatedGroupe);
   };
   const handleToggleCheckbox = (state, setState, value) => {
-    if (state.includes(value)) {
-      setState(state.filter((item) => item !== value));
+    if (state === value) {
+      setState("");
     } else {
-      setState([...state, value]);
+      setState(value);
     }
   };
   useEffect(() => {
     fetchAllData();
+  }, []);
+  useEffect(() => {
     fetchAllData0();
   }, []);
   useEffect(() => {

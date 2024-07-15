@@ -1,37 +1,44 @@
-const { Op, NOW } = require("sequelize");
+const { Op, NOW, and } = require("sequelize");
 const Presence = require("../models/Presence");
-
+const moment = require("moment");
+// const Pratiquants = require("../models/pratiquants");
 // Get single presence by Pratiquants
 exports.getPresencebyPratiquant = async (req, res, next) => {
   let id_pratiquant = req.params.id;
   const presence = await Presence.findAll({
-    where: { id_pratiquant: id_pratiquant },
+    where: {
+      id_pratiquant: id_pratiquant,
+      // , present: true
+    },
   });
   res.json(presence);
 };
 // Get all presence
 exports.getAllPresence = async (req, res, next) => {
-  const presence = await Presence.findAll({});
+  const presence = await Presence.findAll({ where: { present: true } });
   res.json(presence);
 };
 exports.getAllPresenceDate = async (req, res, next) => {
   try {
-    if (!req.body.date) {
+    const date = req.query.date;
+    console.log("Received date:", date);
+    if (!date) {
       return res.status(400).json({ error: "La date est requise" });
     }
-    const date = req.body.date;
+
     const isValidDate = (date) => {
-      return /\d{4}-\d{2}-\d{2}/.test(date);
+      return moment(date, "YYYY-MM-DD", true).isValid();
     };
 
     if (!isValidDate(date)) {
       return res.status(400).json({ error: "Format de date invalide" });
     }
 
+    const formattedDate = moment(date).format("YYYY-MM-DD");
     const presence = await Presence.findAll({
       where: {
         createdAt: {
-          [Op.eq]: date,
+          [Op.eq]: formattedDate,
         },
       },
     });
@@ -42,6 +49,7 @@ exports.getAllPresenceDate = async (req, res, next) => {
     next(error);
   }
 };
+
 // Delete an activity by ID
 exports.deletePresence = async (req, res, next) => {
   try {
@@ -61,41 +69,68 @@ exports.deletePresence = async (req, res, next) => {
 // Create a new Presence
 exports.createPresence = async (req, res, next) => {
   try {
-    let { nom, session, activite, jour, id_pratiquant } = req.body;
+    let {
+      nom,
+      session,
+      activite,
+      categorie,
+      jour,
+      id_pratiquant,
+      datedebut,
+      datefin,
+    } = req.body;
 
     const newPresence = await Presence.create({
       nom: nom,
       session: session,
       activite: activite,
+      categorie: categorie,
       jour: jour,
       id_pratiquant: id_pratiquant,
-      present: true,
-      absence: false,
+      datedebut: datedebut,
+      datefin: datefin,
+      present: false,
+      absence: true,
     });
 
     if (newPresence) {
       res.status(201).send("Ajout avec succès");
+    } else {
+      res.status(400).send({ message: "Échec de l'ajout de la présence" });
     }
   } catch (error) {
-    res
-      .status(400)
-      .send({ message: "Error creating categorie", error: error.message });
+    console.error("Erreur lors de la création de la présence :", error);
+    res.status(400).send({
+      message: "Erreur lors de la création de la présence",
+      error: error.message,
+    });
   }
 };
 
 // Update an activity by ID
 exports.updatePresence = async (req, res, next) => {
   try {
-    const presence = await Presence.findOne({ where: { id: req.params.id } });
+    const presence = await Presence.findOne({
+      where: { id_pratiquant: req.params.id, jour: req.body.jour },
+    });
     if (presence) {
+      if (presence.present === true) {
+        return res
+          .status(400)
+          .send("Présence déjà enregistrée pour cette date");
+      }
+
       presence.nom = req.body.nom;
       presence.activite = req.body.activite;
+      presence.categorie = req.body.categorie;
       presence.session = req.body.session;
-      presence.jour = req.body.jour;
+      presence.present = true;
+      presence.absence = false;
+
       await presence.save();
-      res.status(200).send("Mise à jour avec succès");
+      res.status(200).send("Ajout de pointage réussi avec succès");
     } else {
-      res.status(404).send("Presence not found");
+      res.status(404).send("Présence non trouvée pour cette date");
     }
   } catch (error) {
     res
