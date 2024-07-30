@@ -13,11 +13,12 @@ import {
   TouchableOpacity,
   Alert,
 } from "react-native";
-import BarcodeScannerScreen from "./qrcode";
+
 import { url } from "../url";
 import NetInfo from "@react-native-community/netinfo";
 import * as SQLite from "expo-sqlite";
 import dayjs from "dayjs";
+import BarcodeScannerScreen from "./qrcode";
 
 const Automne_Presence = () => {
   const [nom, setNom] = useState("");
@@ -25,10 +26,10 @@ const Automne_Presence = () => {
   const [remarque, setRemarque] = useState("");
   const [activite, setActivite] = useState("");
   const [categorie, setCategorie] = useState("");
-  const [groupe, setGroupe] = useState(["Lundi"]);
+  // const [groupe, setGroupe] = useState(["Lundi"]);
   const [id_pratiquant, setId_pratiquant] = useState("");
   const [barcodeData, setBarcodeData] = useState(null);
-  const [hiverVisible] = useState(false);
+  const [automneVisible] = useState(false);
   const [present] = useState(true);
   const [absence] = useState(false);
   const [date, setDate] = useState(new Date());
@@ -92,7 +93,7 @@ const Automne_Presence = () => {
             session,
             activite,
             categorie,
-            groupe,
+            formatDate(date),
             present,
             id_pratiquant,
             0
@@ -107,7 +108,7 @@ const Automne_Presence = () => {
           session,
           activite,
           categorie,
-          groupe,
+          formatDate(date),
           present,
           id_pratiquant,
           0
@@ -123,7 +124,7 @@ const Automne_Presence = () => {
         session,
         activite,
         categorie,
-        groupe,
+        formatDate(date),
         present,
         id_pratiquant,
         0
@@ -233,7 +234,7 @@ const Automne_Presence = () => {
   return (
     <SafeAreaView style={tw`bg-black flex-1  p-4`}>
       <ScrollView style={tw`mb-2`}>
-        {hiverVisible && (
+        {automneVisible && (
           <View>
             <TextInput
               name="session"

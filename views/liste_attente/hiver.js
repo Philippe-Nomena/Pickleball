@@ -8,12 +8,13 @@ import {
   FlatList,
   Modal,
   TouchableOpacity,
+  Alert,
+  Image,
 } from "react-native";
 import {
   AntDesign,
   Entypo,
   FontAwesome5,
-  MaterialCommunityIcons,
   MaterialIcons,
 } from "@expo/vector-icons";
 import { Picker } from "@react-native-picker/picker";
@@ -24,12 +25,17 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import dayjs from "dayjs";
 import { Swipeable } from "react-native-gesture-handler";
 import { url } from "../url";
+
+////////debut util sur synchronisation de donnees sqlite
+import * as SQLite from "expo-sqlite";
+const db = SQLite.openDatabase("Test.db");
+import NetInfo from "@react-native-community/netinfo";
+////////fin util sur synchronisation de donnees sqlite
 const Hiver_liste = () => {
   const [data, setData] = useState([]);
   const [data0, setData0] = useState([]);
   const [data1, setData1] = useState([]);
   const [actId, setActId] = useState(null);
-
   const [modalVisible, setModalVisible] = useState(false);
   const [editedItem, setEditedItem] = useState(null);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
@@ -52,11 +58,12 @@ const Hiver_liste = () => {
   const [carte_fede, setCarte_fede] = useState([]);
   const [consigne, setConsigne] = useState([]);
   const [etiquete, setEtiquete] = useState([]);
-
-  const [eteVisible, setEteVisible] = useState(false);
+  const [hiverVisible] = useState(false);
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [filteredCategories, setFilteredCategories] = useState([]);
+  const [presenceModalVisible, setPresenceModalVisible] = useState(false);
+  const [presence, setPresence] = useState([]);
+
   const updateGroupe = (itemValue) => {
     let updatedGroupe = [...groupe];
     const index = updatedGroupe.indexOf(itemValue);
@@ -67,8 +74,20 @@ const Hiver_liste = () => {
     }
     setGroupe(updatedGroupe);
   };
+  const handleToggleCheckbox = (state, setState, value) => {
+    if (state === value) {
+      setState("");
+    } else {
+      setState(value);
+    }
+  };
+  useEffect(() => {
+    fetchPresence();
+  }, []);
   useEffect(() => {
     fetchAllData();
+  }, []);
+  useEffect(() => {
     fetchAllData0();
   }, []);
   useEffect(() => {
@@ -76,14 +95,37 @@ const Hiver_liste = () => {
       fetchAllData1(actId);
     }
   }, [actId]);
+
   const fetchAllData = async () => {
     try {
-      const res = await url.get("/pratiquants/hiver");
-      setData(res.data);
+      const state = await NetInfo.fetch();
+      if (state.isConnected) {
+        try {
+          const response = await url.get(`/pratiquants/hiver`);
+          console.log("Données récupérées de MySQL :", response.data);
+          const donnees = response.data.pratiquants;
+          setData(donnees);
+          setUsers([]);
+          checkUnsyncedData();
+        } catch (error) {
+          console.log(
+            "Erreur lors de la récupération des données de MySQL :",
+            error
+          );
+          fetchSession();
+        }
+      } else {
+        fetchSession();
+      }
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.log(
+        "Erreur lors de la récupération de l'état du réseau :",
+        error
+      );
+      fetchSession();
     }
   };
+
   const fetchAllData0 = async () => {
     try {
       const res = await url.get("/activite");
@@ -102,12 +144,35 @@ const Hiver_liste = () => {
     }
   };
 
-  const handleToggleCheckbox = (state, setState, value) => {
-    if (state === value) {
-      setState("");
-    } else {
-      setState(value);
+  const fetchPresence = async (id_pratiquant) => {
+    try {
+      const presence = await url.get(`presence/bypratiquant/${id_pratiquant}`);
+      setPresence(presence.data);
+    } catch (error) {
+      console.error("Error presence item:", error);
+      Alert.alert("Error presence item", error.message);
     }
+  };
+  // const exportToExcel = async () => {
+  //   try {
+  //     const response = await url.get("/pratiquants/hiver");
+  //     const excelUrl = await response.data.downloadUrl;
+
+  //     if (!excelUrl) {
+  //       throw new Error("Download URL not provided by the server");
+  //     }
+  //     alert("Exportation de données réussi avec succès");
+  //   } catch (error) {
+  //     console.error("Error exporting to Excel:", error);
+  //     alert("Failed to export to Excel. Please try again.");
+  //   }
+  // };
+  const formatDate = (date) => {
+    return dayjs(date).format("DD-MM-YYYY");
+  };
+  const handleDelete = (item) => {
+    setItemToDelete(item);
+    setDeleteModalVisible(true);
   };
   const handleDateChange = (event, selectedDate) => {
     if (selectedDate) {
@@ -118,13 +183,9 @@ const Hiver_liste = () => {
       setShowDatePicker(false);
     }
   };
-
-  const formatDate = (date) => {
-    return dayjs(date).format("DD-MM-YYYY");
-  };
-  const handleDelete = (item) => {
-    setItemToDelete(item);
-    setDeleteModalVisible(true);
+  const handlePresence = (item) => {
+    setPresenceModalVisible(true);
+    fetchPresence(item.id);
   };
   const saveEditedItem = async () => {
     try {
@@ -135,17 +196,17 @@ const Hiver_liste = () => {
         naissance: formatDate(date),
         payement,
         consigne,
-        carte_fede,
+        carte_fede: carte_fede,
         etiquete,
         courriel,
         adresse,
         telephone,
-        tel_urgence,
+        tel_urgence: tel_urgence,
         activite,
         categorie,
         evaluation,
-        mode_payement,
-        carte_payement,
+        mode_payement: mode_payement,
+        carte_payement: carte_payement,
         groupe,
       });
       if (edit) {
@@ -158,6 +219,7 @@ const Hiver_liste = () => {
         setCourriel("");
         setModalVisible(false);
         alert("Edit réussi");
+        fetchAllData();
       }
     } catch (error) {
       console.error("Error editing item:", error);
@@ -184,31 +246,86 @@ const Hiver_liste = () => {
         <AntDesign name="edit" size={24} color="white" />
       </TouchableOpacity>
       <TouchableOpacity
-        style={tw`bg-red-500 p-2 h-10 rounded-md`}
+        style={tw`bg-red-500 p-2 h-10 rounded-md mr-1`}
         onPress={() => handleDelete(item)}
       >
         <Entypo name="trash" size={24} color="white" />
       </TouchableOpacity>
+      <TouchableOpacity
+        style={tw`bg-gray-500 p-2 h-10 rounded-md`}
+        onPress={() => handlePresence(item)}
+      >
+        <MaterialIcons name="co-present" size={24} color="white" />
+      </TouchableOpacity>
     </View>
   );
 
-  const renderItem = ({ item }) => (
-    <Swipeable renderRightActions={() => renderRightActions(item)}>
-      <View
-        style={tw`bg-gray-300 p-4 shadow-md rounded-md mb-4 flex-row p-2 ml-4 mr-4`}
-      >
-        <MaterialCommunityIcons
-          name="face-man-profile"
-          size={24}
-          color="black"
-          style={tw`mr-2`}
-        />
-        <Text style={tw`text-lg text-gray-800 mr-2`}>{item.id}</Text>
-        <Text style={tw`text-lg text-gray-800 mr-8`}>{item.nom}</Text>
-      </View>
-    </Swipeable>
-  );
+  const renderItem = ({ item }) => {
+    const isSynced = item.synced === 1;
 
+    return (
+      <Swipeable renderRightActions={() => renderRightActions(item)}>
+        <View
+          style={tw`bg-gray-900 p-2 shadow-md rounded-md mb-3 ml-4 flex-row items-center`}
+        >
+          <View style={tw`flex-1 flex-row items-center`}>
+            <Text style={tw`text-lg text-white mr-4`}>{item.id}</Text>
+            {item.barcodeUrl && (
+              <Image
+                source={{ uri: item.barcodeUrl }}
+                style={tw`w-40 h-10 mr-1`}
+              />
+            )}
+            <Text style={tw`text-lg text-white`}>{item.nom}</Text>
+          </View>
+          <View style={tw`flex-row items-center`}>
+            {!isSynced ? (
+              <MaterialIcons
+                name="sync"
+                size={24}
+                color="white"
+                style={tw`mr-2`}
+              />
+            ) : (
+              <AntDesign
+                name="checkcircleo"
+                size={24}
+                color="white"
+                style={tw`mr-2`}
+              />
+            )}
+          </View>
+        </View>
+      </Swipeable>
+    );
+  };
+  const listePresence = ({ item }) => (
+    <View style={tw`flex-row items-center justify-between py-2`}>
+      <Text style={tw`text-center text-white text-lg font-bold`}>
+        {item.nom}
+      </Text>
+
+      <Text style={tw`text-lg text-white`}>{item.categorie}</Text>
+      <Text style={tw`text-lg text-white`}>{item.jour}</Text>
+      <Text style={tw`text-white`}>{item.present ? "Présent" : "Absent"}</Text>
+    </View>
+  );
+  const PasdelistePresence = () => (
+    <View style={tw`flex-1 justify-center items-center`}>
+      <Text style={tw`text-lg text-white`}>Pas de données</Text>
+    </View>
+  );
+  const renderHeader = () => (
+    <View
+      style={tw`flex-row items-center justify-between py-2 border-b border-gray-600`}
+    >
+      <Text style={tw`text-white text-lg font-bold`}>Nom</Text>
+
+      <Text style={tw`text-white text-lg font-bold`}>Catégorie</Text>
+      <Text style={tw`text-white text-lg font-bold`}>Date</Text>
+      <Text style={tw`text-white text-lg font-bold`}>Statut</Text>
+    </View>
+  );
   const handleEdit = (item) => {
     setEditedItem(item);
     setNom(item.nom);
@@ -226,11 +343,65 @@ const Hiver_liste = () => {
     setCarte_payement(item.carte_payement);
     setModalVisible(true);
   };
+  const [users, setUsers] = useState([]);
+  const [hasUnsyncedData, setHasUnsyncedData] = useState(false);
 
-  const filteredData = data.filter((item) =>
-    item.nom.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // const dataToRender = (data.length > 0 ? data : users) || [];
+  // const filteredData = () => {
+  //   dataToRender.filter((item) =>
+  //     item.nom.toLowerCase().includes(searchQuery.toLowerCase())
+  //   );
+  // };
 
+  const filteredData = () =>
+    data.filter((item) =>
+      item.nom.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+  ///////////////////////////debut sqlite
+
+  const executeSqlAsync = (sqlStatement, params = []) => {
+    return new Promise((resolve, reject) => {
+      db.transaction((tx) => {
+        tx.executeSql(
+          sqlStatement,
+          params,
+          (_, results) => resolve(results),
+          (_, error) => reject(error)
+        );
+      });
+    });
+  };
+
+  const fetchSession = async () => {
+    try {
+      const results = await executeSqlAsync(
+        "SELECT * FROM session where session='Ete' ;"
+      );
+      let rows = results.rows._array;
+      console.log("Données récupérées de SQLite :", rows);
+      setUsers(rows);
+      setData([]);
+      checkUnsyncedData();
+    } catch (error) {
+      console.log("Erreur lors de la récupération des données :", error);
+    }
+  };
+  const checkUnsyncedData = async () => {
+    try {
+      const results = await executeSqlAsync(
+        "SELECT * FROM session WHERE synced = 0;"
+      );
+      const rows = results.rows._array;
+      setHasUnsyncedData(rows.length > 0);
+    } catch (error) {
+      console.log(
+        "Erreur lors de la vérification des données non synchronisées :",
+        error
+      );
+    }
+  };
+  ///////////////////////////fin sqlite
   return (
     <View>
       <View style={tw`bg-black p-2 flex-row items-center`}>
@@ -244,10 +415,16 @@ const Hiver_liste = () => {
           value={searchQuery}
           placeholderTextColor="white"
         />
+        {/* <TouchableOpacity
+          style={tw`bg-black w-10 h-10 items-center justify-center`}
+          onPress={exportToExcel}
+        >
+          <AntDesign name="download" size={22} color="white" />
+        </TouchableOpacity> */}
       </View>
       <FlatList
         style={tw`mt-1`}
-        data={filteredData}
+        data={filteredData()}
         renderItem={renderItem}
         keyExtractor={(item) => item.id.toString()}
       />
@@ -260,8 +437,11 @@ const Hiver_liste = () => {
         }}
       >
         <SafeAreaView style={tw`bg-black flex-1 p-4`}>
-          <ScrollView style={tw`mb-2`}>
-            {eteVisible && (
+          <ScrollView style={tw`mb-2 flex-1  bg-gray-800 bg-opacity-50`}>
+            <Text style={tw`text-white text-lg font-bold mb-2 text-center`}>
+              Editer l'information de pratiquants
+            </Text>
+            {hiverVisible && (
               <TextInput
                 name="session"
                 value={session}
@@ -498,6 +678,7 @@ const Hiver_liste = () => {
                 <Text style={tw`text-white text-lg ml-1`}>Weekend</Text>
               </View>
             </View>
+
             <Text style={tw`text-white text-lg font-bold mb-2`}>
               Evaluation
             </Text>
@@ -538,10 +719,10 @@ const Hiver_liste = () => {
               style={tw`bg-gray-300 border border-gray-100 rounded-md p-2 mb-4`}
             />
           </ScrollView>
-          <View style={tw`flex-row justify-center`}>
+          <View style={tw`flex-row justify-center `}>
             <TouchableOpacity
               onPress={saveEditedItem}
-              style={tw`bg-blue-500 p-2 rounded-md flex flex-row items-center justify-center mr-4`}
+              style={tw`bg-blue-500 p-2 rounded-md flex flex-row items-center justify-center mr-4 `}
             >
               <FontAwesome5 name="user-plus" size={24} color="white" />
               <Text style={tw`text-white font-bold text-lg ml-2`}>Editer</Text>
@@ -591,6 +772,43 @@ const Hiver_liste = () => {
                 <Text style={tw`text-white text-center ml-1`}>Annuler</Text>
               </TouchableOpacity>
             </View>
+          </View>
+        </View>
+      </Modal>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={presenceModalVisible}
+        onRequestClose={() => {
+          setPresenceModalVisible(!presenceModalVisible);
+        }}
+      >
+        <View style={tw`bg-gray-800 p-2 rounded-md shadow-md justify-center `}>
+          <Text style={tw`text-white text-lg font-bold mb-4 text-center`}>
+            Liste de Présence
+          </Text>
+          <FlatList
+            data={presence}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={listePresence}
+            ListHeaderComponent={renderHeader}
+            ListEmptyComponent={PasdelistePresence}
+          />
+          <View style={tw`flex-row justify-center mt-4`}>
+            <TouchableOpacity
+              style={tw`bg-red-500 p-2 rounded-md w-24 flex-row items-center justify-center mr-3`}
+              onPress={() => setPresenceModalVisible(false)}
+            >
+              <MaterialIcons name="cancel" size={24} color="white" />
+              <Text style={tw`text-white text-lg ml-1`}>Fermer</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={tw`bg-green-500 p-2 rounded-md w-24 flex-row items-center justify-center`}
+              // onPress={() => setPresenceModalVisible(false)}
+            >
+              <MaterialIcons name="download" size={24} color="white" />
+              <Text style={tw`text-white text-lg ml-1`}>Exporter</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>

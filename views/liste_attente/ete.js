@@ -9,12 +9,14 @@ import {
   Modal,
   TouchableOpacity,
   Alert,
+  Image,
 } from "react-native";
 import {
   AntDesign,
   Entypo,
   FontAwesome5,
-  MaterialCommunityIcons,
+  Fontisto,
+  // MaterialCommunityIcons,
   MaterialIcons,
 } from "@expo/vector-icons";
 import { Picker } from "@react-native-picker/picker";
@@ -35,10 +37,13 @@ const Ete_liste = () => {
   const [data, setData] = useState([]);
   const [data0, setData0] = useState([]);
   const [data1, setData1] = useState([]);
+  const [presence, setPresence] = useState([]);
   const [actId, setActId] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [editedItem, setEditedItem] = useState(null);
+
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [presenceModalVisible, setPresenceModalVisible] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [session, setSession] = useState("Ete");
@@ -58,7 +63,7 @@ const Ete_liste = () => {
   const [carte_fede, setCarte_fede] = useState([]);
   const [consigne, setConsigne] = useState([]);
   const [etiquete, setEtiquete] = useState([]);
-  const [eteVisible, setEteVisible] = useState(false);
+  const [eteVisible] = useState(false);
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
 
@@ -83,6 +88,9 @@ const Ete_liste = () => {
     fetchAllData();
   }, []);
   useEffect(() => {
+    fetchPresence();
+  }, []);
+  useEffect(() => {
     fetchAllData0();
   }, []);
   useEffect(() => {
@@ -97,8 +105,10 @@ const Ete_liste = () => {
       if (state.isConnected) {
         try {
           const response = await url.get(`/pratiquants/ete`);
-          console.log("Données récupérées de MySQL :", response.data);
-          setData(response.data);
+
+          const donnees = response.data.pratiquants;
+
+          setData(donnees);
           setUsers([]);
           checkUnsyncedData();
         } catch (error) {
@@ -137,13 +147,34 @@ const Ete_liste = () => {
       console.error("Error fetching data:", error);
     }
   };
+  ///////////////////// debut Export excel
+  // const exportToExcel = async () => {
+  //   try {
+  //     const response = await url.get("/pratiquants/ete");
+  //     const excelUrl = await response.data.downloadUrl;
 
+  //     if (!excelUrl) {
+  //       throw new Error("Download URL not provided by the server");
+  //     }
+  //     alert("Exportation de données réussi avec succès");
+  //   } catch (error) {
+  //     console.error("Error exporting to Excel:", error);
+  //     alert("Failed to export to Excel. Please try again.");
+  //   }
+  // };
+
+  ///////////////////// fin Export excel
   const formatDate = (date) => {
     return dayjs(date).format("DD-MM-YYYY");
   };
   const handleDelete = (item) => {
     setItemToDelete(item);
     setDeleteModalVisible(true);
+  };
+
+  const handlePresence = (item) => {
+    setPresenceModalVisible(true);
+    fetchPresence(item.id);
   };
   const handleDateChange = (event, selectedDate) => {
     if (selectedDate) {
@@ -152,6 +183,16 @@ const Ete_liste = () => {
       console.log("Selected date:", selectedDate.toDateString());
     } else {
       setShowDatePicker(false);
+    }
+  };
+
+  const fetchPresence = async (id_pratiquant) => {
+    try {
+      const presence = await url.get(`presence/bypratiquant/${id_pratiquant}`);
+      setPresence(presence.data);
+    } catch (error) {
+      console.error("Error presence item:", error);
+      Alert.alert("Error presence item", error.message);
     }
   };
   const saveEditedItem = async () => {
@@ -213,10 +254,16 @@ const Ete_liste = () => {
         <AntDesign name="edit" size={24} color="white" />
       </TouchableOpacity>
       <TouchableOpacity
-        style={tw`bg-red-500 p-2 h-10 rounded-md`}
+        style={tw`bg-red-500 p-2 h-10 mr-1 rounded-md`}
         onPress={() => handleDelete(item)}
       >
         <Entypo name="trash" size={24} color="white" />
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={tw`bg-gray-500 p-2 h-10 rounded-md`}
+        onPress={() => handlePresence(item)}
+      >
+        <MaterialIcons name="co-present" size={24} color="white" />
       </TouchableOpacity>
     </View>
   );
@@ -231,6 +278,12 @@ const Ete_liste = () => {
         >
           <View style={tw`flex-1 flex-row items-center`}>
             <Text style={tw`text-lg text-white mr-4`}>{item.id}</Text>
+            {item.barcodeUrl && (
+              <Image
+                source={{ uri: item.barcodeUrl }}
+                style={tw`w-40 h-10 mr-1`}
+              />
+            )}
             <Text style={tw`text-lg text-white`}>{item.nom}</Text>
           </View>
           <View style={tw`flex-row items-center`}>
@@ -254,6 +307,32 @@ const Ete_liste = () => {
       </Swipeable>
     );
   };
+
+  const listePresence = ({ item }) => (
+    <View style={tw`flex-row items-center justify-between py-2`}>
+      <Text style={tw`text-center text-white text-lg font-bold`}>
+        {item.nom}
+      </Text>
+      <Text style={tw`text-lg text-white`}>{item.categorie}</Text>
+      <Text style={tw`text-lg text-white`}>{item.jour}</Text>
+      <Text style={tw`text-white`}>{item.present ? "Présent" : "Absent"}</Text>
+    </View>
+  );
+  const PasdelistePresence = () => (
+    <View style={tw`flex-1 justify-center items-center`}>
+      <Text style={tw`text-lg text-white`}>Pas de données</Text>
+    </View>
+  );
+  const renderHeader = () => (
+    <View
+      style={tw`flex-row items-center justify-between py-2 border-b border-gray-600`}
+    >
+      <Text style={tw`text-white text-lg font-bold`}>Nom</Text>
+      <Text style={tw`text-white text-lg font-bold`}>Catégorie</Text>
+      <Text style={tw`text-white text-lg font-bold`}>Date</Text>
+      <Text style={tw`text-white text-lg font-bold`}>Statut</Text>
+    </View>
+  );
   const handleEdit = (item) => {
     setEditedItem(item);
     setNom(item.nom);
@@ -330,6 +409,7 @@ const Ete_liste = () => {
     }
   };
   ///////////////////////////fin sqlite
+
   return (
     <View>
       <View style={tw`bg-black p-2 flex-row items-center`}>
@@ -343,6 +423,12 @@ const Ete_liste = () => {
           value={searchQuery}
           placeholderTextColor="white"
         />
+        {/* <TouchableOpacity
+          style={tw`bg-black w-10 h-10 items-center justify-center`}
+          onPress={exportToExcel}
+        >
+          <AntDesign name="download" size={22} color="white" />
+        </TouchableOpacity> */}
       </View>
       <FlatList
         style={tw`mt-1`}
@@ -682,7 +768,7 @@ const Ete_liste = () => {
                 style={tw`bg-red-500 p-2 rounded-md mr-5 flex-row`}
                 onPress={confirmDeleteItem}
               >
-                <Entypo name="trash" size={18} color="white" />
+                <Fontisto name="trash" size={24} color="black" />
 
                 <Text style={tw`text-white text-center ml-1`}>Supprimer</Text>
               </TouchableOpacity>
@@ -694,6 +780,43 @@ const Ete_liste = () => {
                 <Text style={tw`text-white text-center ml-1`}>Annuler</Text>
               </TouchableOpacity>
             </View>
+          </View>
+        </View>
+      </Modal>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={presenceModalVisible}
+        onRequestClose={() => {
+          setPresenceModalVisible(!presenceModalVisible);
+        }}
+      >
+        <View style={tw`bg-gray-800 p-2 rounded-md shadow-md justify-center `}>
+          <Text style={tw`text-white text-lg font-bold mb-4 text-center`}>
+            Liste de Présence
+          </Text>
+          <FlatList
+            data={presence}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={listePresence}
+            ListHeaderComponent={renderHeader}
+            ListEmptyComponent={PasdelistePresence}
+          />
+          <View style={tw`flex-row justify-center mt-4`}>
+            <TouchableOpacity
+              style={tw`bg-red-500 p-2 rounded-md w-24 flex-row items-center justify-center mr-3`}
+              onPress={() => setPresenceModalVisible(false)}
+            >
+              <MaterialIcons name="cancel" size={24} color="white" />
+              <Text style={tw`text-white text-lg ml-1`}>Fermer</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={tw`bg-green-500 p-2 rounded-md w-24 flex-row items-center justify-center`}
+              // onPress={() => setPresenceModalVisible(false)}
+            >
+              <MaterialIcons name="download" size={24} color="white" />
+              <Text style={tw`text-white text-lg ml-1`}>Exporter</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>

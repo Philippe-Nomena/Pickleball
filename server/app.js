@@ -35,6 +35,8 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/barcodes", express.static(path.join(__dirname, "barcodes")));
+app.use("/dataExcel", express.static(path.join(__dirname, "dataExcel")));
+
 // Routes
 app.use("/pratiquants", PratiquantsRoute);
 app.use("/utilisateur", UtilisateurRoute);

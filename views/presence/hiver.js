@@ -13,11 +13,12 @@ import {
   TouchableOpacity,
   Alert,
 } from "react-native";
-import BarcodeScannerScreen from "./qrcode";
+
 import { url } from "../url";
 import NetInfo from "@react-native-community/netinfo";
 import * as SQLite from "expo-sqlite";
 import dayjs from "dayjs";
+import BarcodeScannerScreen from "./qrcode";
 
 const Hiver_Presence = () => {
   const [nom, setNom] = useState("");

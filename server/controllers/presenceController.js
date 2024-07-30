@@ -18,38 +18,52 @@ exports.getAllPresence = async (req, res, next) => {
   const presence = await Presence.findAll({ where: { present: true } });
   res.json(presence);
 };
+
+const validateDate = (date) => {
+  if (!date) {
+    return { valid: false, message: "La date est requise" };
+  }
+
+  if (!moment(date, "YYYY-MM-DD", true).isValid()) {
+    return { valid: false, message: "Format de date invalide" };
+  }
+
+  return { valid: true };
+};
+
 exports.getAllPresenceDate = async (req, res, next) => {
   try {
     const date = req.query.date;
-    console.log("Received date:", date);
-    if (!date) {
-      return res.status(400).json({ error: "La date est requise" });
+    const validation = validateDate(date);
+
+    if (!validation.valid) {
+      return res.status(400).json({ error: validation.message });
     }
 
-    const isValidDate = (date) => {
-      return moment(date, "YYYY-MM-DD", true).isValid();
-    };
+    const startDate = moment(date).startOf("day").toDate();
+    const endDate = moment(date).endOf("day").toDate();
 
-    if (!isValidDate(date)) {
-      return res.status(400).json({ error: "Format de date invalide" });
-    }
-
-    const formattedDate = moment(date).format("YYYY-MM-DD");
     const presence = await Presence.findAll({
       where: {
-        createdAt: {
-          [Op.eq]: formattedDate,
+        jour: {
+          [Op.between]: [startDate, endDate],
         },
+        present: true,
       },
     });
 
     res.json(presence);
   } catch (error) {
-    console.error("Erreur lors de la récupération des présences : ", error);
-    next(error);
+    console.error("Erreur lors de la récupération des présences : ", {
+      message: error.message,
+      stack: error.stack,
+    });
+    res.status(500).json({
+      message: "Erreur lors de la récupération des présences",
+      error: error.message,
+    });
   }
 };
-
 // Delete an activity by ID
 exports.deletePresence = async (req, res, next) => {
   try {
