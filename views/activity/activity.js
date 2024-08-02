@@ -15,7 +15,7 @@ import tw from "tailwind-react-native-classnames";
 import { AntDesign, Entypo, MaterialIcons } from "@expo/vector-icons";
 import { url, stateUrl } from "../url";
 import DateTimePicker from "@react-native-community/datetimepicker";
-
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as ImagePicker from "expo-image-picker";
 
 const Activity = () => {
@@ -36,8 +36,6 @@ const Activity = () => {
   const [groupe, setGroupe] = useState([]);
   const [horaire, SetHoraire] = useState("");
   const [prix, setPrix] = useState("");
-  const [nbjour, setNbjour] = useState("");
-  // const [imageName, setImageName] = useState("");
 
   const [date1, setDate1] = useState(new Date());
   const [date2, setDate2] = useState(new Date());
@@ -75,12 +73,27 @@ const Activity = () => {
     }
     setGroupe(updatedGroupe);
   };
+
   const fetchAllData = async () => {
     try {
-      const res = await url.get("/activite");
+      const token = await AsyncStorage.getItem("token");
+      if (!token) {
+        throw new Error("Token not found");
+      }
+
+      const res = await url.get("/activite", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
       setData(res.data);
     } catch (error) {
-      console.error("Error fetching data:", error);
+      const errorMessage = error.response
+        ? error.response.data.message || error.response.data
+        : error.message;
+      console.error("Error fetching data:", errorMessage);
+      alert("Error fetching data: " + errorMessage);
     }
   };
 
@@ -90,23 +103,48 @@ const Activity = () => {
     setDeleteModalVisible(true);
     setImage(imageUrl);
   };
+
   const handleListeCategorie = async (item) => {
     try {
-      const response = await url.get(`/categorie/byactivite/${item.id}`);
+      const token = await AsyncStorage.getItem("token");
+
+      if (!token) {
+        throw new Error("Token not found");
+      }
+
+      const response = await url.get(`/categorie/byactivite/${item.id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
       setListe_categorie(response.data);
       setModalListe_categorie(true);
     } catch (error) {
       console.error("Erreur lors de la récupération des catégories :", error);
     }
   };
+
   const confirmDeleteItem = async () => {
     try {
-      await url.delete(`/activite/${itemToDelete.id}`);
+      const token = await AsyncStorage.getItem("token");
+
+      if (!token) {
+        throw new Error("Token not found");
+      }
+
+      await url.delete(`/activite/${itemToDelete.id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
       setDeleteModalVisible(false);
       fetchAllData();
-      Alert.alert("Suppression réussi avec succès");
+      Alert.alert("Suppression réussie avec succès !");
     } catch (error) {
-      Alert.alert("Error deleting item", error.message);
+      console.error("Erreur lors de la suppression de l'élément :", error);
+      Alert.alert("Erreur lors de la suppression de l'élément", error.message);
     }
   };
 
@@ -123,64 +161,6 @@ const Activity = () => {
     setCategorieModalVisible(true);
   };
 
-  const saveEditedItem = async () => {
-    try {
-      const formData = new FormData();
-      formData.append("nom", nom);
-
-      if (image && image.uri) {
-        formData.append("imagePath", {
-          uri: image.uri,
-          type: getImageType(image.uri),
-          name: image.uri.split("/").pop().toLowerCase(),
-        });
-      }
-
-      await url.put(`/activite/${editedItem.id}`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-      setModalVisible(false);
-      fetchAllData();
-      setNom("");
-      setImage(null);
-      Alert.alert("Edit réussi");
-    } catch (error) {
-      console.error("Error editing item:", error);
-      Alert.alert("Error editing item", error.message);
-    }
-  };
-  const addCategorie = async () => {
-    try {
-      await url.post(`/categorie`, {
-        id_activite,
-        horaire,
-        prix,
-        categorie,
-        nbjour,
-        jour: groupe,
-        datedebut: formatDate(date1),
-        datefin: formatDate(date2),
-      });
-      setCategorieModalVisible(false);
-      fetchAllData();
-      SetHoraire("");
-      setPrix("");
-      setNbjour("");
-      setCategorie("");
-      setGroupe([]);
-
-      Alert.alert("categorie reussi");
-    } catch (error) {
-      console.error("Error categorie item:", error);
-      Alert.alert(
-        "Error categorie item",
-        error.response?.data?.error || error.message
-      );
-    }
-  };
   const handleImagePick = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
@@ -195,43 +175,133 @@ const Activity = () => {
       quality: 1,
     });
 
-    if (!result.cancelled && result.assets.length > 0) {
+    if (!result.canceled && result.assets.length > 0) {
       setImage(result.assets[0]);
-      console.log(result.assets[0]);
     }
   };
 
-  const addActivity = async () => {
-    if (!nom || !image || !image.uri) {
-      Alert.alert("Please fill in all fields and select an image");
-      return;
-    }
-    const formData = new FormData();
-    formData.append("nom", nom);
-    formData.append("imagePath", {
-      uri: image.uri,
-      type: getImageType(image.uri),
-      name: image.uri.split("/").pop().toLowerCase(),
-    });
-
+  const saveEditedItem = async () => {
     try {
-      const res = await url.post("/activite", formData, {
+      const token = await AsyncStorage.getItem("token");
+
+      if (!token) {
+        throw new Error("Token not found");
+      }
+
+      const formData = new FormData();
+      formData.append("nom", nom);
+
+      if (image && image.uri) {
+        formData.append("imagePath", {
+          uri: image.uri,
+          type: getImageType(image.uri),
+          name: image.uri.split("/").pop().toLowerCase(),
+        });
+      }
+
+      const response = await url.put(`/activite/${editedItem.id}`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
         },
       });
-      if (res) {
-        Alert.alert("Activity created successfully!");
+
+      setModalVisible(false);
+      fetchAllData();
+      setNom("");
+      setImage(null);
+      Alert.alert("Modification réussie !");
+    } catch (error) {
+      console.error("Erreur lors de la modification de l'élément :", error);
+      Alert.alert("Erreur lors de la modification de l'élément", error.message);
+    }
+  };
+  const addCategorie = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+
+      if (!token) {
+        throw new Error("Token not found");
+      }
+
+      const formattedDate1 = formatDate(date1);
+      const formattedDate2 = formatDate(date2);
+
+      await url.post(
+        `/categorie`,
+        {
+          id_activite,
+          horaire,
+          prix,
+          categorie,
+          jour: groupe,
+          datedebut: formattedDate1,
+          datefin: formattedDate2,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setCategorieModalVisible(false);
+      fetchAllData();
+      SetHoraire("");
+      setPrix("");
+      setCategorie("");
+      setGroupe([]);
+
+      Alert.alert("Catégorie ajoutée avec succès !");
+    } catch (error) {
+      console.error("Erreur lors de l'ajout de la catégorie :", error);
+      Alert.alert(
+        "Erreur lors de l'ajout de la catégorie",
+        error.response?.data?.error || error.message
+      );
+    }
+  };
+  const addActivity = async () => {
+    if (!nom || !image || !image.uri) {
+      Alert.alert("Veuillez remplir tous les champs et sélectionner une image");
+      return;
+    }
+
+    try {
+      const token = await AsyncStorage.getItem("token");
+
+      if (!token) {
+        throw new Error("Token not found");
+      }
+
+      const formData = new FormData();
+      formData.append("nom", nom);
+      formData.append("imagePath", {
+        uri: image.uri,
+        type: getImageType(image.uri),
+        name: image.uri.split("/").pop().toLowerCase(),
+      });
+
+      const response = await url.post("/activite", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response) {
+        Alert.alert("Activité créée avec succès !");
         fetchAllData();
         setAjoutModal(false);
         setNom("");
         setImage(null);
       }
     } catch (error) {
-      console.error("Error creating activity:", error);
-      Alert.alert("Failed to create activity. Please try again.");
+      console.error("Erreur lors de la création de l'activité :", error);
+      Alert.alert("Échec de la création de l'activité. Veuillez réessayer.");
     }
   };
+
   const getImageType = (uri) => {
     const extension = uri.split(".").pop().toLowerCase();
     switch (extension) {
@@ -386,10 +456,10 @@ const Activity = () => {
                   <Text style={tw`text-center`}>Changer Photo</Text>
                 </TouchableOpacity>
 
-                {image && (
+                {image && image.uri && (
                   <Image
                     name="imagePath"
-                    source={{ uri: image }}
+                    source={{ uri: image.uri }}
                     style={tw`w-full h-44 rounded-md mb-2`}
                   />
                 )}
@@ -483,7 +553,7 @@ const Activity = () => {
                 >
                   <Text style={tw`text-center`}>Inserer Photo</Text>
                 </TouchableOpacity>
-                {image && (
+                {image && image.uri && (
                   <Image
                     name="imagePath"
                     source={{ uri: image.uri }}
@@ -594,16 +664,6 @@ const Activity = () => {
               />
             </View>
 
-            <View>
-              <Text style={tw`text-white `}>Nombre de jour:</Text>
-              <TextInput
-                style={tw`bg-gray-200 border border-gray-600 rounded-md p-2 mb-2 text-center`}
-                placeholder="nbjour"
-                value={nbjour}
-                onChangeText={setNbjour}
-                name="nbjour"
-              />
-            </View>
             <View>
               <Text style={tw`text-white text-lg font-bold mb-2`}>
                 Date de debut

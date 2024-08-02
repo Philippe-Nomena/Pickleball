@@ -13,7 +13,7 @@ import tw from "tailwind-react-native-classnames";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import dayjs from "dayjs";
 import { url } from "../url";
-
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SQLite from "expo-sqlite";
 import NetInfo from "@react-native-community/netinfo";
 import { Checkbox } from "./checkbox";
@@ -74,21 +74,54 @@ const Ete_Session = () => {
 
   const fetchAllData = async () => {
     try {
-      const res = await url.get("/activite");
+      const token = await AsyncStorage.getItem("token");
+
+      if (!token) {
+        throw new Error("Token not found");
+      }
+
+      const res = await url.get("/activite", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
       setData(res.data);
     } catch (error) {
-      console.error("Error fetching data:", error);
+      const errorMessage = error.response
+        ? error.response.data.message || error.response.data
+        : error.message;
+      console.error("Error fetching data:", errorMessage);
+      alert("Error fetching data: " + errorMessage);
     }
   };
 
   const fetchAllData1 = async (activiteId) => {
+    if (!activiteId) {
+      console.error("L'ID d'activité est requis pour récupérer les données.");
+      return;
+    }
+
     try {
-      const res = await url.get(`/categorie/byactivite/${activiteId}`);
+      const token = await AsyncStorage.getItem("token");
+
+      if (!token) {
+        throw new Error("Token not found");
+      }
+
+      const res = await url.get(`/categorie/byactivite/${activiteId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
       setData1(res.data);
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.error("Erreur lors de la récupération des données :", error);
+      Alert.alert("Erreur lors de la récupération des données", error.message);
     }
   };
+
   const handleToggleCheckbox = (state, setState, value) => {
     if (state === value) {
       setState("");
@@ -193,26 +226,40 @@ const Ete_Session = () => {
       const state = await NetInfo.fetch();
       if (state.isConnected) {
         try {
-          const response = await url.post("/pratiquants", {
-            session,
-            nom,
-            sexe,
-            naissance: formatDate(date),
-            payement,
-            consigne,
-            carte_fede,
-            etiquete,
-            courriel,
-            adresse,
-            telephone,
-            tel_urgence,
-            activite,
-            categorie,
-            evaluation,
-            mode_payement,
-            carte_payement,
-            groupe,
-          });
+          const token = await AsyncStorage.getItem("token");
+
+          if (!token) {
+            throw new Error("Token not found");
+          }
+
+          const response = await url.post(
+            "/pratiquants",
+            {
+              session,
+              nom,
+              sexe,
+              naissance: formatDate(date),
+              payement,
+              consigne,
+              carte_fede,
+              etiquete,
+              courriel,
+              adresse,
+              telephone,
+              tel_urgence,
+              activite,
+              categorie,
+              evaluation,
+              mode_payement,
+              carte_payement,
+              groupe,
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
 
           const newPratiquants = response.data;
           console.log("Réponse de l'API :", newPratiquants);
@@ -248,14 +295,12 @@ const Ete_Session = () => {
             "Erreur lors de l'insertion des données dans MySQL :",
             error
           );
-
           await insertLocalPractitioner();
         }
       } else {
         console.log(
           "Pas de connexion Internet. Insertion des données localement."
         );
-
         await insertLocalPractitioner();
       }
     } catch (error) {
@@ -263,7 +308,6 @@ const Ete_Session = () => {
         "Erreur lors de la récupération de l'état du réseau :",
         error
       );
-
       await insertLocalPractitioner();
     }
   };

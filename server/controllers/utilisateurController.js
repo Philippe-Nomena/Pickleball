@@ -114,6 +114,8 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { Op } = require("sequelize");
+require("dotenv").config();
+
 const Utilisateur = require("../models/Utilisateur");
 const { encrypt, decrypt } = require("../utils/cryptoUtil");
 
@@ -215,7 +217,9 @@ exports.login = async (req, res, next) => {
     }
 
     if (result) {
-      const token = jwt.sign({ id: user.id }, "secret", { expiresIn: "1h" });
+      const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
+        expiresIn: "1h",
+      });
       return res.json({ result: true, token: token });
     } else {
       return res.json({ result: false });
@@ -228,11 +232,17 @@ exports.login = async (req, res, next) => {
 
 // Verify JWT Token
 exports.verifyToken = (req, res, next) => {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
+
+  if (!token) {
+    return res.status(403).send("A token is required for authentication");
+  }
+
   try {
-    const decoded = jwt.verify(req.body.token, "secret");
-    console.log(decoded);
-    const userId = decoded.id;
-    return res.json({ iduser: userId });
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded;
+    next();
   } catch (error) {
     console.error("Erreur lors de la vérification du token :", error);
     return res.status(401).send("Token invalide");

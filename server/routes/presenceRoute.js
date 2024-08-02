@@ -2,12 +2,16 @@ const express = require("express");
 const router = express.Router();
 
 const PresenceController = require("../controllers/presenceController");
-
-router.post("/", PresenceController.createPresence);
-router.get("/", PresenceController.getAllPresence);
-router.get("/bydate", PresenceController.getAllPresenceDate);
-router.get("/bypratiquant/:id", PresenceController.getPresencebyPratiquant);
+const { verifyToken } = require("../controllers/utilisateurController");
+router.post("/", verifyToken, PresenceController.createPresence);
+router.get("/", verifyToken, PresenceController.getAllPresence);
+router.get("/bydate", verifyToken, PresenceController.getAllPresenceDate);
+router.get(
+  "/bypratiquant/:id",
+  verifyToken,
+  PresenceController.getPresencebyPratiquant
+);
 router.delete("/:id", PresenceController.deletePresence);
-router.put("/:id", PresenceController.updatePresence);
+router.put("/:id", verifyToken, PresenceController.updatePresence);
 
 module.exports = router;

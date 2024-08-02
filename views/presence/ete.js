@@ -2,7 +2,7 @@ import React, { useState, useEffect, act } from "react";
 import tw from "tailwind-react-native-classnames";
 import { FontAwesome5, MaterialIcons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
-
+import AsyncStorage from "@react-native-async-storage/async-storage";
 // import { Checkbox } from "./checkbox";
 import {
   SafeAreaView,
@@ -34,16 +34,6 @@ const Ete_Presence = () => {
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
 
-  // const updateGroupe = (itemValue) => {
-  //   let updatedGroupe = [...groupe];
-  //   const index = updatedGroupe.indexOf(itemValue);
-  //   if (index > -1) {
-  //     updatedGroupe.splice(index, 1);
-  //   } else {
-  //     updatedGroupe.push(itemValue);
-  //   }
-  //   setGroupe(updatedGroupe);
-  // };
   const handleDateChange = (event, selectedDate) => {
     if (selectedDate) {
       setDate(selectedDate);
@@ -60,6 +50,7 @@ const Ete_Presence = () => {
   const Ajout = async () => {
     if (!nom) {
       console.log("Le nom ne peut pas être vide");
+      Alert.alert("Erreur", "Le nom ne peut pas être vide");
       return;
     }
 
@@ -67,26 +58,38 @@ const Ete_Presence = () => {
       const state = await NetInfo.fetch();
       if (state.isConnected) {
         try {
-          const response = await url.put(`/presence/${id_pratiquant}`, {
-            nom,
-            session,
-            activite,
-            jour: formatDate(date),
-            present,
-            absence,
-            categorie,
-          });
+          const token = await AsyncStorage.getItem("token");
+
+          if (!token) {
+            throw new Error("Token not found");
+          }
+
+          const response = await url.put(
+            `/presence/${id_pratiquant}`,
+            {
+              nom,
+              session,
+              activite,
+              jour: formatDate(date),
+              present,
+              absence,
+              categorie,
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+
           console.log(id_pratiquant);
           console.log("Données insérées avec succès dans MySQL");
-          Alert.alert(response.data);
+          Alert.alert("Succès", response.data);
 
           setBarcodeData(null);
         } catch (error) {
-          // console.log(
-          //   "Erreur lors de l'insertion des données dans MySQL :",
-          //   error.response ? error.response.data : error
-          // );
-          Alert.alert(error.response.data);
+          console.error("Error inserting data online:", error.message);
+          Alert.alert("Erreur", error.response?.data || error.message);
           await insertLocalData(
             nom,
             session,
@@ -112,11 +115,12 @@ const Ete_Presence = () => {
           id_pratiquant,
           0
         );
+        Alert.alert("Succès", "Données insérées localement");
       }
     } catch (error) {
-      console.log(
-        "Erreur lors de la récupération de l'état du réseau :",
-        error
+      console.error(
+        "Erreur lors de la récupération de l'état du réseau:",
+        error.message
       );
       await insertLocalData(
         nom,
@@ -128,14 +132,28 @@ const Ete_Presence = () => {
         id_pratiquant,
         0
       );
+      Alert.alert(
+        "Erreur",
+        "Erreur lors de la récupération de l'état du réseau. Données insérées localement"
+      );
     }
   };
-
   const handleScan = async (data) => {
     setBarcodeData(data);
 
     try {
-      const getNom = await url.get(`/pratiquants/ete/${data}`);
+      const token = await AsyncStorage.getItem("token");
+
+      if (!token) {
+        throw new Error("Token not found");
+      }
+
+      const getNom = await url.get(`/pratiquants/ete/${data}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
       if (getNom) {
         const nom = getNom.data.nom;
         const Id = getNom.data.id;

@@ -52,7 +52,8 @@
     "react-native-tab-view": "^3.5.2",
     "react-native-view-shot": "^3.8.0",
     "react-native-web": "~0.19.6",
-    "tailwind-react-native-classnames": "^1.5.1"
+    "tailwind-react-native-classnames": "^1.5.1",
+    "expo-print": "~12.8.1"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

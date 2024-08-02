@@ -21,7 +21,7 @@ import { Picker } from "@react-native-picker/picker";
 import { Checkbox } from "../session/checkbox";
 import tw from "tailwind-react-native-classnames";
 import DateTimePicker from "@react-native-community/datetimepicker";
-
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import dayjs from "dayjs";
 import { Swipeable } from "react-native-gesture-handler";
 import { url } from "../url";
@@ -101,9 +101,20 @@ const Automne_liste = () => {
       const state = await NetInfo.fetch();
       if (state.isConnected) {
         try {
-          const response = await url.get(`/pratiquants/automne`);
-          console.log("Données récupérées de MySQL :", response.data);
+          const token = await AsyncStorage.getItem("token");
+
+          if (!token) {
+            throw new Error("Token not found");
+          }
+
+          const response = await url.get(`/pratiquants/automne`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
           const donnees = response.data.pratiquants;
+
           setData(donnees);
           setUsers([]);
           checkUnsyncedData();
@@ -128,10 +139,45 @@ const Automne_liste = () => {
 
   const fetchAllData0 = async () => {
     try {
-      const res = await url.get("/activite");
+      const token = await AsyncStorage.getItem("token");
+
+      if (!token) {
+        throw new Error("Token not found");
+      }
+
+      const res = await url.get("/activite", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
       setData0(res.data);
     } catch (error) {
-      console.error("Error fetching data:", error);
+      const errorMessage = error.response
+        ? error.response.data.message || error.response.data
+        : error.message;
+      console.error("Error fetching data:", errorMessage);
+      alert("Error fetching data: " + errorMessage);
+    }
+  };
+
+  const fetchAllData1 = async (activiteId) => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+
+      if (!token) {
+        throw new Error("Token not found");
+      }
+
+      const response = await url.get(`/categorie/byactivite/${activiteId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      setData1(response.data);
+    } catch (error) {
+      console.error("Erreur lors de la récupération des catégories :", error);
     }
   };
   // const exportToExcel = async () => {
@@ -148,23 +194,6 @@ const Automne_liste = () => {
   //     alert("Failed to export to Excel. Please try again.");
   //   }
   // };
-  const fetchAllData1 = async (activiteId) => {
-    try {
-      const res = await url.get(`/categorie/byactivite/${activiteId}`);
-      setData1(res.data);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
-  };
-  const fetchPresence = async (id_pratiquant) => {
-    try {
-      const presence = await url.get(`presence/bypratiquant/${id_pratiquant}`);
-      setPresence(presence.data);
-    } catch (error) {
-      console.error("Error presence item:", error);
-      Alert.alert("Error presence item", error.message);
-    }
-  };
   const formatDate = (date) => {
     return dayjs(date).format("DD-MM-YYYY");
   };
@@ -185,28 +214,66 @@ const Automne_liste = () => {
       setShowDatePicker(false);
     }
   };
+  const fetchPresence = async (id_pratiquant) => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+
+      if (!token) {
+        throw new Error("Token not found");
+      }
+
+      const presence = await url.get(
+        `/presence/bypratiquant/${id_pratiquant}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setPresence(presence.data);
+    } catch (error) {
+      console.error("Error presence item:", error);
+      Alert.alert("Error presence item", error.message);
+    }
+  };
+
   const saveEditedItem = async () => {
     try {
-      const edit = await url.put(`pratiquants/${editedItem.id}`, {
-        session,
-        nom,
-        sexe,
-        naissance: formatDate(date),
-        payement,
-        consigne,
-        carte_fede: carte_fede,
-        etiquete,
-        courriel,
-        adresse,
-        telephone,
-        tel_urgence: tel_urgence,
-        activite,
-        categorie,
-        evaluation,
-        mode_payement: mode_payement,
-        carte_payement: carte_payement,
-        groupe,
-      });
+      const token = await AsyncStorage.getItem("token");
+
+      if (!token) {
+        throw new Error("Token not found");
+      }
+
+      const edit = await url.put(
+        `pratiquants/${editedItem.id}`,
+        {
+          session,
+          nom,
+          sexe,
+          naissance: formatDate(date),
+          payement,
+          consigne,
+          carte_fede: carte_fede,
+          etiquete,
+          courriel,
+          adresse,
+          telephone,
+          tel_urgence: tel_urgence,
+          activite,
+          categorie,
+          evaluation,
+          mode_payement: mode_payement,
+          carte_payement: carte_payement,
+          groupe,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
       if (edit) {
         setNom("");
         setAdresse("");
@@ -224,9 +291,20 @@ const Automne_liste = () => {
       Alert.alert("Error editing item", error.message);
     }
   };
-  const confirmDeleteItem = () => {
+
+  const confirmDeleteItem = async () => {
     try {
-      url.delete(`/pratiquants/${itemToDelete.id}`);
+      const token = await AsyncStorage.getItem("token");
+
+      if (!token) {
+        throw new Error("Token not found");
+      }
+
+      await url.delete(`/pratiquants/${itemToDelete.id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       setDeleteModalVisible(false);
       fetchAllData();
       Alert.alert("Suppression de pratiquants réussi");

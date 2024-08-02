@@ -2,8 +2,7 @@ import React, { useState, useEffect, act } from "react";
 import tw from "tailwind-react-native-classnames";
 import { FontAwesome5, MaterialIcons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
-
-// import { Checkbox } from "./checkbox";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   SafeAreaView,
   ScrollView,
@@ -26,7 +25,7 @@ const Automne_Presence = () => {
   const [remarque, setRemarque] = useState("");
   const [activite, setActivite] = useState("");
   const [categorie, setCategorie] = useState("");
-  // const [groupe, setGroupe] = useState(["Lundi"]);
+
   const [id_pratiquant, setId_pratiquant] = useState("");
   const [barcodeData, setBarcodeData] = useState(null);
   const [automneVisible] = useState(false);
@@ -35,16 +34,6 @@ const Automne_Presence = () => {
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
 
-  // const updateGroupe = (itemValue) => {
-  //   let updatedGroupe = [...groupe];
-  //   const index = updatedGroupe.indexOf(itemValue);
-  //   if (index > -1) {
-  //     updatedGroupe.splice(index, 1);
-  //   } else {
-  //     updatedGroupe.push(itemValue);
-  //   }
-  //   setGroupe(updatedGroupe);
-  // };
   const handleDateChange = (event, selectedDate) => {
     if (selectedDate) {
       setDate(selectedDate);
@@ -61,6 +50,7 @@ const Automne_Presence = () => {
   const Ajout = async () => {
     if (!nom) {
       console.log("Le nom ne peut pas être vide");
+      Alert.alert("Erreur", "Le nom ne peut pas être vide");
       return;
     }
 
@@ -68,32 +58,44 @@ const Automne_Presence = () => {
       const state = await NetInfo.fetch();
       if (state.isConnected) {
         try {
-          const response = await url.put(`/presence/${id_pratiquant}`, {
-            nom,
-            session,
-            activite,
-            jour: formatDate(date),
-            present,
-            absence,
-            categorie,
-          });
+          const token = await AsyncStorage.getItem("token");
+
+          if (!token) {
+            throw new Error("Token not found");
+          }
+
+          const response = await url.put(
+            `/presence/${id_pratiquant}`,
+            {
+              nom,
+              session,
+              activite,
+              jour: formatDate(date),
+              present,
+              absence,
+              categorie,
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+
           console.log(id_pratiquant);
           console.log("Données insérées avec succès dans MySQL");
-          Alert.alert(response.data);
+          Alert.alert("Succès", response.data);
 
           setBarcodeData(null);
         } catch (error) {
-          // console.log(
-          //   "Erreur lors de l'insertion des données dans MySQL :",
-          //   error.response ? error.response.data : error
-          // );
-          Alert.alert(error.response.data);
+          console.error("Error inserting data online:", error.message);
+          Alert.alert("Erreur", error.response?.data || error.message);
           await insertLocalData(
             nom,
             session,
             activite,
             categorie,
-            formatDate(date),
+            groupe,
             present,
             id_pratiquant,
             0
@@ -108,26 +110,31 @@ const Automne_Presence = () => {
           session,
           activite,
           categorie,
-          formatDate(date),
+          groupe,
           present,
           id_pratiquant,
           0
         );
+        Alert.alert("Succès", "Données insérées localement");
       }
     } catch (error) {
-      console.log(
-        "Erreur lors de la récupération de l'état du réseau :",
-        error
+      console.error(
+        "Erreur lors de la récupération de l'état du réseau:",
+        error.message
       );
       await insertLocalData(
         nom,
         session,
         activite,
         categorie,
-        formatDate(date),
+        groupe,
         present,
         id_pratiquant,
         0
+      );
+      Alert.alert(
+        "Erreur",
+        "Erreur lors de la récupération de l'état du réseau. Données insérées localement"
       );
     }
   };
@@ -136,7 +143,18 @@ const Automne_Presence = () => {
     setBarcodeData(data);
 
     try {
-      const getNom = await url.get(`/pratiquants/automne/${data}`);
+      const token = await AsyncStorage.getItem("token");
+
+      if (!token) {
+        throw new Error("Token not found");
+      }
+
+      const getNom = await url.get(`/pratiquants/automne/${data}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
       if (getNom) {
         const nom = getNom.data.nom;
         const Id = getNom.data.id;

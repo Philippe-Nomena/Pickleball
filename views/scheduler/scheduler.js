@@ -5,7 +5,7 @@ import tw from "tailwind-react-native-classnames";
 import { FlatList } from "react-native";
 import { url } from "../url";
 import dayjs from "dayjs";
-
+import AsyncStorage from "@react-native-async-storage/async-storage";
 const Scheduler = () => {
   const [selectedDate, setSelectedDate] = useState("");
   const [pratiquantsByDate, setPratiquantsByDate] = useState([]);
@@ -27,14 +27,27 @@ const Scheduler = () => {
 
   const fetchAllPratiquants = async () => {
     setLoading(true);
+
     try {
-      const response = await url.get(`/presence`);
+      const token = await AsyncStorage.getItem("token");
+
+      if (!token) {
+        throw new Error("Token not found");
+      }
+
+      const response = await url.get(`/presence`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
       const uniquePratiquants = removeDuplicates(response.data);
       setAllPratiquants(uniquePratiquants);
       setPratiquantsByDate(uniquePratiquants);
     } catch (error) {
       console.error("Error fetching all pratiquants:", error.message);
       console.error("Error details:", error.response?.data || error.toJSON());
+      Alert.alert("Error fetching all pratiquants", error.message);
     } finally {
       setLoading(false);
     }
@@ -43,14 +56,25 @@ const Scheduler = () => {
   const fetchPratiquantsByDate = async (date) => {
     setLoading(true);
     try {
+      const token = await AsyncStorage.getItem("token");
+
+      if (!token) {
+        throw new Error("Token not found");
+      }
+
       const response = await url.get("/presence/bydate", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
         params: { date },
       });
+
       const uniquePratiquants = removeDuplicates(response.data);
       setPratiquantsByDate(uniquePratiquants);
     } catch (error) {
       console.error("Error fetching pratiquants by date:", error.message);
       console.error("Error details:", error.response?.data || error.toJSON());
+      Alert.alert("Error fetching pratiquants by date", error.message);
     } finally {
       setLoading(false);
     }

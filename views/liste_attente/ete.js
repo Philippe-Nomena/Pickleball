@@ -23,11 +23,13 @@ import { Picker } from "@react-native-picker/picker";
 import { Checkbox } from "../session/checkbox";
 import tw from "tailwind-react-native-classnames";
 import DateTimePicker from "@react-native-community/datetimepicker";
-
+import * as Print from "expo-print";
+import * as FileSystem from "expo-file-system";
+import * as Sharing from "expo-sharing";
 import dayjs from "dayjs";
 import { Swipeable } from "react-native-gesture-handler";
 import { url } from "../url";
-
+import AsyncStorage from "@react-native-async-storage/async-storage";
 ////////debut util sur synchronisation de donnees sqlite
 import * as SQLite from "expo-sqlite";
 const db = SQLite.openDatabase("Test.db");
@@ -98,13 +100,22 @@ const Ete_liste = () => {
       fetchAllData1(actId);
     }
   }, [actId]);
-
   const fetchAllData = async () => {
     try {
       const state = await NetInfo.fetch();
       if (state.isConnected) {
         try {
-          const response = await url.get(`/pratiquants/ete`);
+          const token = await AsyncStorage.getItem("token");
+
+          if (!token) {
+            throw new Error("Token not found");
+          }
+
+          const response = await url.get(`/pratiquants/ete`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
 
           const donnees = response.data.pratiquants;
 
@@ -132,19 +143,45 @@ const Ete_liste = () => {
 
   const fetchAllData0 = async () => {
     try {
-      const res = await url.get("/activite");
+      const token = await AsyncStorage.getItem("token");
+
+      if (!token) {
+        throw new Error("Token not found");
+      }
+
+      const res = await url.get("/activite", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
       setData0(res.data);
     } catch (error) {
-      console.error("Error fetching data:", error);
+      const errorMessage = error.response
+        ? error.response.data.message || error.response.data
+        : error.message;
+      console.error("Error fetching data:", errorMessage);
+      alert("Error fetching data: " + errorMessage);
     }
   };
 
   const fetchAllData1 = async (activiteId) => {
     try {
-      const res = await url.get(`/categorie/byactivite/${activiteId}`);
-      setData1(res.data);
+      const token = await AsyncStorage.getItem("token");
+
+      if (!token) {
+        throw new Error("Token not found");
+      }
+
+      const response = await url.get(`/categorie/byactivite/${activiteId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      setData1(response.data);
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.error("Erreur lors de la récupération des catégories :", error);
     }
   };
   ///////////////////// debut Export excel
@@ -185,38 +222,66 @@ const Ete_liste = () => {
       setShowDatePicker(false);
     }
   };
-
   const fetchPresence = async (id_pratiquant) => {
     try {
-      const presence = await url.get(`presence/bypratiquant/${id_pratiquant}`);
+      const token = await AsyncStorage.getItem("token");
+
+      if (!token) {
+        throw new Error("Token not found");
+      }
+
+      const presence = await url.get(
+        `/presence/bypratiquant/${id_pratiquant}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       setPresence(presence.data);
     } catch (error) {
       console.error("Error presence item:", error);
       Alert.alert("Error presence item", error.message);
     }
   };
+
   const saveEditedItem = async () => {
     try {
-      const edit = await url.put(`pratiquants/${editedItem.id}`, {
-        session,
-        nom,
-        sexe,
-        naissance: formatDate(date),
-        payement,
-        consigne,
-        carte_fede: carte_fede,
-        etiquete,
-        courriel,
-        adresse,
-        telephone,
-        tel_urgence: tel_urgence,
-        activite,
-        categorie,
-        evaluation,
-        mode_payement: mode_payement,
-        carte_payement: carte_payement,
-        groupe,
-      });
+      const token = await AsyncStorage.getItem("token");
+
+      if (!token) {
+        throw new Error("Token not found");
+      }
+
+      const edit = await url.put(
+        `pratiquants/${editedItem.id}`,
+        {
+          session,
+          nom,
+          sexe,
+          naissance: formatDate(date),
+          payement,
+          consigne,
+          carte_fede: carte_fede,
+          etiquete,
+          courriel,
+          adresse,
+          telephone,
+          tel_urgence: tel_urgence,
+          activite,
+          categorie,
+          evaluation,
+          mode_payement: mode_payement,
+          carte_payement: carte_payement,
+          groupe,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
       if (edit) {
         setNom("");
         setAdresse("");
@@ -234,9 +299,20 @@ const Ete_liste = () => {
       Alert.alert("Error editing item", error.message);
     }
   };
-  const confirmDeleteItem = () => {
+
+  const confirmDeleteItem = async () => {
     try {
-      url.delete(`/pratiquants/${itemToDelete.id}`);
+      const token = await AsyncStorage.getItem("token");
+
+      if (!token) {
+        throw new Error("Token not found");
+      }
+
+      await url.delete(`/pratiquants/${itemToDelete.id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       setDeleteModalVisible(false);
       fetchAllData();
       Alert.alert("Suppression de pratiquants réussi");
@@ -245,6 +321,7 @@ const Ete_liste = () => {
       Alert.alert("Error suppression item", error.message);
     }
   };
+
   const renderRightActions = (item) => (
     <View style={tw`flex-row mr-5`}>
       <TouchableOpacity
@@ -333,6 +410,53 @@ const Ete_liste = () => {
       <Text style={tw`text-white text-lg font-bold`}>Statut</Text>
     </View>
   );
+
+  const handleExport = async () => {
+    try {
+      // Créer le contenu HTML pour le PDF
+      const htmlContent = `
+        <h1>Liste de Présence</h1>
+        <table border="1" style="width:100%; border-collapse: collapse;">
+          <tr>
+            <th>Nom</th>
+            <th>Catégorie</th>
+            <th>Date</th>
+            <th>Statut</th>
+          </tr>
+          ${presence
+            .map(
+              (item) => `
+            <tr>
+              <td>${item.nom}</td>
+              <td>${item.categorie}</td>
+              <td>${item.jour}</td>
+              <td>${item.present ? "Présent" : "Absent"}</td>
+            </tr>
+          `
+            )
+            .join("")}
+        </table>
+      `;
+
+      // Créer le fichier PDF
+      const { uri } = await Print.printToFileAsync({ html: htmlContent });
+
+      console.log("PDF file created at: ", uri);
+
+      // Utiliser expo-sharing pour ouvrir le fichier
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(uri);
+      } else {
+        Alert.alert(
+          "Sharing not available",
+          "Sharing is not available on this device"
+        );
+      }
+    } catch (error) {
+      console.error("Error exporting PDF:", error);
+      Alert.alert("Error", "Failed to export PDF");
+    }
+  };
   const handleEdit = (item) => {
     setEditedItem(item);
     setNom(item.nom);
@@ -812,7 +936,7 @@ const Ete_liste = () => {
             </TouchableOpacity>
             <TouchableOpacity
               style={tw`bg-green-500 p-2 rounded-md w-24 flex-row items-center justify-center`}
-              // onPress={() => setPresenceModalVisible(false)}
+              onPress={handleExport}
             >
               <MaterialIcons name="download" size={24} color="white" />
               <Text style={tw`text-white text-lg ml-1`}>Exporter</Text>

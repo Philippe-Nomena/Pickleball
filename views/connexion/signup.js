@@ -3,11 +3,12 @@ import { Text, TextInput, TouchableOpacity, View } from "react-native";
 import tw from "tailwind-react-native-classnames";
 import { AntDesign } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import url from "../url";
+import { url } from "../url";
+
 const Signup = () => {
   const navigation = useNavigation();
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showPassword] = useState(false);
+  const [showConfirmPassword] = useState(false);
   const [password, setPassword] = useState("");
   const [nom, setNom] = useState("");
   const [nickname, setNickname] = useState("");

@@ -9,6 +9,10 @@ const Categorie = database.define("categorie", {
     primaryKey: true,
     autoIncrement: true,
   },
+  // iv: {
+  //   type: Sequelize.STRING,
+  //   allowNull: false,
+  // },
   categorie: {
     type: Sequelize.STRING,
     allowNull: false,
@@ -25,16 +29,13 @@ const Categorie = database.define("categorie", {
     type: Sequelize.JSON,
     allowNull: false,
   },
-  // nbjour: {
-  //   type: Sequelize.INTEGER,
-  //   allowNull: true,
-  // },
+
   datedebut: {
-    type: Sequelize.DATE,
+    type: Sequelize.DATEONLY,
     allowNull: true,
   },
   datefin: {
-    type: Sequelize.DATE,
+    type: Sequelize.DATEONLY,
     allowNull: true,
   },
 });

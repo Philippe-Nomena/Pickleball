@@ -188,6 +188,8 @@ import tw from "tailwind-react-native-classnames";
 import { AntDesign } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useAuth } from "./AuthContext";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 import { url } from "../url";
 
 const Admin = () => {
@@ -238,8 +240,10 @@ const Users = () => {
         motdepasse: password,
       });
       if (res.data.result) {
-        await login(res.data.token); // Use AuthContext to set the token
-        navigation.navigate("Activités"); // Or any other screen
+        await login(res.data.token);
+
+        await AsyncStorage.setItem("token", res.data.token);
+        navigation.navigate("Activités");
         alert("Vous êtes connectés");
         setPassword("");
         setUsername("");
