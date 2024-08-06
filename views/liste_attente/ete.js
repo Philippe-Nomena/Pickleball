@@ -24,7 +24,7 @@ import { Checkbox } from "../session/checkbox";
 import tw from "tailwind-react-native-classnames";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import * as Print from "expo-print";
-import * as FileSystem from "expo-file-system";
+
 import * as Sharing from "expo-sharing";
 import dayjs from "dayjs";
 import { Swipeable } from "react-native-gesture-handler";

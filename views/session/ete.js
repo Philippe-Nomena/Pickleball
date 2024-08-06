@@ -175,7 +175,7 @@ const Ete_Session = () => {
               id_pratiquant: IdPratiquant,
             };
 
-            console.log("Presence payload being sent:", presencePayload);
+            // console.log("Presence payload being sent:", presencePayload);
 
             await url.post("/presence", presencePayload);
           } catch (error) {
@@ -262,7 +262,7 @@ const Ete_Session = () => {
           );
 
           const newPratiquants = response.data;
-          console.log("Réponse de l'API :", newPratiquants);
+          // console.log("Réponse de l'API :", newPratiquants);
 
           if (
             newPratiquants &&
@@ -270,11 +270,11 @@ const Ete_Session = () => {
             newPratiquants.pratiquant &&
             newPratiquants.pratiquant.id
           ) {
-            console.log("Message de l'API :", newPratiquants.message);
-            console.log(
-              "ID du nouveau pratiquant :",
-              newPratiquants.pratiquant.id
-            );
+            // console.log("Message de l'API :", newPratiquants.message);
+            // console.log(
+            //   "ID du nouveau pratiquant :",
+            //   newPratiquants.pratiquant.id
+            // );
 
             setNom("");
             setAdresse("");
