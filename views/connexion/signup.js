@@ -93,7 +93,7 @@ const Signup = () => {
             <AntDesign name="right" size={15} color="white" />
           </TouchableOpacity>
         </View>
-        <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+        <TouchableOpacity onPress={() => navigation.navigate("User")}>
           <View style={tw`flex-row mt-5 justify-center`}>
             <Text style={tw`text-white `}>Vous avez déjà un compte?</Text>
             <Text style={tw`text-gray-500`}> Se connecter </Text>

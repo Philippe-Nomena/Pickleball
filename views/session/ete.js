@@ -166,6 +166,12 @@ const Ete_Session = () => {
           date = date.add(1, "day")
         ) {
           try {
+            const token = await AsyncStorage.getItem("token");
+
+            if (!token) {
+              throw new Error("Token not found");
+            }
+
             const presencePayload = {
               nom,
               session,
@@ -175,13 +181,23 @@ const Ete_Session = () => {
               id_pratiquant: IdPratiquant,
             };
 
-            // console.log("Presence payload being sent:", presencePayload);
-
-            await url.post("/presence", presencePayload);
+            await url.post("/presence", presencePayload, {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            });
           } catch (error) {
+            const errorMessage = error.response
+              ? error.response.data.message || error.response.data
+              : error.message;
+
             console.error(
               "Erreur lors de l'insertion des données de présence :",
-              error.response ? error.response.data : error
+              errorMessage
+            );
+            alert(
+              "Erreur lors de l'insertion des données de présence : " +
+                errorMessage
             );
           }
         }
