@@ -1,8 +1,8 @@
 require("dotenv").config();
 const bodyParser = require("body-parser");
 const express = require("express");
-const https = require("https");
-const fs = require("fs");
+// const https = require("https");
+// const fs = require("fs");
 const http = require("http");
 const cors = require("cors");
 const path = require("path");
@@ -53,7 +53,7 @@ http
     // sslOptions,
     app
   )
-  .listen(process.env.APP_PORT, process.env.URL, () => {
+  .listen(process.env.APP_PORT, () => {
     console.log("======================================");
     console.log(
       "  Serveur HTTPS avec succès sur le port",
