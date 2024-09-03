@@ -165,6 +165,11 @@ const Hiver_Session = () => {
           date = date.add(1, "day")
         ) {
           try {
+            const token = await AsyncStorage.getItem("token");
+
+            if (!token) {
+              throw new Error("Token not found");
+            }
             const presencePayload = {
               nom,
               session,
@@ -176,7 +181,11 @@ const Hiver_Session = () => {
 
             console.log("Presence payload being sent:", presencePayload);
 
-            await url.post("/presence", presencePayload);
+            await url.post("/presence", presencePayload, {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            });
           } catch (error) {
             console.error(
               "Erreur lors de l'insertion des données de présence :",

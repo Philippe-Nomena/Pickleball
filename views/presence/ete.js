@@ -1,6 +1,6 @@
 import React, { useState, useEffect, act } from "react";
 import tw from "tailwind-react-native-classnames";
-import { FontAwesome5, MaterialIcons } from "@expo/vector-icons";
+import { Entypo, FontAwesome5, MaterialIcons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 // import { Checkbox } from "./checkbox";
@@ -344,7 +344,7 @@ const Ete_Presence = () => {
             style={tw`bg-blue-500 py-2 px-4 rounded-md flex-row items-center justify-center mr-4`}
             onPress={Ajout}
           >
-            <FontAwesome5 name="save" size={24} color="white" />
+            <Entypo name="save" size={24} color="white" />
             <Text style={tw`text-white ml-2`}>Ajouter</Text>
           </TouchableOpacity>
           <TouchableOpacity

@@ -1,117 +1,89 @@
-import React, { useState } from "react";
-import { View, StyleSheet, Dimensions, StatusBar, Text } from "react-native";
-import { TabView, TabBar, SceneMap } from "react-native-tab-view";
+import React from "react";
+import { View, StyleSheet, Text } from "react-native";
+import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import { MaterialIcons } from "@expo/vector-icons";
-import Ete_Presence from "./ete";
 
 import Hiver_Presence from "./hiver";
 import Automne_Presence from "./automne";
+import Ete_Presence from "./ete";
 
-const Ete = () => (
-  <View style={styles.scene}>
-    <Ete_Presence />
-  </View>
-);
+const Tab = createMaterialTopTabNavigator();
 
-const Hiver = () => (
-  <View style={styles.scene}>
-    <Hiver_Presence />
-  </View>
-);
-
-const Automne = () => (
-  <View style={styles.scene}>
-    <Automne_Presence />
-  </View>
-);
-
-const renderTabBar = (props) => (
-  <TabBar
-    {...props}
-    renderLabel={({ route, focused }) => (
-      <View style={styles.tabItem}>
-        <MaterialIcons
-          name={
-            route.key === "ete"
-              ? "wb-sunny"
-              : route.key === "hiver"
-              ? "ac-unit"
-              : "ac-unit"
-          }
-          size={20}
-          color={focused ? "white" : "white"}
-        />
-        <Text style={[styles.label, { color: focused ? "white" : "white" }]}>
-          {route.title}
-        </Text>
-      </View>
-    )}
-    style={styles.tabBar}
-    indicatorStyle={styles.indicator}
-  />
-);
-
-const Presence = () => {
-  const [index, setIndex] = useState(0);
-  const [layout, setLayout] = useState({
-    width: Dimensions.get("window").width,
-  });
-
-  const handleLayout = () => {
-    setLayout({ width: Dimensions.get("window").width });
-  };
-
-  const routes = [
-    { key: "ete", title: "Ete" },
-    { key: "hiver", title: "Hiver" },
-    { key: "automne", title: "Automne" },
-  ];
-
+function Ete() {
   return (
-    <View style={styles.container} onLayout={handleLayout}>
-      <TabView
-        navigationState={{ index, routes }}
-        renderScene={SceneMap({
-          ete: Ete,
-          hiver: Hiver,
-          automne: Automne,
-        })}
-        onIndexChange={setIndex}
-        initialLayout={layout}
-        style={styles.tabView}
-        renderTabBar={renderTabBar}
-      />
+    <View style={styles.scene}>
+      <Ete_Presence />
     </View>
   );
-};
+}
+
+function Hiver() {
+  return (
+    <View style={styles.scene}>
+      <Hiver_Presence />
+    </View>
+  );
+}
+
+function Automne() {
+  return (
+    <View style={styles.scene}>
+      <Automne_Presence />
+    </View>
+  );
+}
+
+export default function Presence() {
+  return (
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        tabBarIcon: ({ focused }) => {
+          let iconName;
+
+          if (route.name === "Ete") {
+            iconName = "wb-sunny";
+          } else if (route.name === "Hiver") {
+            iconName = "ac-unit";
+          } else if (route.name === "Automne") {
+            iconName = "eco";
+          }
+
+          return (
+            <MaterialIcons
+              name={iconName}
+              size={20}
+              color={focused ? "white" : "white"}
+            />
+          );
+        },
+        tabBarLabel: ({ focused }) => (
+          <Text style={[styles.label, { color: focused ? "white" : "white" }]}>
+            {route.name}
+          </Text>
+        ),
+        tabBarStyle: styles.tabBar,
+        tabBarIndicatorStyle: styles.indicator,
+      })}
+    >
+      <Tab.Screen name="Ete" component={Ete} />
+      <Tab.Screen name="Hiver" component={Hiver} />
+      <Tab.Screen name="Automne" component={Automne} />
+    </Tab.Navigator>
+  );
+}
 
 const styles = StyleSheet.create({
-  container: {
+  scene: {
     flex: 1,
   },
   indicator: {
     backgroundColor: "white",
   },
-  scene: {
-    flex: 1,
-  },
-  tabView: {
-    flex: 1,
-    width: "100%",
-  },
   tabBar: {
     backgroundColor: "black",
-    // height: "6%",
+    display: "flex-row",
   },
   label: {
     textTransform: "capitalize",
   },
-  tabItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 3,
-  },
 });
-
-export default Presence;

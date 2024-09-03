@@ -27,6 +27,8 @@ const Activity = () => {
   const [editedItem, setEditedItem] = useState(null);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [categorieModalVisible, setCategorieModalVisible] = useState(false);
+  const [editcategorieModalVisible, setEditCategorieModalVisible] =
+    useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [nom, setNom] = useState("");
@@ -36,6 +38,7 @@ const Activity = () => {
   const [groupe, setGroupe] = useState([]);
   const [horaire, SetHoraire] = useState("");
   const [prix, setPrix] = useState("");
+  const [id_categorie, setId_categorie] = useState("");
 
   const [date1, setDate1] = useState(new Date());
   const [date2, setDate2] = useState(new Date());
@@ -60,6 +63,54 @@ const Activity = () => {
     setShowDatePicker2(false);
     setDate2(currentDate);
   };
+  const handleEditCategory = (category) => {
+    setEditedItem(category);
+    setId_activite(category.id_activite);
+    setId_categorie(category.id);
+    setCategorie(category.categorie);
+    SetHoraire(category.horaire);
+    setPrix(category.prix);
+    setDate1(category.datedebut ? new Date(category.datedebut) : new Date());
+    setDate2(category.datefin ? new Date(category.datefin) : new Date());
+    setGroupe(category.groupe || []);
+    setEditCategorieModalVisible(true);
+  };
+
+  const editCategorie = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+
+      if (!token) {
+        throw new Error("Token not found");
+      }
+      const data = {
+        categorie,
+        horaire,
+        prix,
+        date1: formatDate(date1),
+        date2: formatDate(date2),
+        jour: groupe,
+        id_activite,
+      };
+
+      const response = await url.put(`/categorie/${editedItem.id}`, data, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (response) {
+        Alert.alert("Mise à jour de catégorie réussie avec succès");
+        setEditCategorieModalVisible(false);
+      }
+    } catch (error) {
+      console.error("Erreur lors de la modification de la catégorie :", error);
+      Alert.alert(
+        "Erreur lors de la modification de la catégorie",
+        error.response?.data?.error || error.message
+      );
+    }
+  };
+
   useEffect(() => {
     fetchAllData();
   }, []);
@@ -261,6 +312,7 @@ const Activity = () => {
       );
     }
   };
+
   const addActivity = async () => {
     if (!nom || !image || !image.uri) {
       Alert.alert("Veuillez remplir tous les champs et sélectionner une image");
@@ -349,22 +401,7 @@ const Activity = () => {
       </TouchableOpacity>
     </View>
   );
-  const renderRightActions1 = (item) => (
-    <View style={tw`flex-row mr-5`}>
-      <TouchableOpacity
-        style={tw`bg-blue-500 p-2 h-10 mr-1 rounded-md`}
-        onPress={() => handleEdit(item)}
-      >
-        <AntDesign name="edit" size={24} color="white" />
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={tw`bg-red-500 p-2 h-10 mr-1 rounded-md`}
-        onPress={() => handleDelete(item)}
-      >
-        <Entypo name="trash" size={24} color="white" />
-      </TouchableOpacity>
-    </View>
-  );
+
   const renderItem = ({ item }) => {
     const imageUrl = `${stateUrl}/uploads/${item.imagePath}`;
 
@@ -384,15 +421,15 @@ const Activity = () => {
   };
   const renderItem1 = ({ item }) => {
     return (
-      <Swipeable renderRightActions={() => renderRightActions1(item)}>
-        <View
-          style={tw`bg-gray-900 p-2 shadow-md rounded-md mb-3 ml-4 mr-4 flex-col`}
+      <View style={tw`p-4 bg-gray-800 mb-2 rounded-md`}>
+        <TouchableOpacity
+          onPress={() => {
+            handleEditCategory(item);
+          }}
         >
-          <Text style={tw`text-lg text-white text-center`}>
-            {item.categorie}
-          </Text>
-        </View>
-      </Swipeable>
+          <Text style={tw`text-white text-center`}>{item.categorie}</Text>
+        </TouchableOpacity>
+      </View>
     );
   };
   return (
@@ -476,7 +513,10 @@ const Activity = () => {
               </TouchableOpacity>
               <TouchableOpacity
                 style={tw`bg-red-500 p-2 rounded-md w-24 flex-row`}
-                onPress={() => setModalVisible(false)}
+                onPress={() => {
+                  setModalVisible(false);
+                  setNom("");
+                }}
               >
                 <MaterialIcons name="cancel" size={20} color="white" />
                 <Text style={tw`text-white text-center ml-2`}>Annuler</Text>
@@ -573,7 +613,10 @@ const Activity = () => {
               </TouchableOpacity>
               <TouchableOpacity
                 style={tw`bg-red-500 p-2 rounded-md w-24 flex-row`}
-                onPress={() => setAjoutModal(false)}
+                onPress={() => {
+                  setAjoutModal(false);
+                  setNom("");
+                }}
               >
                 <MaterialIcons name="cancel" size={20} color="white" />
                 <Text style={tw`text-white text-center ml-2`}>Annuler</Text>
@@ -597,17 +640,24 @@ const Activity = () => {
               Liste de categorie
             </Text>
 
-            <FlatList
-              data={liste_categorie}
-              renderItem={renderItem1}
-              keyExtractor={(item) => item.id.toString()}
-              vertical={true}
-              showsVerticalScrollIndicator={false}
-            />
+            {liste_categorie.length === 0 ? (
+              <Text style={tw`text-white text-center mt-2 mb-2`}>
+                Aucune catégorie disponible
+              </Text>
+            ) : (
+              <FlatList
+                data={liste_categorie}
+                renderItem={renderItem1}
+                keyExtractor={(item) => item.id.toString()}
+                vertical={true}
+                showsVerticalScrollIndicator={false}
+              />
+            )}
             <TouchableOpacity
-              style={tw`bg-red-500 p-1 w-24 items-center rounded-md ml-16`}
+              style={tw`bg-red-500 p-1 w-28 items-center rounded-md ml-16 flex-row`}
               onPress={() => setModalListe_categorie(false)}
             >
+              <MaterialIcons name="cancel" size={24} color="white" />
               <Text style={tw`text-white text-lg`}>Fermer</Text>
             </TouchableOpacity>
           </View>
@@ -797,6 +847,210 @@ const Activity = () => {
               >
                 <MaterialIcons name="cancel" size={20} color="white" />
                 <Text style={tw`text-white text-center ml-2`}>Annuler</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+      <Modal
+        animationType="slide"
+        transparent={false}
+        visible={editcategorieModalVisible}
+        onRequestClose={() =>
+          setEditCategorieModalVisible(!editcategorieModalVisible)
+        }
+      >
+        <View style={tw`flex-1 justify-center items-center bg-gray-800 `}>
+          <View
+            style={tw` bg-gray-700 p-2 rounded-md  justify-center items-center w-11/12 `}
+          >
+            <Text style={tw`text-white text-center text-lg`}>
+              Editer la categorie
+            </Text>
+            <View style={tw`flex`}>
+              <TextInput
+                value={id_activite.toString()}
+                editable={false}
+                name="id_activite"
+                style={{ display: "none" }}
+              />
+              <TextInput
+                value={id_categorie.toString()}
+                editable={false}
+                name="id_categorie"
+                // style={{ display: "none" }}
+              />
+              <Text style={tw`text-white mb-2`}>Categorie:</Text>
+              <View style={tw`flex-row items-center`}>
+                <TextInput
+                  style={tw`bg-gray-200 border border-gray-600 rounded-md p-2 text-center w-full`}
+                  placeholder="ex:A || debutant ..."
+                  value={categorie}
+                  onChangeText={setCategorie}
+                  name="categorie"
+                />
+              </View>
+              <View>
+                <Text style={tw`text-white `}>Horaire:</Text>
+                <TextInput
+                  style={tw`bg-gray-200 border border-gray-600 rounded-md p-2 mb-2 text-center`}
+                  placeholder="ex: 9h-10h-30"
+                  value={horaire}
+                  onChangeText={SetHoraire}
+                  name="horaire"
+                />
+              </View>
+
+              <View>
+                <Text style={tw`text-white `}>Prix:</Text>
+                <TextInput
+                  style={tw`bg-gray-200 border border-gray-600 rounded-md p-2 mb-2 text-center`}
+                  placeholder="Prix"
+                  value={prix.toString()}
+                  onChangeText={setPrix}
+                  name="prix"
+                />
+              </View>
+
+              <View>
+                <Text style={tw`text-white text-lg font-bold mb-2`}>
+                  Date de debut
+                </Text>
+                <TouchableOpacity onPress={() => setShowDatePicker1(true)}>
+                  <View
+                    style={tw`bg-gray-200 border border-gray-600 rounded-md p-2 mb-2 text-center`}
+                  >
+                    <TextInput
+                      value={formatDate(date1)}
+                      editable={false}
+                      name="datedebut"
+                    />
+                  </View>
+                </TouchableOpacity>
+
+                {showDatePicker1 && (
+                  <DateTimePicker
+                    value={date1}
+                    mode="date"
+                    display="spinner"
+                    onChange={handleDateChange1}
+                    style={{ backgroundColor: "white", color: "black" }}
+                  />
+                )}
+              </View>
+
+              <View>
+                <Text style={tw`text-white text-lg font-bold mb-2`}>
+                  Date de fin
+                </Text>
+                <TouchableOpacity onPress={() => setShowDatePicker2(true)}>
+                  <View
+                    style={tw`bg-gray-300 border border-gray-100 rounded-md p-2 mb-4`}
+                  >
+                    <TextInput
+                      value={formatDate(date2)}
+                      editable={false}
+                      name="datefin"
+                    />
+                  </View>
+                </TouchableOpacity>
+
+                {showDatePicker2 && (
+                  <DateTimePicker
+                    value={date2}
+                    mode="date"
+                    display="spinner"
+                    onChange={handleDateChange2}
+                    style={{ backgroundColor: "white", color: "black" }}
+                  />
+                )}
+              </View>
+              <View>
+                <Text style={tw`text-white text-lg font-bold mb-2`}>Jours</Text>
+                <View style={tw`flex-row`}>
+                  <View style={tw`flex-col mr-1`}>
+                    <View style={tw`flex-row items-center mb-2`}>
+                      <Checkbox
+                        name="jour"
+                        checked={groupe.includes("Lundi")}
+                        onChange={() => handleSetGroupe("Lundi")}
+                      />
+                      <Text style={tw`text-white text-lg ml-2`}>Lundi</Text>
+                    </View>
+                    <View style={tw`flex-row items-center mb-2`}>
+                      <Checkbox
+                        name="jour"
+                        checked={groupe.includes("Mardi")}
+                        onChange={() => handleSetGroupe("Mardi")}
+                      />
+                      <Text style={tw`text-white text-lg ml-2`}>Mardi</Text>
+                    </View>
+                    <View style={tw`flex-row items-center mb-2`}>
+                      <Checkbox
+                        name="jour"
+                        checked={groupe.includes("Mercredi")}
+                        onChange={() => handleSetGroupe("Mercredi")}
+                      />
+                      <Text style={tw`text-white text-lg ml-2`}>Mercredi</Text>
+                    </View>
+                    <View style={tw`flex-row items-center mb-2`}>
+                      <Checkbox
+                        name="jour"
+                        checked={groupe.includes("Jeudi")}
+                        onChange={() => handleSetGroupe("Jeudi")}
+                      />
+                      <Text style={tw`text-white text-lg ml-2`}>Jeudi</Text>
+                    </View>
+                  </View>
+
+                  <View style={tw`flex-col`}>
+                    <View style={tw`flex-row items-center mb-2`}>
+                      <Checkbox
+                        name="jour"
+                        checked={groupe.includes("Vendredi")}
+                        onChange={() => handleSetGroupe("Vendredi")}
+                      />
+                      <Text style={tw`text-white text-lg ml-2`}>Vendredi</Text>
+                    </View>
+                    <View style={tw`flex-row items-center mb-2`}>
+                      <Checkbox
+                        name="jour"
+                        checked={groupe.includes("Samedi")}
+                        onChange={() => handleSetGroupe("Samedi")}
+                      />
+                      <Text style={tw`text-white text-lg ml-2`}>Samedi</Text>
+                    </View>
+                    <View style={tw`flex-row items-center mb-2`}>
+                      <Checkbox
+                        name="jour"
+                        checked={groupe.includes("Dimanche")}
+                        onChange={() => handleSetGroupe("Dimanche")}
+                      />
+                      <Text style={tw`text-white text-lg ml-2`}>Dimanche</Text>
+                    </View>
+                  </View>
+                </View>
+              </View>
+            </View>
+            <View style={tw`flex-row justify-center`}>
+              <TouchableOpacity
+                style={tw`bg-blue-500 p-2 rounded-md mr-5 flex-row`}
+                onPress={editCategorie}
+              >
+                <AntDesign name="edit" size={20} color="white" />
+                <Text style={tw`text-white text-center ml-1`}>Editer</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={tw`bg-gray-500 p-2 rounded-md  flex-row`}
+                onPress={() => {
+                  setEditCategorieModalVisible(false);
+                  setCategorie("");
+                  SetHoraire("");
+                  setPrix("");
+                }}
+              >
+                <MaterialIcons name="cancel" size={20} color="white" />
+                <Text style={tw`text-white text-center ml-1`}>Annuler</Text>
               </TouchableOpacity>
             </View>
           </View>

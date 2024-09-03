@@ -1,6 +1,6 @@
 import React, { useState, useEffect, act } from "react";
 import tw from "tailwind-react-native-classnames";
-import { FontAwesome5, MaterialIcons } from "@expo/vector-icons";
+import { Entypo, FontAwesome5, MaterialIcons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
@@ -338,78 +338,13 @@ const Hiver_Presence = () => {
           onChangeText={(text) => setRemarque(text)}
           style={tw`bg-gray-300 border border-gray-300 rounded-md p-2 mb-4`}
         />
-        {/* 
-        <Text style={tw`text-white text-lg font-bold mb-2`}>Jour</Text>
-        <View style={tw`flex-row`}>
-          <View style={tw`flex-col mr-4`}>
-            <View style={tw`flex-row items-center mb-2`}>
-              <Checkbox
-                name="jour"
-                checked={groupe.includes("Lundi")}
-                onChange={() => updateGroupe("Lundi")}
-              />
-              <Text style={tw`text-white text-lg ml-2`}>Lundi</Text>
-            </View>
-            <View style={tw`flex-row items-center mb-2`}>
-              <Checkbox
-                name="jour"
-                checked={groupe.includes("Mardi")}
-                onChange={() => updateGroupe("Mardi")}
-              />
-              <Text style={tw`text-white text-lg ml-2`}>Mardi</Text>
-            </View>
-            <View style={tw`flex-row items-center mb-2`}>
-              <Checkbox
-                name="jour"
-                checked={groupe.includes("Mercredi")}
-                onChange={() => updateGroupe("Mercredi")}
-              />
-              <Text style={tw`text-white text-lg ml-2`}>Mercredi</Text>
-            </View>
-            <View style={tw`flex-row items-center mb-2`}>
-              <Checkbox
-                name="jour"
-                checked={groupe.includes("Jeudi")}
-                onChange={() => updateGroupe("Jeudi")}
-              />
-              <Text style={tw`text-white text-lg ml-2`}>Jeudi</Text>
-            </View>
-          </View>
-
-          <View style={tw`flex-col`}>
-            <View style={tw`flex-row items-center mb-2`}>
-              <Checkbox
-                name="jour"
-                checked={groupe.includes("Vendredi")}
-                onChange={() => updateGroupe("Vendredi")}
-              />
-              <Text style={tw`text-white text-lg ml-2`}>Vendredi</Text>
-            </View>
-            <View style={tw`flex-row items-center mb-2`}>
-              <Checkbox
-                name="jour"
-                checked={groupe.includes("Samedi")}
-                onChange={() => updateGroupe("Samedi")}
-              />
-              <Text style={tw`text-white text-lg ml-2`}>Samedi</Text>
-            </View>
-            <View style={tw`flex-row items-center mb-2`}>
-              <Checkbox
-                name="jour"
-                checked={groupe.includes("Dimanche")}
-                onChange={() => updateGroupe("Dimanche")}
-              />
-              <Text style={tw`text-white text-lg ml-2`}>Dimanche</Text>
-            </View>
-          </View>
-        </View> */}
 
         <View style={tw`flex-row justify-center`}>
           <TouchableOpacity
             style={tw`bg-blue-500 py-2 px-4 rounded-md flex-row items-center justify-center mr-4`}
             onPress={Ajout}
           >
-            <FontAwesome5 name="save" size={24} color="white" />
+            <Entypo name="save" size={24} color="white" />
             <Text style={tw`text-white ml-2`}>Ajouter</Text>
           </TouchableOpacity>
           <TouchableOpacity

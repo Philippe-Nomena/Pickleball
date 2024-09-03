@@ -181,20 +181,6 @@ const Hiver_liste = () => {
     }
   };
 
-  // const exportToExcel = async () => {
-  //   try {
-  //     const response = await url.get("/pratiquants/hiver");
-  //     const excelUrl = await response.data.downloadUrl;
-
-  //     if (!excelUrl) {
-  //       throw new Error("Download URL not provided by the server");
-  //     }
-  //     alert("Exportation de données réussi avec succès");
-  //   } catch (error) {
-  //     console.error("Error exporting to Excel:", error);
-  //     alert("Failed to export to Excel. Please try again.");
-  //   }
-  // };
   const formatDate = (date) => {
     return dayjs(date).format("DD-MM-YYYY");
   };
@@ -837,7 +823,7 @@ const Hiver_liste = () => {
                 style={tw`bg-red-500 p-2 rounded-md mr-5 flex-row`}
                 onPress={confirmDeleteItem}
               >
-                <Entypo name="trash" size={18} color="white" />
+                <Entypo name="trash" size={20} color="white" />
 
                 <Text style={tw`text-white text-center ml-1`}>Supprimer</Text>
               </TouchableOpacity>
@@ -873,14 +859,14 @@ const Hiver_liste = () => {
           />
           <View style={tw`flex-row justify-center mt-4`}>
             <TouchableOpacity
-              style={tw`bg-red-500 p-2 rounded-md w-24 flex-row items-center justify-center mr-3`}
+              style={tw`bg-red-500 p-2 rounded-md  flex-row items-center justify-center mr-3`}
               onPress={() => setPresenceModalVisible(false)}
             >
               <MaterialIcons name="cancel" size={24} color="white" />
               <Text style={tw`text-white text-lg ml-1`}>Fermer</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={tw`bg-green-500 p-2 rounded-md w-24 flex-row items-center justify-center`}
+              style={tw`bg-green-500 p-2 rounded-md  flex-row items-center justify-center`}
               // onPress={() => setPresenceModalVisible(false)}
             >
               <MaterialIcons name="download" size={24} color="white" />

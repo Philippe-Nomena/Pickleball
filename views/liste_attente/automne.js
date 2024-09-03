@@ -831,7 +831,7 @@ const Automne_liste = () => {
                 style={tw`bg-red-500 p-2 rounded-md mr-5 flex-row`}
                 onPress={confirmDeleteItem}
               >
-                <Entypo name="trash" size={18} color="white" />
+                <Entypo name="trash" size={20} color="white" />
 
                 <Text style={tw`text-white text-center ml-1`}>Supprimer</Text>
               </TouchableOpacity>
@@ -867,14 +867,14 @@ const Automne_liste = () => {
           />
           <View style={tw`flex-row justify-center mt-4`}>
             <TouchableOpacity
-              style={tw`bg-red-500 p-2 rounded-md w-24 flex-row items-center justify-center mr-3`}
+              style={tw`bg-red-500 p-2 rounded-md flex-row items-center justify-center mr-3`}
               onPress={() => setPresenceModalVisible(false)}
             >
               <MaterialIcons name="cancel" size={24} color="white" />
               <Text style={tw`text-white text-lg ml-1`}>Fermer</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={tw`bg-green-500 p-2 rounded-md w-24 flex-row items-center justify-center`}
+              style={tw`bg-green-500 p-2 rounded-md flex-row items-center justify-center`}
               // onPress={() => setPresenceModalVisible(false)}
             >
               <MaterialIcons name="download" size={24} color="white" />

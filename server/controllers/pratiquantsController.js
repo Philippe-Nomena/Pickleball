@@ -23,8 +23,10 @@ exports.getAllPratiquants = async (req, res, next) => {
   }
 };
 
-const generateExcelFile = async (pratiquants, req) => {
+const generateExcelFile = async (pratiquants, req, session) => {
   try {
+    const fileName = `pratiquants_${session.toLowerCase()}.xlsx`;
+    const filePath = path.join(__dirname, "..", "dataExcel", fileName);
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("Pratiquants Ete");
 
@@ -84,9 +86,6 @@ const generateExcelFile = async (pratiquants, req) => {
       }
     }
 
-    const fileName = `pratiquants_ete_${Date.now()}.xlsx`;
-    const filePath = path.join(__dirname, "..", "dataExcel", fileName);
-
     await workbook.xlsx.writeFile(filePath);
 
     console.log("Excel file generated at:", filePath);
@@ -98,154 +97,6 @@ const generateExcelFile = async (pratiquants, req) => {
   }
 };
 
-const generateExcelFileHiver = async (pratiquants, req) => {
-  try {
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet("Pratiquants Hiver");
-
-    worksheet.columns = [
-      { header: "ID", key: "id", width: 10 },
-      { header: "Session", key: "session", width: 30 },
-      { header: "Nom Complet", key: "nom", width: 50 },
-      { header: "Sexe", key: "sexe", width: 10 },
-      { header: "Date de naissance", key: "naissance", width: 30 },
-      { header: "Payement", key: "payement", width: 30 },
-      { header: "Consigne", key: "consigne", width: 30 },
-      { header: "Carte federation", key: "carte_fede", width: 30 },
-      { header: "Etiquete", key: "etiquete", width: 30 },
-      { header: "Email", key: "courriel", width: 50 },
-      { header: "Adresse du pratiquant", key: "adresse", width: 50 },
-      { header: "Telephone", key: "telephone", width: 30 },
-      { header: "Telephone d'urgence", key: "tel_urgence", width: 30 },
-      { header: "Activite choisit", key: "activite", width: 30 },
-      { header: "Categorie choisit", key: "categorie", width: 30 },
-      { header: "Evaluation", key: "evaluation", width: 30 },
-      { header: "Mode de payement", key: "mode_payement", width: 30 },
-      { header: "Carte de payement", key: "carte_payement", width: 30 },
-      { header: "Groupe", key: "groupe", width: 50 },
-      { header: "Barcode", key: "barcode", width: 20 },
-    ];
-
-    for (const pratiquant of pratiquants) {
-      const row = worksheet.addRow(pratiquant);
-
-      const barcodeFileName = path.basename(pratiquant.barcodeUrl);
-      const barcodeFilePath = path.join(
-        __dirname,
-        "..",
-        "barcodes",
-        barcodeFileName
-      );
-
-      try {
-        const imageBuffer = await readFile(barcodeFilePath);
-
-        const imageId = workbook.addImage({
-          buffer: imageBuffer,
-          extension: "png",
-        });
-
-        worksheet.addImage(imageId, {
-          tl: { col: worksheet.columns.length - 1, row: row.number - 1 },
-          ext: { width: 200, height: 80 },
-        });
-
-        row.height = 50;
-      } catch (error) {
-        console.error(
-          `Failed to add barcode image for pratiquant ${pratiquant.id}:`,
-          error
-        );
-      }
-    }
-
-    const fileName = `pratiquants_hiver_${Date.now()}.xlsx`;
-    const filePath = path.join(__dirname, "..", "dataExcel", fileName);
-
-    await workbook.xlsx.writeFile(filePath);
-
-    console.log("Excel file generated at:", filePath);
-
-    return `${req.protocol}://${req.get("host")}/dataExcel/${fileName}`;
-  } catch (error) {
-    console.error("Error generating Excel file:", error);
-    throw new Error("Failed to generate Excel file");
-  }
-};
-const generateExcelFileAutomne = async (pratiquants, req) => {
-  try {
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet("Pratiquants Automne");
-
-    worksheet.columns = [
-      { header: "ID", key: "id", width: 10 },
-      { header: "Session", key: "session", width: 30 },
-      { header: "Nom Complet", key: "nom", width: 50 },
-      { header: "Sexe", key: "sexe", width: 10 },
-      { header: "Date de naissance", key: "naissance", width: 30 },
-      { header: "Payement", key: "payement", width: 30 },
-      { header: "Consigne", key: "consigne", width: 30 },
-      { header: "Carte federation", key: "carte_fede", width: 30 },
-      { header: "Etiquete", key: "etiquete", width: 30 },
-      { header: "Email", key: "courriel", width: 50 },
-      { header: "Adresse du pratiquant", key: "adresse", width: 50 },
-      { header: "Telephone", key: "telephone", width: 30 },
-      { header: "Telephone d'urgence", key: "tel_urgence", width: 30 },
-      { header: "Activite choisit", key: "activite", width: 30 },
-      { header: "Categorie choisit", key: "categorie", width: 30 },
-      { header: "Evaluation", key: "evaluation", width: 30 },
-      { header: "Mode de payement", key: "mode_payement", width: 30 },
-      { header: "Carte de payement", key: "carte_payement", width: 30 },
-      { header: "Groupe", key: "groupe", width: 50 },
-      { header: "Barcode", key: "barcode", width: 20 },
-    ];
-
-    for (const pratiquant of pratiquants) {
-      const row = worksheet.addRow(pratiquant);
-
-      const barcodeFileName = path.basename(pratiquant.barcodeUrl);
-      const barcodeFilePath = path.join(
-        __dirname,
-        "..",
-        "barcodes",
-        barcodeFileName
-      );
-
-      try {
-        const imageBuffer = await readFile(barcodeFilePath);
-
-        const imageId = workbook.addImage({
-          buffer: imageBuffer,
-          extension: "png",
-        });
-
-        worksheet.addImage(imageId, {
-          tl: { col: worksheet.columns.length - 1, row: row.number - 1 },
-          ext: { width: 200, height: 80 },
-        });
-
-        row.height = 50;
-      } catch (error) {
-        console.error(
-          `Failed to add barcode image for pratiquant ${pratiquant.id}:`,
-          error
-        );
-      }
-    }
-
-    const fileName = `pratiquants_automne_${Date.now()}.xlsx`;
-    const filePath = path.join(__dirname, "..", "dataExcel", fileName);
-
-    await workbook.xlsx.writeFile(filePath);
-
-    console.log("Excel file generated at:", filePath);
-
-    return `${req.protocol}://${req.get("host")}/dataExcel/${fileName}`;
-  } catch (error) {
-    console.error("Error generating Excel file:", error);
-    throw new Error("Failed to generate Excel file");
-  }
-};
 exports.getAllPratiquantsEte = async (req, res, next) => {
   try {
     const pratiquants = await Pratiquants.findAll({
@@ -262,7 +113,7 @@ exports.getAllPratiquantsEte = async (req, res, next) => {
       return { ...pratiquantPlain, barcodeUrl };
     });
 
-    const downloadUrl = await generateExcelFile(updatedPratiquants, req);
+    const downloadUrl = await generateExcelFile(updatedPratiquants, req, "Ete");
     if (!downloadUrl) {
       throw new Error("Failed to generate download URL");
     }
@@ -296,7 +147,11 @@ exports.getAllPratiquantsHiver = async (req, res, next) => {
       return { ...pratiquantPlain, barcodeUrl };
     });
 
-    const downloadUrl = await generateExcelFileHiver(updatedPratiquants, req);
+    const downloadUrl = await generateExcelFile(
+      updatedPratiquants,
+      req,
+      "Hiver"
+    );
     if (!downloadUrl) {
       throw new Error("Failed to generate download URL");
     }
@@ -314,19 +169,6 @@ exports.getAllPratiquantsHiver = async (req, res, next) => {
   }
 };
 exports.getAllPratiquantsAutomne = async (req, res, next) => {
-  // const pratiquants = await Pratiquants.findAll({
-  //   where: {
-  //     session: "Automne",
-  //   },
-  // });
-  // const updatedPratiquants = pratiquants.map((pratiquant) => {
-  //   const idString = pratiquant.id.toString().padStart(2, "0");
-  //   const fileName = `barcode_${idString}.png`;
-  //   const barcodeUrl = `${req.protocol}://${req.get("host")}/barcodes/${fileName}`;
-  //   return { ...pratiquant.toJSON(), barcodeUrl };
-  // });
-
-  // res.json(updatedPratiquants);
   try {
     const pratiquants = await Pratiquants.findAll({
       where: {
@@ -342,7 +184,11 @@ exports.getAllPratiquantsAutomne = async (req, res, next) => {
       return { ...pratiquantPlain, barcodeUrl };
     });
 
-    const downloadUrl = await generateExcelFileAutomne(updatedPratiquants, req);
+    const downloadUrl = await generateExcelFile(
+      updatedPratiquants,
+      req,
+      "Automne"
+    );
     if (!downloadUrl) {
       throw new Error("Failed to generate download URL");
     }
