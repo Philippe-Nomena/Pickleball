@@ -75,11 +75,12 @@ const bodyParser = require("body-parser");
 const PratiquantsRoute = require("./routes/pratiquantsRoute");
 const UtilisateurRoute = require("./routes/utilisateursRoute");
 const AdminRoute = require("./routes/adminRoute");
-const CodeBarreRoute = require("./routes/codeBarreRoute");
+// const CodeBarreRoute = require("./routes/codeBarreRoute");
 const ActiviteRoute = require("./routes/activiteRoute");
 const CategorieRoute = require("./routes/categorieRoute");
-const Sqlite_test = require("./routes/sqlite_testRoute");
+// const Sqlite_test = require("./routes/sqlite_testRoute");
 const PresenceRoute = require("./routes/presenceRoute");
+const SessionRoute = require("./routes/sessionRoute");
 
 const app = express();
 
@@ -113,10 +114,11 @@ app.use((req, res, next) => {
 app.use("/pratiquants", PratiquantsRoute);
 app.use("/utilisateur", UtilisateurRoute);
 app.use("/admin", AdminRoute);
-app.use("/codebarre", CodeBarreRoute);
+app.use("/session", SessionRoute);
+// app.use("/codebarre", CodeBarreRoute);
 app.use("/activite", ActiviteRoute);
 app.use("/categorie", CategorieRoute);
-app.use("/sqlite_test", Sqlite_test);
+// app.use("/sqlite_test", Sqlite_test);
 app.use("/presence", PresenceRoute);
 app.get("/", (req, res) => {
   res.send("Hello from nodejs Server");

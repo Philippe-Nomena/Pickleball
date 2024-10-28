@@ -25,12 +25,14 @@ const db = SQLite.openDatabase("Test.db");
 ////////fin util sur synchronisation de donnees sqlite
 
 const Ete_Session = () => {
-  const [session] = useState("Ete");
   const [nom, setNom] = useState("");
   const [categorie, setCategorie] = useState("");
   const [selectedCategorie, setSelectedCategorie] = useState(null);
-
+  const [session, setSession] = useState("");
   const [activite, setActivite] = useState("");
+  const [idactivite, setidActivite] = useState("");
+  const [idcategorie, setidCategorie] = useState("");
+
   const [sexe, setSexe] = useState("F");
   const [adresse, setAdresse] = useState("");
   const [tel_urgence, setTel_urgence] = useState("");
@@ -45,9 +47,9 @@ const Ete_Session = () => {
   const [etiquete, setEtiquete] = useState("");
   const [data, setData] = useState([]);
   const [data1, setData1] = useState([]);
+  const [data2, setData2] = useState([]);
   const [actId, setActId] = useState(null);
 
-  const [eteVisible] = useState(false);
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
 
@@ -65,7 +67,16 @@ const Ete_Session = () => {
   useEffect(() => {
     fetchAllData();
   }, []);
+  useEffect(() => {
+    fetchAllData2();
+  }, []);
+  useEffect(() => {
+    console.log("Updated idactivite:", idactivite);
+  }, [idactivite]);
 
+  useEffect(() => {
+    console.log("Updated idcategorie:", idcategorie);
+  }, [idcategorie]);
   useEffect(() => {
     if (actId) {
       fetchAllData1(actId);
@@ -122,6 +133,30 @@ const Ete_Session = () => {
     }
   };
 
+  const fetchAllData2 = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+
+      if (!token) {
+        throw new Error("Token not found");
+      }
+
+      const res = await url.get("/session", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      setData2(res.data);
+    } catch (error) {
+      const errorMessage = error.response
+        ? error.response.data.message || error.response.data
+        : error.message;
+      console.error("Error fetching data:", errorMessage);
+      alert("Error fetching data: " + errorMessage);
+    }
+  };
+
   const handleToggleCheckbox = (state, setState, value) => {
     if (state === value) {
       setState("");
@@ -174,9 +209,9 @@ const Ete_Session = () => {
 
             const presencePayload = {
               nom,
-              session,
-              activite,
-              categorie,
+              id_session: session,
+              id_activite: idactivite,
+              id_categorie: idcategorie,
               jour: date.format("YYYY-MM-DD"),
               id_pratiquant: IdPratiquant,
             };
@@ -251,7 +286,7 @@ const Ete_Session = () => {
           const response = await url.post(
             "/pratiquants",
             {
-              session,
+              id_session: session,
               nom,
               sexe,
               naissance: formatDate(date),
@@ -263,8 +298,8 @@ const Ete_Session = () => {
               adresse,
               telephone,
               tel_urgence,
-              activite,
-              categorie,
+              id_activite: idactivite,
+              id_categorie: idcategorie,
               evaluation,
               mode_payement,
               carte_payement,
@@ -468,14 +503,24 @@ const Ete_Session = () => {
   return (
     <SafeAreaView style={tw`bg-black flex-1  p-4`}>
       <ScrollView style={tw`mb-2`}>
-        {eteVisible && (
-          <TextInput
+        <Text style={tw`text-white text-lg font-bold mb-2`}>Session</Text>
+        <View
+          style={tw`bg-gray-300 border border-gray-100 rounded-md p-2 mb-4`}
+        >
+          <Picker
+            selectedValue={session}
+            onValueChange={(itemValue) => {
+              setSession(itemValue);
+              console.log(itemValue);
+            }}
+            style={{ color: "gray" }}
             name="session"
-            value={session}
-            style={tw`bg-gray-300 border border-gray-100 rounded-md p-2 mb-4`}
-          />
-        )}
-
+          >
+            {data2.map((item) => (
+              <Picker.Item key={item.id} label={item.nom} value={item.id} />
+            ))}
+          </Picker>
+        </View>
         <Text style={tw`text-white text-lg font-bold mb-2`}>Nom</Text>
         <TextInput
           placeholderTextColor="gray"
@@ -492,7 +537,7 @@ const Ete_Session = () => {
         >
           <Picker
             selectedValue={sexe}
-            onValueChange={(itemValue, itemIndex) => setSexe(itemValue)}
+            onValueChange={(itemValue) => setSexe(itemValue)}
             style={{ color: "gray" }}
             name="sexe"
           >
@@ -628,11 +673,14 @@ const Ete_Session = () => {
         >
           <Picker
             selectedValue={activite}
-            onValueChange={(itemValue, itemIndex) => {
-              setActivite(itemValue);
+            onValueChange={(itemValue) => {
               const selectedActivity = data.find(
                 (item) => item.nom === itemValue
               );
+              if (selectedActivity) {
+                setidActivite(selectedActivity.id);
+                console.log("ito", selectedActivity.id);
+              }
               setActId(selectedActivity ? selectedActivity.id : null);
             }}
             style={{ color: "gray" }}
@@ -651,11 +699,16 @@ const Ete_Session = () => {
         >
           <Picker
             selectedValue={categorie}
-            onValueChange={(itemValue, itemIndex) => {
+            onValueChange={(itemValue) => {
               setCategorie(itemValue);
+
               const selectedCat = data1.find(
                 (item) => item.categorie === itemValue
               );
+              if (selectedCat) {
+                setidCategorie(selectedCat.id);
+                console.log("idcategorie", selectedCat.id);
+              }
               setSelectedCategorie(selectedCat);
             }}
             style={{ color: "gray" }}

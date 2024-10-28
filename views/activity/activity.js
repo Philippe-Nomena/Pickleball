@@ -12,7 +12,12 @@ import {
 import { Checkbox } from "./checkbox";
 import { ScrollView, Swipeable } from "react-native-gesture-handler";
 import tw from "tailwind-react-native-classnames";
-import { AntDesign, Entypo, MaterialIcons } from "@expo/vector-icons";
+import {
+  AntDesign,
+  Entypo,
+  FontAwesome5,
+  MaterialIcons,
+} from "@expo/vector-icons";
 import { url, stateUrl } from "../url";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -87,8 +92,8 @@ const Activity = () => {
         categorie,
         horaire,
         prix,
-        date1: formatDate(date1),
-        date2: formatDate(date2),
+        datedebut: formatDate(date1),
+        datefin: formatDate(date2),
         jour: groupe,
         id_activite,
       };
@@ -104,10 +109,59 @@ const Activity = () => {
       }
     } catch (error) {
       console.error("Erreur lors de la modification de la catégorie :", error);
+
       Alert.alert(
         "Erreur lors de la modification de la catégorie",
         error.response?.data?.error || error.message
       );
+    }
+  };
+
+  const DeleteCategorie = async () => {
+    try {
+      Alert.alert(
+        "Confirmation",
+        "Êtes-vous sûr de vouloir supprimer cette catégorie ?",
+        [
+          {
+            text: "Annuler",
+            style: "cancel",
+          },
+          {
+            text: "Oui",
+            onPress: async () => {
+              try {
+                const token = await AsyncStorage.getItem("token");
+
+                if (!token) {
+                  throw new Error("Token not found");
+                }
+
+                await url.delete(`/categorie/${editedItem.id}`, {
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                  },
+                });
+                Alert.alert("Suppression réussie avec succès !");
+                setEditCategorieModalVisible(false);
+              } catch (error) {
+                console.error(
+                  "Erreur lors de la suppression de l'élément :",
+                  error
+                );
+                Alert.alert(
+                  "Erreur lors de la suppression de l'élément",
+                  error.message
+                );
+              }
+            },
+          },
+        ],
+        { cancelable: true }
+      );
+    } catch (error) {
+      console.error("Erreur lors de la suppression de l'élément :", error);
+      Alert.alert("Erreur lors de la suppression de l'élément", error.message);
     }
   };
 
@@ -878,7 +932,7 @@ const Activity = () => {
                 value={id_categorie.toString()}
                 editable={false}
                 name="id_categorie"
-                // style={{ display: "none" }}
+                style={{ display: "none" }}
               />
               <Text style={tw`text-white mb-2`}>Categorie:</Text>
               <View style={tw`flex-row items-center`}>
@@ -1039,6 +1093,13 @@ const Activity = () => {
               >
                 <AntDesign name="edit" size={20} color="white" />
                 <Text style={tw`text-white text-center ml-1`}>Editer</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={tw`bg-red-500 p-2 rounded-md mr-5 flex-row`}
+                onPress={DeleteCategorie}
+              >
+                <FontAwesome5 name="trash" size={20} color="white" />
+                <Text style={tw`text-white text-center ml-1`}>Supprimer</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={tw`bg-gray-500 p-2 rounded-md  flex-row`}

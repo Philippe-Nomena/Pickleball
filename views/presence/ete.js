@@ -21,9 +21,12 @@ import dayjs from "dayjs";
 
 const Ete_Presence = () => {
   const [nom, setNom] = useState("");
-  const [session] = useState("Ete");
+  const [session, setSession] = useState("");
   const [remarque, setRemarque] = useState("");
   const [activite, setActivite] = useState("");
+  const [idActivite, setIdActivite] = useState("");
+  const [idSession, setIdSession] = useState("");
+  const [idCategorie, setIdCategorie] = useState("");
   const [categorie, setCategorie] = useState("");
   const [groupe, setGroupe] = useState(["Lundi"]);
   const [id_pratiquant, setId_pratiquant] = useState("");
@@ -68,12 +71,12 @@ const Ete_Presence = () => {
             `/presence/${id_pratiquant}`,
             {
               nom,
-              session,
-              activite,
+              id_session: idSession,
+              id_activite: idActivite,
               jour: formatDate(date),
               present,
               absence,
-              categorie,
+              id_categorie: idCategorie,
             },
             {
               headers: {
@@ -157,13 +160,25 @@ const Ete_Presence = () => {
       if (getNom) {
         const nom = getNom.data.nom;
         const Id = getNom.data.id;
-        const activite = getNom.data.activite;
-        const categorie = getNom.data.categorie;
-        setBarcodeData({ nom, Id, activite, categorie });
+        const activite = getNom.data.activite.nom;
+        const categorie = getNom.data.categorie.categorie;
+        const idActivite = getNom.data.id_activite;
+        const idCategorie = getNom.data.id_categorie;
+        const session = getNom.data.session.nom;
+        const idSession = getNom.data.id_session;
+        setBarcodeData({ nom, Id, activite, categorie, session });
         setNom(nom);
         setActivite(activite);
         setCategorie(categorie);
+        setSession(session);
+        setIdSession(idSession);
+        setIdActivite(idActivite);
+        setIdCategorie(idCategorie);
         setId_pratiquant(Id.toString());
+        console.log("ito pr", getNom.data);
+      } else {
+        setBarcodeData(null);
+        console.error("Pratiquant data not found or invalid response");
       }
     } catch (error) {
       setBarcodeData(null);
@@ -268,6 +283,7 @@ const Ete_Presence = () => {
           barcodeData.nom &&
           barcodeData.Id &&
           barcodeData.activite &&
+          barcodeData.session &&
           barcodeData.categorie && (
             <View>
               <Text style={tw`text-white text-lg font-bold mb-2`}>Nom:</Text>
@@ -281,8 +297,8 @@ const Ete_Presence = () => {
                 Activite:
               </Text>
               <TextInput
-                name="activite"
-                value={barcodeData.activite}
+                name="id_activite"
+                value={barcodeData.activite.toString()}
                 editable={false}
                 style={tw`bg-gray-300 border border-gray-300 rounded-md p-2 mb-2`}
               />
@@ -290,8 +306,17 @@ const Ete_Presence = () => {
                 Categorie:
               </Text>
               <TextInput
-                name="categorie"
-                value={barcodeData.categorie}
+                name="id_Categorie"
+                value={barcodeData.categorie.toString()}
+                editable={false}
+                style={tw`bg-gray-300 border border-gray-300 rounded-md p-2 mb-2`}
+              />
+              <Text style={tw`text-white text-lg font-bold mb-2`}>
+                Session:
+              </Text>
+              <TextInput
+                name="id_session"
+                value={barcodeData.session.toString()}
                 editable={false}
                 style={tw`bg-gray-300 border border-gray-300 rounded-md p-2 mb-2`}
               />

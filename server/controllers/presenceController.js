@@ -1,22 +1,72 @@
 const { Op, NOW, and } = require("sequelize");
 const Presence = require("../models/Presence");
+const Activite = require("../models/Activite");
 const moment = require("moment");
+const Categorie = require("../models/Categorie");
+const Pratiquant = require("../models/Pratiquant");
 // const Pratiquants = require("../models/pratiquants");
 // Get single presence by Pratiquants
 exports.getPresencebyPratiquant = async (req, res, next) => {
   let id_pratiquant = req.params.id;
+  const compagnieId = req.user.compagnieId;
+
   const presence = await Presence.findAll({
     where: {
       id_pratiquant: id_pratiquant,
-      // , present: true
     },
+    include: [
+      {
+        model: Activite,
+        as: "activite",
+        where: { id_compagnie: compagnieId },
+      },
+      {
+        model: Categorie,
+        as: "categorie",
+        attributes: ["categorie"],
+      },
+      {
+        model: Pratiquant,
+        as: "pratiquant",
+        attributes: ["nom"],
+      },
+    ],
+    attributes: ["present", "jour"],
   });
+
   res.json(presence);
 };
+
 // Get all presence
+
 exports.getAllPresence = async (req, res, next) => {
-  const presence = await Presence.findAll({ where: { present: true } });
-  res.json(presence);
+  try {
+    const compagnieId = req.user.compagnieId;
+
+    const presence = await Presence.findAll({
+      where: { present: true },
+      include: [
+        {
+          model: Activite,
+          as: "activite",
+          where: { id_compagnie: compagnieId },
+        },
+        {
+          model: Pratiquant,
+          as: "pratiquant",
+          attributes: ["nom"],
+        },
+      ],
+    });
+
+    res.status(200).json(presence);
+  } catch (error) {
+    console.error("Error retrieving presence records:", error);
+    res.status(500).json({
+      message: "Error retrieving presence records",
+      error: error.message,
+    });
+  }
 };
 
 const validateDate = (date) => {
@@ -35,6 +85,7 @@ exports.getAllPresenceDate = async (req, res, next) => {
   try {
     const date = req.query.date;
     const validation = validateDate(date);
+    const compagnieId = req.user.compagnieId;
 
     if (!validation.valid) {
       return res.status(400).json({ error: validation.message });
@@ -50,6 +101,14 @@ exports.getAllPresenceDate = async (req, res, next) => {
         },
         present: true,
       },
+      include: [
+        {
+          model: Activite,
+          as: "activite",
+          where: { id_compagnie: compagnieId },
+        },
+        { model: Pratiquant, as: "pratiquant", attributes: ["nom"] },
+      ],
     });
 
     res.json(presence);
@@ -85,9 +144,9 @@ exports.createPresence = async (req, res, next) => {
   try {
     let {
       nom,
-      session,
-      activite,
-      categorie,
+      id_session,
+      id_activite,
+      id_categorie,
       jour,
       id_pratiquant,
       datedebut,
@@ -96,9 +155,9 @@ exports.createPresence = async (req, res, next) => {
 
     const newPresence = await Presence.create({
       nom: nom,
-      session: session,
-      activite: activite,
-      categorie: categorie,
+      id_session: id_session,
+      id_activite: id_activite,
+      id_categorie: id_categorie,
       jour: jour,
       id_pratiquant: id_pratiquant,
       datedebut: datedebut,
@@ -135,9 +194,9 @@ exports.updatePresence = async (req, res, next) => {
       }
 
       presence.nom = req.body.nom;
-      presence.activite = req.body.activite;
-      presence.categorie = req.body.categorie;
-      presence.session = req.body.session;
+      presence.id_activite = req.body.id_activite;
+      presence.id_categorie = req.body.id_categorie;
+      presence.id_session = req.body.id_session;
       presence.present = true;
       presence.absence = false;
 

@@ -37,6 +37,7 @@ const Ete_liste = () => {
   const [data, setData] = useState([]);
   const [data0, setData0] = useState([]);
   const [data1, setData1] = useState([]);
+  const [data2, setData2] = useState([]);
   const [presence, setPresence] = useState([]);
   const [actId, setActId] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
@@ -46,10 +47,11 @@ const Ete_liste = () => {
   const [presenceModalVisible, setPresenceModalVisible] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [session, setSession] = useState("Ete");
+  const [session, setSession] = useState("");
   const [nom, setNom] = useState("");
-  const [categorie, setCategorie] = useState("");
-  const [activite, setActivite] = useState("");
+  const [categorie, setCategorie] = useState(null);
+  const [activite, setActivite] = useState(null);
+  const [selectedActivite, setSelectedActivite] = useState(null);
   const [sexe, setSexe] = useState("F");
   const [adresse, setAdresse] = useState("");
   const [tel_urgence, setTel_urgence] = useState("");
@@ -63,10 +65,11 @@ const Ete_liste = () => {
   const [carte_fede, setCarte_fede] = useState([]);
   const [consigne, setConsigne] = useState([]);
   const [etiquete, setEtiquete] = useState([]);
-  const [eteVisible] = useState(false);
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
-
+  const filteredSelected = selectedActivite
+    ? data0.filter((item) => item.id === selectedActivite)
+    : data0;
   const updateGroupe = (itemValue) => {
     let updatedGroupe = [...groupe];
     const index = updatedGroupe.indexOf(itemValue);
@@ -86,6 +89,9 @@ const Ete_liste = () => {
   };
   useEffect(() => {
     fetchAllData();
+    fetchAllData3();
+    fetchAllData4();
+    fetchAllData6();
   }, []);
   useEffect(() => {
     fetchPresence();
@@ -94,10 +100,20 @@ const Ete_liste = () => {
     fetchAllData0();
   }, []);
   useEffect(() => {
+    fetchAllData2();
+  }, []);
+  useEffect(() => {
     if (actId) {
       fetchAllData1(actId);
     }
   }, [actId]);
+  useEffect(() => {
+    if (selectedActivite) {
+      fetchAllData5(selectedActivite);
+    }
+  }, [selectedActivite]);
+
+  //display all pratiquants in ete session
   const fetchAllData = async () => {
     try {
       const state = await NetInfo.fetch();
@@ -138,6 +154,7 @@ const Ete_liste = () => {
       fetchSession();
     }
   };
+  //display all activite
 
   const fetchAllData0 = async () => {
     try {
@@ -162,11 +179,11 @@ const Ete_liste = () => {
       alert("Error fetching data: " + errorMessage);
     }
   };
+  //display all categorie by the activite selected
 
   const fetchAllData1 = async (activiteId) => {
     try {
       const token = await AsyncStorage.getItem("token");
-
       if (!token) {
         throw new Error("Token not found");
       }
@@ -178,27 +195,173 @@ const Ete_liste = () => {
       });
 
       setData1(response.data);
+      return response.data;
     } catch (error) {
       console.error("Erreur lors de la récupération des catégories :", error);
+      alert("Error fetching categories: " + error.message);
     }
   };
-  ///////////////////// debut Export excel
-  // const exportToExcel = async () => {
-  //   try {
-  //     const response = await url.get("/pratiquants/ete");
-  //     const excelUrl = await response.data.downloadUrl;
 
-  //     if (!excelUrl) {
-  //       throw new Error("Download URL not provided by the server");
-  //     }
-  //     alert("Exportation de données réussi avec succès");
-  //   } catch (error) {
-  //     console.error("Error exporting to Excel:", error);
-  //     alert("Failed to export to Excel. Please try again.");
-  //   }
-  // };
+  //display all session
 
-  ///////////////////// fin Export excel
+  const fetchAllData2 = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+
+      if (!token) {
+        throw new Error("Token not found");
+      }
+
+      const res = await url.get("/session", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      setData2(res.data);
+    } catch (error) {
+      const errorMessage = error.response
+        ? error.response.data.message || error.response.data
+        : error.message;
+      console.error("Error fetching data:", errorMessage);
+      alert("Error fetching data: " + errorMessage);
+    }
+  };
+  //display all pratiquants in hiver session
+
+  const fetchAllData3 = async () => {
+    try {
+      const state = await NetInfo.fetch();
+      if (state.isConnected) {
+        try {
+          const token = await AsyncStorage.getItem("token");
+
+          if (!token) {
+            throw new Error("Token not found");
+          }
+
+          const response = await url.get(`/pratiquants/hiver`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          console.log("liste d'hiver", response.data.pratiquants);
+        } catch (error) {
+          console.log(
+            "Erreur lors de la récupération des données de MySQL :",
+            error
+          );
+        }
+      } else {
+        console.log("Il y a un erreur");
+      }
+    } catch (error) {
+      console.log(
+        "Erreur lors de la récupération de l'état du réseau :",
+        error
+      );
+    }
+  };
+
+  //display all pratiquants in automne session
+
+  const fetchAllData4 = async () => {
+    try {
+      const state = await NetInfo.fetch();
+      if (state.isConnected) {
+        try {
+          const token = await AsyncStorage.getItem("token");
+
+          if (!token) {
+            throw new Error("Token not found");
+          }
+
+          const response = await url.get(`/pratiquants/automne`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          console.log("liste d'automne", response.data.pratiquants);
+        } catch (error) {
+          console.log(
+            "Erreur lors de la récupération des données de MySQL :",
+            error
+          );
+        }
+      } else {
+        console.log("Il y a un erreur");
+      }
+    } catch (error) {
+      console.log(
+        "Erreur lors de la récupération de l'état du réseau :",
+        error
+      );
+    }
+  };
+
+  //filter all pratiquants by the activite selected
+
+  const fetchAllData5 = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+
+      if (!token) {
+        throw new Error("Token not found");
+      }
+
+      const res = await url.get(`/pratiquants/selected/${selectedActivite}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setData(res.data);
+    } catch (error) {
+      const errorMessage = error.response
+        ? error.response.data.message || error.response.data
+        : error.message;
+      console.error("Error fetching data:", errorMessage);
+      alert("Error fetching data: " + errorMessage);
+    }
+  };
+
+  //display all pratiquants in printemps session
+
+  const fetchAllData6 = async () => {
+    try {
+      const state = await NetInfo.fetch();
+      if (state.isConnected) {
+        try {
+          const token = await AsyncStorage.getItem("token");
+
+          if (!token) {
+            throw new Error("Token not found");
+          }
+
+          const response = await url.get(`/pratiquants/printemps`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          console.log("liste de printemps", response.data.pratiquants);
+        } catch (error) {
+          console.log(
+            "Erreur lors de la récupération des données de MySQL :",
+            error
+          );
+        }
+      } else {
+        console.log("Il y a un erreur");
+      }
+    } catch (error) {
+      console.log(
+        "Erreur lors de la récupération de l'état du réseau :",
+        error
+      );
+    }
+  };
   const formatDate = (date) => {
     return dayjs(date).format("DD-MM-YYYY");
   };
@@ -220,6 +383,9 @@ const Ete_liste = () => {
       setShowDatePicker(false);
     }
   };
+
+  //fetch all presence by the pratiquant selected
+
   const fetchPresence = async (id_pratiquant) => {
     try {
       const token = await AsyncStorage.getItem("token");
@@ -242,6 +408,8 @@ const Ete_liste = () => {
       Alert.alert("Error presence item", error.message);
     }
   };
+
+  //Edited pratiquant by id
 
   const saveEditedItem = async () => {
     try {
@@ -297,7 +465,7 @@ const Ete_liste = () => {
       Alert.alert("Error editing item", error.message);
     }
   };
-
+  //delete pratiquant by id
   const confirmDeleteItem = async () => {
     try {
       const token = await AsyncStorage.getItem("token");
@@ -352,13 +520,13 @@ const Ete_liste = () => {
           style={tw`bg-gray-900 p-2 shadow-md rounded-md mb-3 ml-4 flex-row items-center`}
         >
           <View style={tw`flex-1 flex-row items-center`}>
-            <Text style={tw`text-lg text-white mr-4`}>{item.id}</Text>
-            {item.barcodeUrl && (
+            {/* <Text style={tw`text-lg text-white mr-4`}>{item.id}</Text> */}
+            {/* {item.barcodeUrl && (
               <Image
                 source={{ uri: item.barcodeUrl }}
                 style={tw`w-40 h-10 mr-1`}
               />
-            )}
+            )} */}
             <Text style={tw`text-lg text-white`}>{item.nom}</Text>
           </View>
           <View style={tw`flex-row items-center`}>
@@ -385,14 +553,23 @@ const Ete_liste = () => {
 
   const listePresence = ({ item }) => (
     <View style={tw`flex-row items-center justify-between py-2`}>
-      <Text style={tw`text-center text-white text-lg font-bold`}>
-        {item.nom}
+      <Text
+        style={[tw`text-white text-lg font-bold text-center`, { width: 100 }]}
+      >
+        {item.pratiquant.nom}
       </Text>
-      <Text style={tw`text-lg text-white`}>{item.categorie}</Text>
-      <Text style={tw`text-lg text-white`}>{item.jour}</Text>
-      <Text style={tw`text-white`}>{item.present ? "Présent" : "Absent"}</Text>
+      <Text style={[tw`text-lg text-white text-center`, { width: 80 }]}>
+        {item.categorie.categorie}
+      </Text>
+      <Text style={[tw`text-lg text-white text-center`, { width: 110 }]}>
+        {item.jour}
+      </Text>
+      <Text style={[tw`text-white text-center`, { width: 80 }]}>
+        {item.present ? "Présent" : "Absent"}
+      </Text>
     </View>
   );
+
   const PasdelistePresence = () => (
     <View style={tw`flex-1 justify-center items-center`}>
       <Text style={tw`text-lg text-white`}>Pas de données</Text>
@@ -409,9 +586,9 @@ const Ete_liste = () => {
     </View>
   );
 
+  //Exportation of the data on the pdf file
   const handleExport = async () => {
     try {
-      // Créer le contenu HTML pour le PDF
       const htmlContent = `
         <h1>Liste de Présence</h1>
         <table border="1" style="width:100%; border-collapse: collapse;">
@@ -425,8 +602,8 @@ const Ete_liste = () => {
             .map(
               (item) => `
             <tr>
-              <td>${item.nom}</td>
-              <td>${item.categorie}</td>
+              <td>${item.pratiquant.nom}</td>
+              <td>${item.categorie.categorie}</td>
               <td>${item.jour}</td>
               <td>${item.present ? "Présent" : "Absent"}</td>
             </tr>
@@ -455,7 +632,7 @@ const Ete_liste = () => {
       Alert.alert("Error", "Failed to export PDF");
     }
   };
-  const handleEdit = (item) => {
+  const handleEdit = async (item) => {
     setEditedItem(item);
     setNom(item.nom);
     setSession(item.session);
@@ -465,13 +642,27 @@ const Ete_liste = () => {
     setAdresse(item.adresse);
     setTelephone(item.telephone);
     setTel_urgence(item.tel_urgence);
-    // setActivite(item.activite);
-    // setCategorie(item.categorie);
+    setActivite(item.activite);
+    const activityId = item.activite.id;
+    if (activityId) {
+      const categories = await fetchAllData1(activityId);
+      if (categories && Array.isArray(categories)) {
+        const categoryNames = categories.map((cat) => cat.categorie);
+        setCategorie(categoryNames);
+      } else {
+        setCategorie(null);
+        console.log("Categorie: null");
+      }
+    } else {
+      setCategorie(null);
+      console.log("Categorie: null");
+    }
     setEvaluation(item.evaluation);
     setMode_payement(item.mode_payement);
     setCarte_payement(item.carte_payement);
     setModalVisible(true);
   };
+
   const [users, setUsers] = useState([]);
   const [hasUnsyncedData, setHasUnsyncedData] = useState(false);
 
@@ -534,7 +725,7 @@ const Ete_liste = () => {
 
   return (
     <View>
-      <View style={tw`bg-black p-2 flex-row items-center`}>
+      <View style={tw`bg-black p-2 flex-row items-center justify-between`}>
         <TouchableOpacity style={tw`p-2`}>
           <AntDesign name="search1" size={18} color="white" />
         </TouchableOpacity>
@@ -545,13 +736,23 @@ const Ete_liste = () => {
           value={searchQuery}
           placeholderTextColor="white"
         />
-        {/* <TouchableOpacity
-          style={tw`bg-black w-10 h-10 items-center justify-center`}
-          onPress={exportToExcel}
-        >
-          <AntDesign name="download" size={22} color="white" />
-        </TouchableOpacity> */}
+
+        <View style={tw`bg-black border`}>
+          <Picker
+            selectedValue={selectedActivite}
+            onValueChange={(itemValue) => {
+              setSelectedActivite(itemValue);
+            }}
+            style={{ color: "white", width: 180 }}
+          >
+            <Picker.Item label="Filtrer" value={null} />
+            {data0.map((item) => (
+              <Picker.Item key={item.id} label={item.nom} value={item.id} />
+            ))}
+          </Picker>
+        </View>
       </View>
+
       <FlatList
         style={tw`mt-1`}
         data={filteredData()}
@@ -571,13 +772,23 @@ const Ete_liste = () => {
             <Text style={tw`text-white text-lg font-bold mb-2 text-center`}>
               Editer l'information de pratiquants
             </Text>
-            {eteVisible && (
-              <TextInput
+            <Text style={tw`text-white text-lg font-bold mb-2`}>Session</Text>
+            <View
+              style={tw`bg-gray-300 border border-gray-100 rounded-md p-2 mb-4`}
+            >
+              <Picker
+                selectedValue={session}
+                onValueChange={(itemValue, itemIndex) => {
+                  setSession(itemValue);
+                }}
+                style={{ color: "gray" }}
                 name="session"
-                value={session}
-                style={tw`bg-gray-300 border border-gray-100 rounded-md p-2 mb-4`}
-              />
-            )}
+              >
+                {data2.map((item) => (
+                  <Picker.Item key={item.id} label={item.nom} value={item.id} />
+                ))}
+              </Picker>
+            </View>
 
             <Text style={tw`text-white text-lg font-bold mb-2`}>Nom</Text>
             <TextInput
@@ -725,14 +936,13 @@ const Ete_liste = () => {
               placeholder="Telephone d'urgence"
               style={tw`bg-gray-300 border border-gray-100 rounded-md p-2 mb-4`}
             />
-
             <Text style={tw`text-white text-lg font-bold mb-2`}>Activité</Text>
             <View
               style={tw`bg-gray-300 border border-gray-100 rounded-md p-2 mb-4`}
             >
               <Picker
                 selectedValue={activite}
-                onValueChange={(itemValue, itemIndex) => {
+                onValueChange={(itemValue) => {
                   setActivite(itemValue);
                   const selectedActivity = data0.find(
                     (item) => item.nom === itemValue
@@ -742,34 +952,43 @@ const Ete_liste = () => {
                 style={{ color: "gray" }}
                 name="activite"
               >
-                {data0.map((item) => (
-                  <Picker.Item
-                    key={item.id}
-                    label={item.nom}
-                    value={item.nom}
-                  />
-                ))}
+                {data0.length > 0 ? (
+                  data0.map((item) => (
+                    <Picker.Item
+                      key={item.id}
+                      label={item.nom}
+                      value={item.nom}
+                    />
+                  ))
+                ) : (
+                  <Picker.Item label="No activities available" value={null} />
+                )}
               </Picker>
             </View>
+
             <Text style={tw`text-white text-lg font-bold mb-2`}>Catégorie</Text>
             <View
               style={tw`bg-gray-300 border border-gray-100 rounded-md p-2 mb-4`}
             >
               <Picker
                 selectedValue={categorie}
-                onValueChange={(itemValue, itemIndex) =>
-                  setCategorie(itemValue)
-                }
+                onValueChange={(itemValue) => {
+                  setCategorie(itemValue);
+                }}
                 style={{ color: "gray" }}
                 name="categorie"
               >
-                {data1.map((item) => (
-                  <Picker.Item
-                    key={item.id}
-                    label={item.categorie}
-                    value={item.categorie}
-                  />
-                ))}
+                {data1.length > 0 ? (
+                  data1.map((item) => (
+                    <Picker.Item
+                      key={item.id}
+                      label={item.categorie}
+                      value={item.categorie}
+                    />
+                  ))
+                ) : (
+                  <Picker.Item label="No categories available" value={null} />
+                )}
               </Picker>
             </View>
 
@@ -919,10 +1138,10 @@ const Ete_liste = () => {
           </Text>
           <FlatList
             data={presence}
-            keyExtractor={(item) => item.id.toString()}
             renderItem={listePresence}
             ListHeaderComponent={renderHeader}
             ListEmptyComponent={PasdelistePresence}
+            keyExtractor={(item, index) => index.toString()}
           />
           <View style={tw`flex-row justify-center mt-4`}>
             <TouchableOpacity

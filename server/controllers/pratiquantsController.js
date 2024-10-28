@@ -4,11 +4,25 @@ const path = require("path");
 const fs = require("fs");
 const util = require("util");
 const ExcelJS = require("exceljs");
-const Pratiquants = require("../models/pratiquants");
+const Pratiquants = require("../models/Pratiquant");
+const Session = require("../models/Session");
+const Activite = require("../models/Activite");
+// const Pratiquant = require("../models/Pratiquant");
+const Categorie = require("../models/Categorie");
 const readFile = util.promisify(fs.readFile);
 exports.getAllPratiquants = async (req, res, next) => {
   try {
-    const pratiquants = await Pratiquants.findAll();
+    const pratiquants = await Pratiquants.findAll({
+      include: [
+        {
+          model: Activite,
+          as: "activite",
+          where: {
+            id_compagnie: compagnieId,
+          },
+        },
+      ],
+    });
 
     const updatedPratiquants = pratiquants.map((pratiquant) => {
       const idString = pratiquant.id.toString().padStart(2, "0");
@@ -97,14 +111,34 @@ const generateExcelFile = async (pratiquants, req, session) => {
   }
 };
 
-exports.getAllPratiquantsEte = async (req, res, next) => {
+const getAllPratiquantsBySession = async (req, res, next, sessionName) => {
   try {
-    const pratiquants = await Pratiquants.findAll({
-      where: {
-        session: "Ete",
-      },
-    });
+    const compagnieId = req.user.compagnieId;
 
+    const includeOptions = [
+      {
+        model: Activite,
+        as: "activite",
+        where: {
+          id_compagnie: compagnieId,
+        },
+      },
+    ];
+
+    if (sessionName) {
+      includeOptions.push({
+        model: Session,
+        as: "session",
+        where: {
+          nom: sessionName,
+        },
+      });
+    }
+
+    // Fetch pratiquants with the required includes
+    const pratiquants = await Pratiquants.findAll({ include: includeOptions });
+
+    // Map and add barcode URL
     const updatedPratiquants = pratiquants.map((pratiquant) => {
       const pratiquantPlain = pratiquant.get({ plain: true });
       const idString = pratiquantPlain.id.toString().padStart(2, "0");
@@ -113,17 +147,26 @@ exports.getAllPratiquantsEte = async (req, res, next) => {
       return { ...pratiquantPlain, barcodeUrl };
     });
 
-    const downloadUrl = await generateExcelFile(updatedPratiquants, req, "Ete");
+    // Generate Excel file
+    const downloadUrl = await generateExcelFile(
+      updatedPratiquants,
+      req,
+      sessionName || "Ete"
+    );
     if (!downloadUrl) {
       throw new Error("Failed to generate download URL");
     }
 
+    // Send response
     res.json({
       pratiquants: updatedPratiquants,
       downloadUrl: downloadUrl,
     });
   } catch (error) {
-    console.error("Error in getAllPratiquantsEte:", error);
+    console.error(
+      `Error in getAllPratiquantsBySession (${sessionName || "Ete"}):`,
+      error
+    );
     res.status(500).json({
       message: "An error occurred while processing the request",
       error: error.message,
@@ -131,79 +174,20 @@ exports.getAllPratiquantsEte = async (req, res, next) => {
   }
 };
 
-exports.getAllPratiquantsHiver = async (req, res, next) => {
-  try {
-    const pratiquants = await Pratiquants.findAll({
-      where: {
-        session: "Hiver",
-      },
-    });
-
-    const updatedPratiquants = pratiquants.map((pratiquant) => {
-      const pratiquantPlain = pratiquant.get({ plain: true });
-      const idString = pratiquantPlain.id.toString().padStart(2, "0");
-      const fileName = `barcode_${idString}.png`;
-      const barcodeUrl = `${req.protocol}://${req.get("host")}/barcodes/${fileName}`;
-      return { ...pratiquantPlain, barcodeUrl };
-    });
-
-    const downloadUrl = await generateExcelFile(
-      updatedPratiquants,
-      req,
-      "Hiver"
-    );
-    if (!downloadUrl) {
-      throw new Error("Failed to generate download URL");
-    }
-
-    res.json({
-      pratiquants: updatedPratiquants,
-      downloadUrl: downloadUrl,
-    });
-  } catch (error) {
-    console.error("Error in getAllPratiquantsHiver:", error);
-    res.status(500).json({
-      message: "An error occurred while processing the request",
-      error: error.message,
-    });
-  }
+// Specific session handlers
+exports.getAllPratiquantsEte = (req, res, next) => {
+  getAllPratiquantsBySession(req, res, next, null);
 };
-exports.getAllPratiquantsAutomne = async (req, res, next) => {
-  try {
-    const pratiquants = await Pratiquants.findAll({
-      where: {
-        session: "Automne",
-      },
-    });
 
-    const updatedPratiquants = pratiquants.map((pratiquant) => {
-      const pratiquantPlain = pratiquant.get({ plain: true });
-      const idString = pratiquantPlain.id.toString().padStart(2, "0");
-      const fileName = `barcode_${idString}.png`;
-      const barcodeUrl = `${req.protocol}://${req.get("host")}/barcodes/${fileName}`;
-      return { ...pratiquantPlain, barcodeUrl };
-    });
+exports.getAllPratiquantsHiver = (req, res, next) => {
+  getAllPratiquantsBySession(req, res, next, "Hiver");
+};
 
-    const downloadUrl = await generateExcelFile(
-      updatedPratiquants,
-      req,
-      "Automne"
-    );
-    if (!downloadUrl) {
-      throw new Error("Failed to generate download URL");
-    }
-
-    res.json({
-      pratiquants: updatedPratiquants,
-      downloadUrl: downloadUrl,
-    });
-  } catch (error) {
-    console.error("Error in getAllPratiquantsAutomne:", error);
-    res.status(500).json({
-      message: "An error occurred while processing the request",
-      error: error.message,
-    });
-  }
+exports.getAllPratiquantsAutomne = (req, res, next) => {
+  getAllPratiquantsBySession(req, res, next, "Automne");
+};
+exports.getAllPratiquantsPrintemps = (req, res, next) => {
+  getAllPratiquantsBySession(req, res, next, "Printemps");
 };
 exports.getPratiquantsEte = async (req, res, next) => {
   const id = req.params.id;
@@ -211,8 +195,24 @@ exports.getPratiquantsEte = async (req, res, next) => {
     let pratiquants = await Pratiquants.findOne({
       where: {
         id: id,
-        session: "Ete",
       },
+      include: [
+        {
+          model: Session,
+          as: "session",
+          attributes: ["nom"],
+        },
+        {
+          model: Activite,
+          as: "activite",
+          attributes: ["nom"],
+        },
+        {
+          model: Categorie,
+          as: "categorie",
+          attributes: ["categorie"],
+        },
+      ],
     });
 
     res.json(pratiquants);
@@ -223,6 +223,37 @@ exports.getPratiquantsEte = async (req, res, next) => {
     });
   }
 };
+
+exports.getPratiquantsbySelected = async (req, res, next) => {
+  const { activiteId } = req.params;
+
+  try {
+    const pratiquants = await Pratiquants.findAll({
+      include: [
+        {
+          model: Activite,
+          as: "activite",
+          where: {
+            id: activiteId,
+          },
+        },
+      ],
+    });
+    if (!pratiquants) {
+      return res
+        .status(404)
+        .json({ message: "No pratiquants found for this activite." });
+    }
+
+    return res.status(200).json(pratiquants);
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ message: "Server error", error: error.message });
+  }
+};
+
 // exports.getPratiquantsEte = async (req, res, next) => {
 //   const id = req.params.id;
 //   try {
@@ -267,7 +298,13 @@ exports.getPratiquantsHiver = async (req, res, next) => {
   let pratiquants = await Pratiquants.findOne({
     where: {
       id: id,
-      session: "Hiver",
+    },
+    include: {
+      model: Session,
+      as: "session",
+      where: {
+        nom: "Hiver",
+      },
     },
   });
   res.json(pratiquants);
@@ -277,7 +314,13 @@ exports.getPratiquantsAutomne = async (req, res, next) => {
   let pratiquants = await Pratiquants.findOne({
     where: {
       id: id,
-      session: "Automne",
+    },
+    include: {
+      model: Session,
+      as: "session",
+      where: {
+        nom: "Automne",
+      },
     },
   });
   res.json(pratiquants);
@@ -334,7 +377,7 @@ const formatBarcodeId = (id) => {
 exports.createPratiquants = async (req, res, next) => {
   try {
     const {
-      session,
+      id_session,
       nom,
       sexe,
       naissance,
@@ -346,8 +389,8 @@ exports.createPratiquants = async (req, res, next) => {
       adresse,
       telephone,
       tel_urgence,
-      activite,
-      categorie,
+      id_activite,
+      id_categorie,
       evaluation,
       mode_payement,
       carte_payement,
@@ -365,7 +408,7 @@ exports.createPratiquants = async (req, res, next) => {
 
     // Create a new practitioner
     const newPratiquants = await Pratiquants.create({
-      session,
+      id_session,
       nom,
       sexe,
       naissance,
@@ -377,8 +420,8 @@ exports.createPratiquants = async (req, res, next) => {
       adresse,
       telephone,
       tel_urgence,
-      activite,
-      categorie,
+      id_activite,
+      id_categorie,
       evaluation,
       mode_payement,
       carte_payement,
@@ -443,7 +486,7 @@ exports.updatePratiquants = async (req, res, next) => {
       },
     });
 
-    (pratiquants.session = req.body.session),
+    (pratiquants.id_session = req.body.id_session),
       (pratiquants.nom = req.body.nom),
       (pratiquants.sexe = req.body.sexe);
     pratiquants.naissance = req.body.naissance;
@@ -455,8 +498,8 @@ exports.updatePratiquants = async (req, res, next) => {
     pratiquants.adresse = req.body.adresse;
     pratiquants.telephone = req.body.telephone;
     pratiquants.tel_urgence = req.body.tel_urgence;
-    pratiquants.activite = req.body.activite;
-    pratiquants.categorie = req.body.categorie;
+    pratiquants.id_activite = req.body.id_activite;
+    pratiquants.id_categorie = req.body.id_categorie;
     pratiquants.evaluation = req.body.evaluation;
     pratiquants.mode_payement = req.body.mode_payement;
     pratiquants.carte_payement = req.body.carte_payement;

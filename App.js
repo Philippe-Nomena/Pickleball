@@ -8,7 +8,7 @@ import {
   MaterialIcons,
 } from "@expo/vector-icons";
 import { createDrawerNavigator } from "@react-navigation/drawer";
-import AdminScreen from "./views/connexion/AdminScreen";
+// import AdminScreen from "./views/connexion/AdminScreen";
 import UsersScreen from "./views/connexion/UsersScreen";
 import Signup from "./views/connexion/signup";
 import { AuthProvider, useAuth } from "./views/connexion/AuthContext";
@@ -56,32 +56,32 @@ const UsersStack = () => (
   </Stack.Navigator>
 );
 
-const TabScreens = () => (
-  <Tab.Navigator
-    screenOptions={({ route }) => ({
-      tabBarIcon: ({ color, size }) => {
-        let iconName;
+// const TabScreens = () => (
+//   <Tab.Navigator
+//     screenOptions={({ route }) => ({
+//       tabBarIcon: ({ color, size }) => {
+//         let iconName;
 
-        if (route.name === "Admin") {
-          iconName = "home";
-        } else if (route.name === "Users") {
-          iconName = "user";
-        }
+//         if (route.name === "Admin") {
+//           iconName = "home";
+//         } else if (route.name === "Users") {
+//           iconName = "user";
+//         }
 
-        return <AntDesign name={iconName} size={size} color={color} />;
-      },
-      tabBarActiveTintColor: "white",
-      tabBarInactiveTintColor: "gray",
-      tabBarStyle: {
-        backgroundColor: "black",
-      },
-      headerShown: false,
-    })}
-  >
-    <Tab.Screen name="Admin" component={AdminScreen} />
-    <Tab.Screen name="Users" component={UsersStack} />
-  </Tab.Navigator>
-);
+//         return <AntDesign name={iconName} size={size} color={color} />;
+//       },
+//       tabBarActiveTintColor: "white",
+//       tabBarInactiveTintColor: "gray",
+//       tabBarStyle: {
+//         backgroundColor: "black",
+//       },
+//       headerShown: false,
+//     })}
+//   >
+//     {/* <Tab.Screen name="Admin" component={AdminScreen} /> */}
+//     <Tab.Screen name="Users" component={UsersStack} />
+//   </Tab.Navigator>
+// );
 
 function CustomDrawerContent(props) {
   const { navigation } = props;
@@ -100,7 +100,7 @@ function CustomDrawerContent(props) {
           text: "Déconnecter",
           onPress: async () => {
             await logout();
-            navigation.navigate("Tabs");
+            navigation.navigate("Users");
           },
         },
       ],
@@ -154,7 +154,7 @@ const DrawerScreens = () => (
       }}
     />
     <Drawer.Screen
-      name="Session"
+      name="Inscription"
       component={Session}
       options={{
         drawerIcon: () => (
@@ -212,9 +212,14 @@ const DrawerScreens = () => (
 
 const MainStack = () => (
   <Stack.Navigator>
-    <Stack.Screen
+    {/* <Stack.Screen
       name="Tabs"
       component={TabScreens}
+      options={{ headerShown: false }}
+    /> */}
+    <Stack.Screen
+      name="Users"
+      component={UsersStack}
       options={{ headerShown: false }}
     />
     <Stack.Screen

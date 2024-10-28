@@ -58,7 +58,7 @@
       "router": {
         "origin": false
       },
-      "BASE_URL": "http://172.27.220.131:3000",
+      "BASE_URL": "http://mgstarlink1.dnsdojo.com:3000",
       "eas": {
         "projectId": "cf1dc29d-b070-4ab0-a270-b2ebdb50a182"
       }

@@ -389,7 +389,7 @@ const Hiver_liste = () => {
       <Text style={tw`text-white text-lg font-bold`}>Statut</Text>
     </View>
   );
-  const handleEdit = (item) => {
+  const handleEdit = async (item) => {
     setEditedItem(item);
     setNom(item.nom);
     setSession(item.session);
@@ -400,7 +400,20 @@ const Hiver_liste = () => {
     setTelephone(item.telephone);
     setTel_urgence(item.tel_urgence);
     setActivite(item.activite);
-    setCategorie(item.categorie);
+    const activityId = item.activite.id;
+    if (activityId) {
+      const categories = await fetchAllData1(activityId);
+      if (categories && Array.isArray(categories)) {
+        const categoryNames = categories.map((cat) => cat.categorie);
+        setCategorie(categoryNames);
+      } else {
+        setCategorie(null);
+        console.log("Categorie: null");
+      }
+    } else {
+      setCategorie(null);
+      console.log("Categorie: null");
+    }
     setEvaluation(item.evaluation);
     setMode_payement(item.mode_payement);
     setCarte_payement(item.carte_payement);

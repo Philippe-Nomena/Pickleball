@@ -5,7 +5,17 @@ const { verifyToken } = require("../controllers/utilisateurController");
 router.post("/", pratiquantsController.createPratiquants);
 router.get("/", verifyToken, pratiquantsController.getAllPratiquants);
 router.get("/ete", verifyToken, pratiquantsController.getAllPratiquantsEte);
+router.get(
+  "/printemps",
+  verifyToken,
+  pratiquantsController.getAllPratiquantsPrintemps
+);
 router.get("/hiver", verifyToken, pratiquantsController.getAllPratiquantsHiver);
+router.get(
+  "/selected/:activiteId",
+  verifyToken,
+  pratiquantsController.getPratiquantsbySelected
+);
 router.get(
   "/automne",
   verifyToken,
