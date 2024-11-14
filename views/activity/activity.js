@@ -8,6 +8,7 @@ import {
   TextInput,
   Alert,
   Image,
+  SafeAreaView,
 } from "react-native";
 import { Checkbox } from "./checkbox";
 import { ScrollView, Swipeable } from "react-native-gesture-handler";
@@ -914,10 +915,8 @@ const Activity = () => {
           setEditCategorieModalVisible(!editcategorieModalVisible)
         }
       >
-        <View style={tw`flex-1 justify-center items-center bg-gray-800 `}>
-          <View
-            style={tw` bg-gray-700 p-2 rounded-md  justify-center items-center w-11/12 `}
-          >
+        <SafeAreaView style={tw`bg-black flex-1 p-4`}>
+          <ScrollView style={tw`mb-2 flex-1  bg-gray-800 bg-opacity-50`}>
             <Text style={tw`text-white text-center text-lg`}>
               Editer la categorie
             </Text>
@@ -1114,8 +1113,8 @@ const Activity = () => {
                 <Text style={tw`text-white text-center ml-1`}>Annuler</Text>
               </TouchableOpacity>
             </View>
-          </View>
-        </View>
+          </ScrollView>
+        </SafeAreaView>
       </Modal>
     </View>
   );

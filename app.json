@@ -29,9 +29,7 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true
     },
@@ -58,7 +56,7 @@
       "router": {
         "origin": false
       },
-      "BASE_URL": "http://mgstarlink1.dnsdojo.com:3000",
+      "BASE_URL": "http://192.168.220.111:3000",
       "eas": {
         "projectId": "cf1dc29d-b070-4ab0-a270-b2ebdb50a182"
       }

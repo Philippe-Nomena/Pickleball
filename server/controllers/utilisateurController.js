@@ -90,42 +90,7 @@ exports.updateUser = async (req, res, next) => {
   }
 };
 
-// Login
-// exports.login = async (req, res, next) => {
-//   try {
-//     console.log("Received username:", req.body.username);
-//     console.log("Received password:", req.body.motdepasse);
-
-//     const user = await Compagnie_Utilisateur.findOne({
-//       where: { username: req.body.username },
-//     });
-
-//     if (!user) {
-//       return res.json({ result: false, message: "User not found." });
-//     }
-
-//     const match = await bcrypt.compare(req.body.motdepasse, user.motdepasse);
-//     if (match) {
-//       try {
-//         const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
-//           expiresIn: "1h",
-//         });
-//         // console.log("Generated Token:", token);
-//         return res.json({ result: true, token: token });
-//       } catch (error) {
-//         console.error("Error generating token:", error);
-//         return res
-//           .status(500)
-//           .json({ result: false, message: "Token generation failed." });
-//       }
-//     } else {
-//       return res.json({ result: false, message: "Invalid password." });
-//     }
-//   } catch (error) {
-//     console.error(error);
-//     res.status(400).send(error.message);
-//   }
-// };
+//Login
 exports.login = async (req, res, next) => {
   try {
     const user = await Compagnie_Utilisateur.findOne({

@@ -65,9 +65,9 @@ const UsersScreen = () => {
           />
         </View>
         <View style={tw`flex-row justify-center mt-5`}>
-          <TouchableOpacity onPress={() => navigation.navigate("Forget_pass")}>
+          {/* <TouchableOpacity onPress={() => navigation.navigate("Forget_pass")}>
             <Text style={tw`text-white w-48 mr-5`}>Mot de passe oubliée?</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
           <TouchableOpacity
             onPress={loginUsers}
             style={tw`w-36 h-8 bg-blue-500 flex-row rounded-lg flex items-center justify-center`}
@@ -76,12 +76,12 @@ const UsersScreen = () => {
             <AntDesign name="right" size={15} color="white" />
           </TouchableOpacity>
         </View>
-        <TouchableOpacity onPress={() => navigation.navigate("Signup")}>
+        {/* <TouchableOpacity onPress={() => navigation.navigate("Signup")}>
           <View style={tw`flex-row mt-5 justify-center`}>
             <Text style={tw`text-white`}>Vous n’avez pas de compte?</Text>
             <Text style={tw`text-gray-500`}> S’inscrire</Text>
           </View>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
     </View>
   );

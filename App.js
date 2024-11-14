@@ -43,7 +43,7 @@ const UsersStack = () => (
       component={UsersScreen}
       options={{ headerShown: false }}
     />
-    <Stack.Screen
+    {/* <Stack.Screen
       name="Signup"
       component={Signup}
       options={{ headerShown: false }}
@@ -52,7 +52,7 @@ const UsersStack = () => (
       name="Forget_pass"
       component={Forget_pass}
       options={{ headerShown: false }}
-    />
+    /> */}
   </Stack.Navigator>
 );
 

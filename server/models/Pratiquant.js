@@ -120,7 +120,7 @@ const Pratiquant = database.define(
       allowNull: false,
     },
     naissance: {
-      type: Sequelize.DATE,
+      type: Sequelize.DATEONLY,
       allowNull: false,
     },
     payement: {

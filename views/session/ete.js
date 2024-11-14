@@ -175,7 +175,7 @@ const Ete_Session = () => {
   };
 
   const formatDate = (date) => {
-    return dayjs(date).format("YYYY-MM-DD");
+    return dayjs(date).format("DD-MM-YYYY");
   };
   const annulEte = async () => {
     setNom("");
@@ -671,7 +671,7 @@ const Ete_Session = () => {
         <View
           style={tw`bg-gray-300 border border-gray-100 rounded-md p-2 mb-4`}
         >
-          <Picker
+          {/* <Picker
             selectedValue={activite}
             onValueChange={(itemValue) => {
               const selectedActivity = data.find(
@@ -689,6 +689,27 @@ const Ete_Session = () => {
             {data.map((item) => (
               <Picker.Item key={item.id} label={item.nom} value={item.nom} />
             ))}
+          </Picker> */}
+
+          <Picker
+            selectedValue={activite}
+            onValueChange={(itemValue) => {
+              setActivite(itemValue);
+              const selectedActivity = data.find(
+                (item) => item.nom === itemValue
+              );
+              setActId(selectedActivity ? selectedActivity.id : null);
+            }}
+            style={{ color: "gray" }}
+            name="activite"
+          >
+            {data.length > 0 ? (
+              data.map((item) => (
+                <Picker.Item key={item.id} label={item.nom} value={item.nom} />
+              ))
+            ) : (
+              <Picker.Item label="No activities available" value={null} />
+            )}
           </Picker>
         </View>
         <Text style={tw`text-white text-lg font-bold mb-2`}>
@@ -697,7 +718,7 @@ const Ete_Session = () => {
         <View
           style={tw`bg-gray-300 border border-gray-100 rounded-md p-2 mb-4`}
         >
-          <Picker
+          {/* <Picker
             selectedValue={categorie}
             onValueChange={(itemValue) => {
               setCategorie(itemValue);
@@ -721,6 +742,26 @@ const Ete_Session = () => {
                 value={item.categorie}
               />
             ))}
+          </Picker> */}
+          <Picker
+            selectedValue={categorie}
+            onValueChange={(itemValue) => {
+              setCategorie(itemValue);
+            }}
+            style={{ color: "gray" }}
+            name="categorie"
+          >
+            {data1.length > 0 ? (
+              data1.map((item) => (
+                <Picker.Item
+                  key={item.id}
+                  label={item.categorie}
+                  value={item.categorie}
+                />
+              ))
+            ) : (
+              <Picker.Item label="No categories available" value={null} />
+            )}
           </Picker>
         </View>
         <Text style={tw`text-white text-lg font-bold mb-2`}>Evaluation</Text>
