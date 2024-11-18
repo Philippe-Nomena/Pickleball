@@ -123,21 +123,26 @@ const Pratiquant = database.define(
       type: Sequelize.DATEONLY,
       allowNull: false,
     },
+
     payement: {
-      type: Sequelize.STRING,
-      allowNull: false,
+      type: Sequelize.BOOLEAN,
+      allowNull: true,
+      defaultValue: false,
     },
     consigne: {
-      type: Sequelize.STRING,
-      allowNull: false,
+      type: Sequelize.BOOLEAN,
+      allowNull: true,
+      defaultValue: false,
     },
     carte_fede: {
-      type: Sequelize.STRING,
+      type: Sequelize.BOOLEAN,
       allowNull: true,
+      defaultValue: false,
     },
     etiquete: {
-      type: Sequelize.STRING,
+      type: Sequelize.BOOLEAN,
       allowNull: true,
+      defaultValue: false,
     },
     courriel: {
       type: Sequelize.STRING,

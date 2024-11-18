@@ -363,7 +363,7 @@ const Ete_liste = () => {
     }
   };
   const formatDate = (date) => {
-    return dayjs(date).format("DD-MM-YYYY");
+    return dayjs(date).format("YYYY-MM-DD");
   };
   const handleDelete = (item) => {
     setItemToDelete(item);
@@ -843,9 +843,9 @@ const Ete_liste = () => {
                 <View style={tw`flex-row`}>
                   <Checkbox
                     name="payement"
-                    checked={payement.includes("Payement")}
+                    checked={payement.includes("Oui")}
                     onChange={() =>
-                      handleToggleCheckbox(payement, setPayement, "Payement")
+                      handleToggleCheckbox(payement, setPayement, "Oui")
                     }
                   />
                   <Text style={tw`text-white text-lg font-bold mb-2`}>
@@ -856,13 +856,9 @@ const Ete_liste = () => {
                 <View style={tw`flex-row`}>
                   <Checkbox
                     name="carte_fede"
-                    checked={carte_fede.includes("Carte Fédé")}
+                    checked={carte_fede.includes("Oui")}
                     onChange={() =>
-                      handleToggleCheckbox(
-                        carte_fede,
-                        setCarte_fede,
-                        "Carte Fédé"
-                      )
+                      handleToggleCheckbox(carte_fede, setCarte_fede, "Oui")
                     }
                   />
                   <Text style={tw`text-white text-lg font-bold mb-2`}>
@@ -874,9 +870,9 @@ const Ete_liste = () => {
                 <View style={tw`flex-row`}>
                   <Checkbox
                     name="consigne"
-                    checked={consigne.includes("Consigne")}
+                    checked={consigne.includes("Oui")}
                     onChange={() =>
-                      handleToggleCheckbox(consigne, setConsigne, "Consigne")
+                      handleToggleCheckbox(consigne, setConsigne, "Oui")
                     }
                   />
                   <Text style={tw`text-white text-lg font-bold mb-2`}>
@@ -886,9 +882,9 @@ const Ete_liste = () => {
                 <View style={tw`flex-row`}>
                   <Checkbox
                     name="etiquete"
-                    checked={etiquete.includes("Etiquete")}
+                    checked={etiquete.includes("Oui")}
                     onChange={() =>
-                      handleToggleCheckbox(etiquete, setEtiquete, "Etiquete")
+                      handleToggleCheckbox(etiquete, setEtiquete, "Oui")
                     }
                   />
                   <Text style={tw`text-white text-lg font-bold mb-2`}>

@@ -7,7 +7,7 @@ const ExcelJS = require("exceljs");
 const Pratiquants = require("../models/Pratiquant");
 const Session = require("../models/Session");
 const Activite = require("../models/Activite");
-// const Pratiquant = require("../models/Pratiquant");
+
 const Categorie = require("../models/Categorie");
 const readFile = util.promisify(fs.readFile);
 exports.getAllPratiquants = async (req, res, next) => {
@@ -254,45 +254,6 @@ exports.getPratiquantsbySelected = async (req, res, next) => {
   }
 };
 
-// exports.getPratiquantsEte = async (req, res, next) => {
-//   const id = req.params.id;
-//   try {
-//     let pratiquant = await Pratiquants.findOne({
-//       where: {
-//         id: id,
-//         session: "Ete",
-//       },
-//     });
-
-//     if (!pratiquant) {
-//       return res.status(404).send({
-//         message: "Vous n'êtes pas inscrit dans la liste de pratiquants été",
-//       });
-//     }
-
-//     const pratiquantPlain = pratiquant.get({ plain: true });
-//     const idString = pratiquantPlain.id.toString().padStart(2, "0");
-//     const fileName = `barcode_${idString}.png`;
-//     const barcodeUrl = `${req.protocol}://${req.get("host")}/barcodes/${fileName}`;
-//     const updatedPratiquant = { ...pratiquantPlain, barcodeUrl };
-
-//     const downloadUrl = await generateExcelFile([updatedPratiquant], req);
-//     if (!downloadUrl) {
-//       throw new Error("Failed to generate download URL");
-//     }
-
-//     res.json({
-//       pratiquant: updatedPratiquant,
-//       downloadUrl: downloadUrl,
-//     });
-//   } catch (error) {
-//     console.error("Error in getPratiquantsEte:", error);
-//     res.status(500).send({
-//       message: "An error occurred while processing the request",
-//       error: error.message,
-//     });
-//   }
-// };
 exports.getPratiquantsHiver = async (req, res, next) => {
   const id = req.params.id;
   let pratiquants = await Pratiquants.findOne({

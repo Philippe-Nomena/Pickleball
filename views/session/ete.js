@@ -37,14 +37,20 @@ const Ete_Session = () => {
   const [adresse, setAdresse] = useState("");
   const [tel_urgence, setTel_urgence] = useState("");
   const [evaluation, setEvaluation] = useState("NON");
-  const [payement, setPayement] = useState("");
-  const [carte_payement, setCarte_payement] = useState("");
+
   const [mode_payement, setMode_payement] = useState("");
   const [telephone, setTelephone] = useState("");
   const [courriel, setCourriel] = useState("");
-  const [carte_fede, setCarte_fede] = useState("");
-  const [consigne, setConsigne] = useState("");
-  const [etiquete, setEtiquete] = useState("");
+  // const [carte_fede, setCarte_fede] = useState("");
+  // const [consigne, setConsigne] = useState("");
+  // const [etiquete, setEtiquete] = useState("");
+  // const [payement, setPayement] = useState("");
+  const [carte_fede, setCarte_fede] = useState(false);
+  const [consigne, setConsigne] = useState(false);
+  const [etiquete, setEtiquete] = useState(false);
+  const [payement, setPayement] = useState(false);
+
+  const [carte_payement, setCarte_payement] = useState("");
   const [data, setData] = useState([]);
   const [data1, setData1] = useState([]);
   const [data2, setData2] = useState([]);
@@ -175,7 +181,7 @@ const Ete_Session = () => {
   };
 
   const formatDate = (date) => {
-    return dayjs(date).format("DD-MM-YYYY");
+    return dayjs(date).format("YYYY-MM-DD");
   };
   const annulEte = async () => {
     setNom("");
@@ -313,7 +319,6 @@ const Ete_Session = () => {
           );
 
           const newPratiquants = response.data;
-          // console.log("Réponse de l'API :", newPratiquants);
 
           if (
             newPratiquants &&
@@ -475,10 +480,10 @@ const Ete_Session = () => {
       fetchAllData();
       setNom("");
       setSexe("");
-      setPayement("");
-      setConsigne("");
-      setCarte_fede("");
-      setEtiquete("");
+      setPayement(false);
+      setCarte_fede(false);
+      setConsigne(false);
+      setEtiquete(false);
       setCourriel("");
       setAdresse("");
       setTelephone("");
@@ -572,12 +577,17 @@ const Ete_Session = () => {
         <View style={tw`flex-row items-center mb-2`}>
           <View style={tw`flex-col`}>
             <View style={tw`flex-row`}>
+              {/* <Checkbox
+                name="payement"
+                checked={payement.includes("Oui")}
+                onChange={() =>
+                  handleToggleCheckbox(payement, setPayement, "Oui")
+                }
+              /> */}
               <Checkbox
                 name="payement"
-                checked={payement.includes("Payement")}
-                onChange={() =>
-                  handleToggleCheckbox(payement, setPayement, "Payement")
-                }
+                checked={payement}
+                onChange={() => setPayement(!payement)}
               />
               <Text style={tw`text-white text-lg font-bold mb-2`}>
                 Payement
@@ -585,12 +595,17 @@ const Ete_Session = () => {
             </View>
 
             <View style={tw`flex-row`}>
+              {/* <Checkbox
+                name="carte_fede"
+                checked={carte_fede.includes("Oui")}
+                onChange={() =>
+                  handleToggleCheckbox(carte_fede, setCarte_fede, "Oui")
+                }
+              /> */}
               <Checkbox
                 name="carte_fede"
-                checked={carte_fede.includes("Carte Fédé")}
-                onChange={() =>
-                  handleToggleCheckbox(carte_fede, setCarte_fede, "Carte Fédé")
-                }
+                checked={carte_fede}
+                onChange={() => setCarte_fede(!carte_fede)}
               />
               <Text style={tw`text-white text-lg font-bold mb-2`}>
                 Carte Fédé
@@ -599,24 +614,34 @@ const Ete_Session = () => {
           </View>
           <View style={tw`flex-col ml-4`}>
             <View style={tw`flex-row`}>
+              {/* <Checkbox
+                name="consigne"
+                checked={consigne.includes("Oui")}
+                onChange={() =>
+                  handleToggleCheckbox(consigne, setConsigne, "Oui")
+                }
+              /> */}
               <Checkbox
                 name="consigne"
-                checked={consigne.includes("Consigne")}
-                onChange={() =>
-                  handleToggleCheckbox(consigne, setConsigne, "Consigne")
-                }
+                checked={consigne}
+                onChange={() => setConsigne(!consigne)}
               />
               <Text style={tw`text-white text-lg font-bold mb-2`}>
                 Consigne
               </Text>
             </View>
             <View style={tw`flex-row`}>
+              {/* <Checkbox
+                name="etiquete"
+                checked={etiquete.includes("Oui")}
+                onChange={() =>
+                  handleToggleCheckbox(etiquete, setEtiquete, "Oui")
+                }
+              /> */}
               <Checkbox
                 name="etiquete"
-                checked={etiquete.includes("Etiquete")}
-                onChange={() =>
-                  handleToggleCheckbox(etiquete, setEtiquete, "Etiquete")
-                }
+                checked={etiquete}
+                onChange={() => setEtiquete(!etiquete)}
               />
               <Text style={tw`text-white text-lg font-bold mb-2`}>
                 Etiquete
@@ -671,7 +696,7 @@ const Ete_Session = () => {
         <View
           style={tw`bg-gray-300 border border-gray-100 rounded-md p-2 mb-4`}
         >
-          {/* <Picker
+          <Picker
             selectedValue={activite}
             onValueChange={(itemValue) => {
               const selectedActivity = data.find(
@@ -679,7 +704,6 @@ const Ete_Session = () => {
               );
               if (selectedActivity) {
                 setidActivite(selectedActivity.id);
-                console.log("ito", selectedActivity.id);
               }
               setActId(selectedActivity ? selectedActivity.id : null);
             }}
@@ -689,9 +713,9 @@ const Ete_Session = () => {
             {data.map((item) => (
               <Picker.Item key={item.id} label={item.nom} value={item.nom} />
             ))}
-          </Picker> */}
+          </Picker>
 
-          <Picker
+          {/* <Picker
             selectedValue={activite}
             onValueChange={(itemValue) => {
               setActivite(itemValue);
@@ -710,7 +734,7 @@ const Ete_Session = () => {
             ) : (
               <Picker.Item label="No activities available" value={null} />
             )}
-          </Picker>
+          </Picker> */}
         </View>
         <Text style={tw`text-white text-lg font-bold mb-2`}>
           Dans quelle catégorie avez-vous joué auparavant ?
@@ -718,7 +742,7 @@ const Ete_Session = () => {
         <View
           style={tw`bg-gray-300 border border-gray-100 rounded-md p-2 mb-4`}
         >
-          {/* <Picker
+          <Picker
             selectedValue={categorie}
             onValueChange={(itemValue) => {
               setCategorie(itemValue);
@@ -742,8 +766,8 @@ const Ete_Session = () => {
                 value={item.categorie}
               />
             ))}
-          </Picker> */}
-          <Picker
+          </Picker>
+          {/* <Picker
             selectedValue={categorie}
             onValueChange={(itemValue) => {
               setCategorie(itemValue);
@@ -762,7 +786,7 @@ const Ete_Session = () => {
             ) : (
               <Picker.Item label="No categories available" value={null} />
             )}
-          </Picker>
+          </Picker> */}
         </View>
         <Text style={tw`text-white text-lg font-bold mb-2`}>Evaluation</Text>
         <View
