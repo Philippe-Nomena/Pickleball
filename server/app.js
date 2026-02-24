@@ -85,10 +85,10 @@ const SessionRoute = require("./routes/sessionRoute");
 const app = express();
 
 // Load SSL key and certificate for HTTPS
-const sslOptions = {
-  key: fs.readFileSync("key.pem"),
-  cert: fs.readFileSync("cert.pem"),
-};
+// const sslOptions = {
+//   key: fs.readFileSync("key.pem"),
+//   cert: fs.readFileSync("cert.pem"),
+// };
 
 // Middlewares
 app.use(cors());
